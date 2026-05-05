@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { apiGet } from "../api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { apiGet, apiPost } from "../api";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { routes } from "../routes";
 import {
@@ -9,6 +9,12 @@ import {
   aiReportExample,
   AnalysisReport,
 } from "../utils/aiReportExample";
+
+type AnalyzeNavState = {
+  shots?: Array<Record<string, unknown>>;
+  filename?: string;
+  cached?: boolean;
+};
 
 const ScoreIndicator = ({ score }: { score: number }) => {
   const getColor = (score: number) => {
@@ -108,9 +114,36 @@ const DrillCard = ({
 export const AIReport = () => {
   const { reportId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navState = (location.state ?? {}) as AnalyzeNavState;
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+
+  const canRegenerate = !!navState.shots && navState.shots.length > 0;
+  const handleRegenerate = async () => {
+    if (!canRegenerate || regenerating) return;
+    setRegenerating(true);
+    try {
+      const fresh = await apiPost<AnalysisReport & { cached?: boolean }>(
+        "/api/analyze",
+        {
+          shots: navState.shots,
+          timeframe: "last session",
+          filename: navState.filename ?? "",
+          force: true,
+        },
+      );
+      navigate(`${routes.aiAnalysis}/${fresh.id}`, {
+        state: { ...navState, cached: !!fresh.cached },
+        replace: true,
+      });
+    } catch (err) {
+      console.error("Regenerate failed:", err);
+      setRegenerating(false);
+    }
+  };
 
   useEffect(() => {
     if (!reportId) {
@@ -200,8 +233,16 @@ export const AIReport = () => {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
               AI Golf Analysis
+              {navState.cached && (
+                <span
+                  title="Reused a previously generated report for this exact shot selection. Click Regenerate for a fresh take."
+                  className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                >
+                  Cached
+                </span>
+              )}
             </h1>
             <p className="mt-2 text-gray-600">
               Analysis from {format(new Date(report.createdAt), "PPP")} •{" "}
@@ -211,12 +252,23 @@ export const AIReport = () => {
               )}
             </p>
           </div>
-          <button
-            onClick={() => navigate(routes.aiAnalysis)}
-            className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200"
-          >
-            Back to Reports
-          </button>
+          <div className="flex gap-2">
+            {canRegenerate && (
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+              >
+                {regenerating ? "Regenerating…" : "Regenerate"}
+              </button>
+            )}
+            <button
+              onClick={() => navigate(routes.aiAnalysis)}
+              className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200"
+            >
+              Back to Reports
+            </button>
+          </div>
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-sm">

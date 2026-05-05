@@ -62,13 +62,14 @@ export const AIAnalysis = () => {
       const selectedFiles = allSessions.filter((s) => sessions[s].selected);
       const filename = selectedFiles.join(", ");
 
-      const report = await apiPost<AIAnalysisResult & { id: string }>(
-        "/api/analyze",
-        { shots, timeframe: "last session", filename },
-      );
+      const report = await apiPost<
+        AIAnalysisResult & { id: string; cached?: boolean }
+      >("/api/analyze", { shots, timeframe: "last session", filename });
 
       await fetchReports();
-      navigate(`${routes.aiAnalysis}/${report.id}`);
+      navigate(`${routes.aiAnalysis}/${report.id}`, {
+        state: { shots, filename, cached: !!report.cached },
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(
