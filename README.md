@@ -1,4 +1,4 @@
-# R10Progress
+# R10Progress (self-hosted)
 
 Track and visualize your golf shot progress from the Garmin Approach R10 Radar.
 
