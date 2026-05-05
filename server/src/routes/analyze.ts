@@ -30,24 +30,41 @@ router.post("/", async (req, res) => {
   const shotsForPrompt = shots.slice(0, 200).map((s) => ({
     clubName: s["Club Name"] ?? s["Schlägername"] ?? s["Nombre del palo"],
     clubType: s["Club Type"] ?? s["Schlägerart"] ?? s["Tipo de palo"],
-    ballSpeed: s["Ball Speed"] ?? s["Ballgeschwindigkeit"] ?? s["Velocidad de bola"],
+    ballSpeed:
+      s["Ball Speed"] ?? s["Ballgeschwindigkeit"] ?? s["Velocidad de bola"],
     clubSpeed: s["Club Speed"] ?? s["Schl.gsch."] ?? s["Velocidad del palo"],
-    launchAngle: s["Launch Angle"] ?? s["Abflugwinkel"] ?? s["Ángulo de lanzamiento"],
-    launchDirection: s["Launch Direction"] ?? s["Abflugrichtung"] ?? s["Dirección de lanzamiento"],
-    carryDistance: s["Carry Distance"] ?? s["Carry-Distanz"] ?? s["Dist.​vuelo"],
-    totalDistance: s["Total Distance"] ?? s["Gesamtstrecke"] ?? s["Distan​cia total"],
+    launchAngle:
+      s["Launch Angle"] ?? s["Abflugwinkel"] ?? s["Ángulo de lanzamiento"],
+    launchDirection:
+      s["Launch Direction"] ??
+      s["Abflugrichtung"] ??
+      s["Dirección de lanzamiento"],
+    carryDistance:
+      s["Carry Distance"] ?? s["Carry-Distanz"] ?? s["Dist.​vuelo"],
+    totalDistance:
+      s["Total Distance"] ?? s["Gesamtstrecke"] ?? s["Distan​cia total"],
     spinRate: s["Spin Rate"] ?? s["Drehrate"] ?? s["Tasa de giro"],
     backspin: s["Backspin"],
     sidespin: s["Sidespin"],
     clubFace: s["Club Face"] ?? s["Schlagfläche"] ?? s["Cara del palo"],
     clubPath: s["Club Path"] ?? s["Schwungbahn"] ?? s["Línea del palo"],
-    faceToPath: s["Face to Path"] ?? s["Schlagflächenstellung"] ?? s["Cara a línea"],
-    attackAngle: s["Attack Angle"] ?? s["Anstellwinkel"] ?? s["Ángulo de ataque"],
-    smashFactor: s["Smash Factor"] ?? s["Smash-Faktor"] ?? s["Calidad del impacto"],
+    faceToPath:
+      s["Face to Path"] ?? s["Schlagflächenstellung"] ?? s["Cara a línea"],
+    attackAngle:
+      s["Attack Angle"] ?? s["Anstellwinkel"] ?? s["Ángulo de ataque"],
+    smashFactor:
+      s["Smash Factor"] ?? s["Smash-Faktor"] ?? s["Calidad del impacto"],
     spinAxis: s["Spin Axis"] ?? s["Drehachse"] ?? s["Eje de giro"],
-    apexHeight: s["Apex Height"] ?? s["Höhe des Scheitelpunkts"] ?? s["Altura máxima"],
-    carryDeviation: s["Carry Deviation Distance"] ?? s["Carry-Abweichungsdistanz"] ?? s["Distancia de desviación de vuelo"],
-    totalDeviation: s["Total Deviation Distance"] ?? s["Gesamtabweichungsdistanz"] ?? s["Distancia de desviación total"],
+    apexHeight:
+      s["Apex Height"] ?? s["Höhe des Scheitelpunkts"] ?? s["Altura máxima"],
+    carryDeviation:
+      s["Carry Deviation Distance"] ??
+      s["Carry-Abweichungsdistanz"] ??
+      s["Distancia de desviación de vuelo"],
+    totalDeviation:
+      s["Total Deviation Distance"] ??
+      s["Gesamtabweichungsdistanz"] ??
+      s["Distancia de desviación total"],
     date: s["Date"] ?? s["Datum"] ?? s["Fecha"],
   }));
 
@@ -124,7 +141,14 @@ All score/consistency values are 0-100.`;
     const db = await getDb();
     await db.execute({
       sql: "INSERT INTO reports (id, created_at, shot_count, timeframe, filename, analysis) VALUES (?, ?, ?, ?, ?, ?)",
-      args: [id, now, shots.length, timeframe, filename, JSON.stringify(analysis)],
+      args: [
+        id,
+        now,
+        shots.length,
+        timeframe,
+        filename,
+        JSON.stringify(analysis),
+      ],
     });
 
     res.json({

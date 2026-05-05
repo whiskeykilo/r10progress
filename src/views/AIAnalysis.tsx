@@ -7,7 +7,11 @@ import { BasePageLayout } from "../components/base/BasePageLayout";
 import { useSelectedShots } from "../hooks/useSelectedShots";
 import { SessionContext } from "../provider/SessionContext";
 import { routes } from "../routes";
-import { AIAnalysisResult, aiReportExample, AnalysisReport } from "../utils/aiReportExample";
+import {
+  AIAnalysisResult,
+  aiReportExample,
+  AnalysisReport,
+} from "../utils/aiReportExample";
 
 interface LoadingState {
   analyzing: boolean;
@@ -84,8 +88,8 @@ export const AIAnalysis = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">AI Golf Analysis</h1>
           <p className="mt-2 text-gray-600">
-            Get personalized insights and recommendations for your golf game using advanced AI
-            analysis.
+            Get personalized insights and recommendations for your golf game
+            using advanced AI analysis.
           </p>
         </div>
 
@@ -95,9 +99,14 @@ export const AIAnalysis = () => {
               <div className="rounded-md bg-yellow-50 p-4">
                 <div className="flex">
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-yellow-800">No shots selected</h3>
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      No shots selected
+                    </h3>
                     <div className="mt-2 text-sm text-yellow-700">
-                      <p>Please select the sessions you want to receive AI analysis for.</p>
+                      <p>
+                        Please select the sessions you want to receive AI
+                        analysis for.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -119,9 +128,12 @@ export const AIAnalysis = () => {
               </div>
             ) : (
               <div className="rounded-lg bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">Start Analysis</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Start Analysis
+                </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  Get detailed insights about your swing patterns and consistency.
+                  Get detailed insights about your swing patterns and
+                  consistency.
                 </p>
                 <button
                   className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

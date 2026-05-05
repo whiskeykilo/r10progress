@@ -26,7 +26,10 @@ export interface SessionContextInterface {
   fetchSnapshot: () => Promise<Sessions | undefined>;
   deleteSession: (id: string) => Promise<void>;
   exportSessionsToJson: (sessions: Sessions) => void;
-  deleteRowFromSession: (sessionId: string, row: GolfSwingData) => Promise<void>;
+  deleteRowFromSession: (
+    sessionId: string,
+    row: GolfSwingData,
+  ) => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextInterface>({
@@ -54,12 +57,15 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const raw = await apiGet<Record<string, { results: unknown[]; created_at: number }>>(
-        "/api/sessions",
-      );
+      const raw =
+        await apiGet<
+          Record<string, { results: unknown[]; created_at: number }>
+        >("/api/sessions");
       const sessionResult: Sessions = {};
       for (const [filename, data] of Object.entries(raw)) {
-        const session = reduceSessionToDefinedValues({ results: data.results } as Session);
+        const session = reduceSessionToDefinedValues({
+          results: data.results,
+        } as Session);
         sessionResult[filename] = {
           ...session,
           selected: true,
@@ -78,7 +84,9 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const exportSessionsToJson = useCallback((sessions: Sessions) => {
     const element = document.createElement("a");
-    const file = new Blob([JSON.stringify(sessions)], { type: "application/json" });
+    const file = new Blob([JSON.stringify(sessions)], {
+      type: "application/json",
+    });
     element.href = URL.createObjectURL(file);
     element.download = "sessions.json";
     document.body.appendChild(element);
@@ -101,7 +109,9 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     async (sessionId: string, row: GolfSwingData) => {
       const session = sessions[sessionId];
       if (!session) return;
-      const rowIndex = session.results.findIndex((r) => getDate(r) === getDate(row));
+      const rowIndex = session.results.findIndex(
+        (r) => getDate(r) === getDate(row),
+      );
       if (rowIndex === -1) return;
       const updatedResults = [...session.results];
       updatedResults.splice(rowIndex, 1);
