@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .firebase
 tsconfig.node.tsbuildinfo
+
+# SQLite data dir
+data/
