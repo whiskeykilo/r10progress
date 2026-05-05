@@ -1,15 +1,12 @@
 import { Navigate, Outlet, createBrowserRouter } from "react-router-dom";
 import {
   RedirectIfNotLoggedIn,
-  RedirectIfSignedIn,
 } from "./components/AuthRedirects";
 import { routes } from "./routes";
 import { AIAnalysis } from "./views/AIAnalysis";
 import { AIReport } from "./views/AIReport";
-import { Authentication } from "./views/Authentication";
 import { Dashboard } from "./views/Dashboard";
 import { Goals } from "./views/Goals";
-import { Layout } from "./views/Layout";
 import { NewLayout } from "./views/NewLayout";
 import { Reports } from "./views/Reports";
 import { Sessions } from "./views/Sessions";
@@ -66,17 +63,6 @@ export const router = createBrowserRouter([
         Component: Upload,
       },
     ],
-  },
-  {
-    path: routes.login,
-    id: "login",
-    Component: () => (
-      <RedirectIfSignedIn>
-        <Layout>
-          <Authentication />
-        </Layout>
-      </RedirectIfSignedIn>
-    ),
   },
   {
     path: "*",

@@ -1,37 +1,24 @@
-import { onAuthStateChanged, User } from "firebase/auth";
-import React, {
-  createContext,
-  PropsWithChildren,
-  useEffect,
-  useState,
-} from "react";
-import { auth } from "../firebase";
+import React, { createContext, PropsWithChildren } from "react";
 
-type UserInitialState = User | null;
+// Stub user — single-user self-hosted mode, no auth required.
+const LOCAL_USER = { uid: "local", isAnonymous: false };
+
+type LocalUser = typeof LOCAL_USER;
+
 interface UserContextInterface {
-  user: UserInitialState;
-  setUser: (user: User) => void;
+  user: LocalUser | null;
+  setUser: (user: LocalUser) => void;
 }
 
 export const UserContext = createContext<UserContextInterface>({
-  user: null,
+  user: LOCAL_USER,
   setUser: () => undefined,
 });
 
 export const UserProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<UserInitialState>({} as User);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
   const memoizedValue = React.useMemo(
-    () => ({
-      user,
-      setUser,
-    }),
-    [user, setUser],
+    () => ({ user: LOCAL_USER, setUser: () => undefined }),
+    [],
   );
 
   return (

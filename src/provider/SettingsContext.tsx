@@ -1,12 +1,13 @@
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
   PropsWithChildren,
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
-import { db } from "../firebase";
+
+import { apiGet, apiPut } from "../api";
 import { UserContext } from "./UserContext";
 
 export type SettingsType = {
@@ -21,49 +22,41 @@ interface SettingsContextProps {
   isLoading: boolean;
 }
 
+const DEFAULT_SETTINGS: SettingsType = {
+  useIQR: false,
+  useAboveAverageShots: false,
+  unit: "meters",
+};
+
 export const SettingsContext = createContext<SettingsContextProps>({
-  settings: {
-    useIQR: false,
-    useAboveAverageShots: false,
-    unit: "meters",
-  },
+  settings: DEFAULT_SETTINGS,
   setSettings: () => {},
   isLoading: true,
 });
 
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
-  const [settings, setSettings] = useState<SettingsType>({
-    useIQR: false,
-    useAboveAverageShots: false,
-    unit: "meters",
-  });
+  const [settings, setSettings] = useState<SettingsType>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useContext(UserContext);
+  const initialized = useRef(false);
 
+  // Load settings once on mount
   useEffect(() => {
-    if (!user || user.isAnonymous) return;
-    const uuid = user?.uid;
-
-    const settingsRef = doc(db, `r10data/${uuid}/settings/preferences`);
-
-    // Subscribe to settings changes
-    const unsubscribe = onSnapshot(settingsRef, (doc) => {
-      if (doc.exists()) {
-        setSettings(doc.data() as SettingsType);
-      }
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
+    if (!user) return;
+    apiGet<SettingsType>("/api/settings")
+      .then((data) => {
+        setSettings(data);
+        initialized.current = true;
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }, [user]);
 
-  // Sync settings to Firestore
+  // Persist settings changes (but not the initial load)
   useEffect(() => {
-    if (!user || isLoading) return;
-
-    const settingsRef = doc(db, `r10data/${user.uid}/settings/preferences`);
-    setDoc(settingsRef, settings, { merge: true });
-  }, [settings, user, isLoading]);
+    if (!initialized.current || isLoading) return;
+    apiPut("/api/settings", settings).catch(console.error);
+  }, [settings, isLoading]);
 
   return (
     <SettingsContext.Provider value={{ settings, setSettings, isLoading }}>

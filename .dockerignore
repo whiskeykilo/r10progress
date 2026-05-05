@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.github
+firebaseEmulatorData
+functions
+server/node_modules
+server/dist
+*.log
+.env*
+.firebase
+.firebaserc
+firebase.json
