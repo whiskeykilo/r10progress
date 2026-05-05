@@ -1,5 +1,9 @@
 # R10Progress (self-hosted)
 
+<p align="center">
+  <img src="public/logo.png" alt="R10Progress logo" width="160" />
+</p>
+
 Track and visualize your golf shot progress from the Garmin Approach R10 Radar.
 
 This is a self-hosted fork: a React SPA backed by a small Node/Express + SQLite server, packaged as a single Docker image.
