@@ -15,6 +15,7 @@
     "@headlessui/react": "^1.7.19",
     "@heroicons/react": "^2.2.0",
     "@types/papaparse": "^5.5.2",
+    "ag-grid-community": "^31.3.4",
     "ag-grid-react": "^31.3.4",
     "antd": "^5.29.3",
     "autoprefixer": "^10.4.27",
