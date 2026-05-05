@@ -10,9 +10,9 @@ RUN npm run build
 FROM node:22-alpine AS server-build
 WORKDIR /app/server
 COPY server/package*.json ./
-RUN npm install --production
+RUN npm install
 COPY server/ .
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 # Stage 3: Runtime image
 FROM node:22-alpine
