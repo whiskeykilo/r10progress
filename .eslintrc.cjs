@@ -19,4 +19,13 @@ module.exports = {
     "prettier/prettier": "error",
     "@typescript-eslint/no-unused-vars": "off",
   },
+  overrides: [
+    {
+      // Context provider files intentionally export both context and hook
+      files: ["src/provider/**/*.tsx"],
+      rules: {
+        "react-refresh/only-export-components": "off",
+      },
+    },
+  ],
 };

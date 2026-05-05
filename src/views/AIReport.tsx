@@ -173,11 +173,13 @@ export const AIReport = () => {
         <div className="rounded-md bg-red-50 p-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Incomplete Report</h3>
+              <h3 className="text-sm font-medium text-red-800">
+                Incomplete Report
+              </h3>
               <div className="mt-2 text-sm text-red-700">
                 <p>
-                  This report is missing data. The AI analysis may have been cut short. Please try
-                  generating a new report.
+                  This report is missing data. The AI analysis may have been cut
+                  short. Please try generating a new report.
                 </p>
               </div>
               <button
@@ -198,7 +200,9 @@ export const AIReport = () => {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">AI Golf Analysis</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              AI Golf Analysis
+            </h1>
             <p className="mt-2 text-gray-600">
               Analysis from {format(new Date(report.createdAt), "PPP")} •{" "}
               {report.shotCount} shots analyzed
@@ -216,29 +220,43 @@ export const AIReport = () => {
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900">Performance Overview</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Performance Overview
+          </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Overall Score</h3>
-              <ScoreIndicator score={analysis.performanceMetrics.overallScore} />
+              <h3 className="text-sm font-medium text-gray-500">
+                Overall Score
+              </h3>
+              <ScoreIndicator
+                score={analysis.performanceMetrics.overallScore}
+              />
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Consistency</h3>
-              <ScoreIndicator score={analysis.performanceMetrics.consistencyScore} />
+              <ScoreIndicator
+                score={analysis.performanceMetrics.consistencyScore}
+              />
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Accuracy</h3>
-              <ScoreIndicator score={analysis.performanceMetrics.accuracyScore} />
+              <ScoreIndicator
+                score={analysis.performanceMetrics.accuracyScore}
+              />
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Efficiency</h3>
-              <ScoreIndicator score={analysis.performanceMetrics.efficiencyScore} />
+              <ScoreIndicator
+                score={analysis.performanceMetrics.efficiencyScore}
+              />
             </div>
           </div>
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">Impact Conditions</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            Impact Conditions
+          </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <AnalysisSection
               title="Face Control"
@@ -256,7 +274,9 @@ export const AIReport = () => {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">Ball Flight</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            Ball Flight
+          </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <AnalysisSection
               title="Launch Conditions"
@@ -274,10 +294,14 @@ export const AIReport = () => {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">Practice Plan</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            Practice Plan
+          </h2>
           <div className="rounded-lg bg-white p-6 shadow-sm">
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900">High Priority Focus</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                High Priority Focus
+              </h3>
               <p className="mt-2 text-gray-600">
                 {analysis.practiceRecommendations.highPriorityFocus}
               </p>
@@ -291,7 +315,9 @@ export const AIReport = () => {
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900">Statistical Trends</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Statistical Trends
+          </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Distance</h3>

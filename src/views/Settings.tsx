@@ -1,7 +1,6 @@
 import { SessionList } from "../components/SessionList";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { OutlierDetectionSettings } from "../components/panels/OutlierDetectionSettings";
-import { TrackingSettings } from "../components/panels/TrackingSettings";
 import { UnitSettings } from "../components/panels/UnitSettings";
 
 export const Settings = () => (
@@ -17,11 +16,6 @@ export const Settings = () => (
       <section>
         <h3 className="mb-4 text-xl font-semibold">Outlier Detection</h3>
         <OutlierDetectionSettings />
-      </section>
-
-      <section>
-        <h3 className="mb-4 text-xl font-semibold">Privacy Settings</h3>
-        <TrackingSettings />
       </section>
 
       <section>

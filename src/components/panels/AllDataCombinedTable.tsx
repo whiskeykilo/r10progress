@@ -72,6 +72,19 @@ export const AllDataCombinedTable = () => {
     [sessions],
   );
 
+  // Handler for delete button click
+  const handleDeleteClick = useCallback(
+    (row: GolfSwingData) => {
+      const sessionId = findSessionIdForRow(row);
+      setDeleteAction({
+        row,
+        sessionId,
+        showDialog: true,
+      });
+    },
+    [findSessionIdForRow],
+  );
+
   // Initialize columns
   useEffect(() => {
     if (sessions && Object.keys(sessions)?.length > 0) {
@@ -103,7 +116,7 @@ export const AllDataCombinedTable = () => {
                 padding: "4px",
                 display: "flex",
                 alignItems: "center",
-                color: isDeleting ? "#9ca3af" : "#dc2626", // Gray when disabled
+                color: isDeleting ? "#9ca3af" : "#dc2626",
                 height: "100%",
               }}
             >
@@ -118,20 +131,7 @@ export const AllDataCombinedTable = () => {
       } as any);
       setColumnDefs(filteredColumns);
     }
-  }, [sessions, isDeleting]);
-
-  // Handler for delete button click
-  const handleDeleteClick = useCallback(
-    (row: GolfSwingData) => {
-      const sessionId = findSessionIdForRow(row);
-      setDeleteAction({
-        row,
-        sessionId,
-        showDialog: true,
-      });
-    },
-    [findSessionIdForRow],
-  );
+  }, [sessions, isDeleting, handleDeleteClick]);
 
   // Custom context menu logic
   const handleCellContextMenu = useCallback(

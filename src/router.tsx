@@ -1,7 +1,5 @@
 import { Navigate, Outlet, createBrowserRouter } from "react-router-dom";
-import {
-  RedirectIfNotLoggedIn,
-} from "./components/AuthRedirects";
+import { RedirectIfNotLoggedIn } from "./components/AuthRedirects";
 import { routes } from "./routes";
 import { AIAnalysis } from "./views/AIAnalysis";
 import { AIReport } from "./views/AIReport";

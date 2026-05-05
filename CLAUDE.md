@@ -2,84 +2,94 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Architecture
+
+Self-hosted fork of R10Progress: React SPA + Node/Express + SQLite, packaged as a single Docker image. No Firebase.
+
+- **Frontend** (`src/`): React 18 + TypeScript, Vite, Tailwind, served by the backend in production.
+- **Backend** (`server/`): Express on Node 22, SQLite via `@libsql/client`, OpenAI for shot analysis.
+- **Container**: multi-stage `Dockerfile` builds SPA + server, serves both on port 8080. SQLite persists at `/data`.
+
 ## Development Commands
 
-### Frontend Development
+Package manager: **pnpm**.
 
-- `npm run dev` - Start development server with Firebase emulators and watch mode for functions
-- `npm run build` - Build the production app (includes TypeScript compilation)
-- `npm run lint` - Run ESLint on TypeScript/TSX files
-- `npm run preview` - Preview the production build locally
-- `npm run emulate` - Start Firebase emulators with imported data
-- `npm run emulate:export` - Start emulators and export data on exit
+### Frontend (repo root)
 
-### Functions Development
+- `pnpm dev` — Vite dev server + API server concurrently (port 5173 + API).
+- `pnpm build` — TypeScript compile + production Vite build.
+- `pnpm lint` — ESLint over `src/`.
+- `pnpm preview` — Preview the production build.
 
-Navigate to `functions/` directory:
+### Backend (`server/`)
 
-- `npm run build` - Compile TypeScript functions
-- `npm run build:watch` - Compile functions in watch mode
-- `npm run lint` - Run ESLint on functions code
-- `npm run serve` - Build and start Firebase function emulators
+- `pnpm dev` — `tsx watch` on `src/index.ts`.
+- `pnpm build` — TypeScript compile to `dist/`.
+- `pnpm start` — Run compiled server.
 
-### Testing
+### Tests
 
-- Tests are configured for Vitest (frontend) and Jest (functions)
-- Frontend tests: Run with `vitest` (configured in vite.config.ts)
-- Functions tests: Run with `jest` in functions directory
+- `pnpm test` — Run all Vitest tests (from repo root).
+- `pnpm test -- src/utils/utils.test.ts` — Run a single test file.
+- Tests use `globals: true` and `jsdom` environment (configured in `vite.config.ts`).
 
-## Architecture Overview
+## Frontend Structure
 
-### Frontend Structure
+- **State**: Context providers (User, Settings, Session) + Jotai for specific atoms.
+- **Styling**: Tailwind + Sass, Headless UI, Heroicons.
+- **Charts/Tables**: ECharts (`echarts-for-react`), React-Vega, AG Grid.
 
-- **React 18** with TypeScript, using React Router for navigation
-- **State Management**: Context providers (User, Settings, Session, TrackingConsent) + Jotai for specific state
-- **Styling**: Tailwind CSS with Sass, using Headless UI and Heroicons
-- **Data Visualization**: ECharts (echarts-for-react), React-Vega, AG Grid for tables
-- **Firebase Integration**: Authentication, Firestore, Functions
+### Context providers (order in `main.tsx`)
 
-### Key Context Providers (in main.tsx order)
-
-1. **UserProvider** - Authentication and user data
-2. **SettingsProvider** - App settings and preferences
-3. **SessionProvider** - Golf session/shot data management
-4. **TrackingConsentProvider** - Analytics consent management
+1. `UserProvider`
+2. `SettingsProvider`
+3. `SessionProvider`
 
 ### Data Types
 
-- **GolfSwingData** - Multilingual support (EN/DE/ES/NL) for Garmin R10 CSV data
-- Extensive type definitions for golf metrics with unit conversions
-- Location: `src/types/GolfSwingData.ts`
+- `GolfSwingData` — multilingual (EN/DE/ES/NL) Garmin R10 CSV shape with unit conversions.
+- Located at `src/types/GolfSwingData.ts`.
 
-### Firebase Functions
+### API
 
-- **analyzeShotPatterns** - AI analysis using OpenAI GPT-4o-mini
-- **getPracticeRecommendations** - Personalized practice plans
-- **checkMembershipStatus** - Subscription management
-- **handleBuyMeACoffeeWebhook** - Payment processing
+`src/api.ts` is a thin `fetch` wrapper for the backend at `/api/*`. The Vite dev server proxies `/api` to the local Node server.
 
-### Project Structure
+## Project Layout
 
-- **src/components/** - Reusable UI components, organized by feature
-- **src/views/** - Page-level components
-- **src/hooks/** - Custom React hooks
-- **src/utils/** - Helper functions and data processing
-- **src/provider/** - Context providers
-- **functions/src/** - Firebase Cloud Functions
+- `src/components/` — UI components, organized by feature.
+- `src/views/` — Page-level components.
+- `src/hooks/` — Custom hooks.
+- `src/utils/` — Helpers, data processing.
+- `src/provider/` — Context providers.
+- `server/src/` — Express server (routes, db, OpenAI integration).
 
-### Key Features
+## Key Features
 
-- Golf shot data import from Garmin R10 CSV files
-- Multi-language support for CSV data
-- Data visualization with charts and dispersion analysis
-- AI-powered shot analysis and coaching recommendations
-- Session-based data organization with goals tracking
-- Firebase emulator support for local development
+- Garmin R10 CSV import with multi-language support.
+- Dispersion charts and shot-table analysis.
+- AI-powered shot analysis via OpenAI.
+- Session-based organization with goals.
 
-### Development Notes
+## Server Environment Variables
 
-- Uses Bun as package manager (`bun install`)
-- Sentry integration for error tracking (disabled in development)
-- Environment variables for Firebase config
-- Emulator data stored in `firebaseEmulatorData/` for consistent development
-- Functions use Node.js 22 runtime
+- `OPENAI_API_KEY` — Required for `/api/analyze` (AI shot analysis).
+- `PORT` — Server port (default: `8080`).
+- `STATIC_DIR` — Path to built SPA (default: `{cwd}/dist`).
+- `DATA_DIR` — Directory for `sqlite.db` (default: `{cwd}/data`).
+
+## Backend Routes
+
+All routes mounted under `/api/`:
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET/POST/PATCH/DELETE | `/sessions/:filename` | Session CRUD |
+| GET | `/reports`, `/reports/:id` | AI report retrieval |
+| POST | `/analyze` | Analyze shots via OpenAI (gpt-4o-mini) |
+| GET/PUT | `/settings` | User settings (IQR filter, units) |
+
+## Notes
+
+- Self-hosted Plausible-style analytics is loaded via `index.html` and proxied through `/api/wildflower/*`.
+- Sentry was used upstream but is not wired in this fork.
+- The `.env.example` contains stale Firebase vars and can be ignored — the app no longer uses Firebase.

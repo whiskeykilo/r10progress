@@ -22,7 +22,9 @@ router.get("/", async (_req, res) => {
 
 router.post("/:filename", async (req, res) => {
   const { filename } = req.params;
-  const body = z.object({ results: z.array(z.record(z.unknown())) }).safeParse(req.body);
+  const body = z
+    .object({ results: z.array(z.record(z.unknown())) })
+    .safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "Invalid body" });
     return;
@@ -38,14 +40,19 @@ router.post("/:filename", async (req, res) => {
 router.delete("/:filename", async (req, res) => {
   const { filename } = req.params;
   const db = await getDb();
-  await db.execute({ sql: "DELETE FROM sessions WHERE filename = ?", args: [filename] });
+  await db.execute({
+    sql: "DELETE FROM sessions WHERE filename = ?",
+    args: [filename],
+  });
   res.json({ ok: true });
 });
 
 // PATCH /sessions/:filename — body: { results: GolfSwingData[] } (full replacement after row deletion)
 router.patch("/:filename", async (req, res) => {
   const { filename } = req.params;
-  const body = z.object({ results: z.array(z.record(z.unknown())) }).safeParse(req.body);
+  const body = z
+    .object({ results: z.array(z.record(z.unknown())) })
+    .safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "Invalid body" });
     return;

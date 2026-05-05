@@ -57,7 +57,9 @@ export const Upload = () => {
     try {
       const results = [...csvFile];
       results.shift();
-      await apiPost(`/api/sessions/${encodeURIComponent(filename)}`, { results });
+      await apiPost(`/api/sessions/${encodeURIComponent(filename)}`, {
+        results,
+      });
 
       const updatedSessions = await fetchSnapshot();
       if (updatedSessions && filename in updatedSessions) {
@@ -73,7 +75,9 @@ export const Upload = () => {
       setUploadedFilename(filename);
       setStep("success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred.",
+      );
       setStep("error");
     }
   };
@@ -99,10 +103,13 @@ export const Upload = () => {
             handleUpload();
           }}
         >
-          <p className="text-md">Upload your CSV file exported from the Garmin Golf App.</p>
+          <p className="text-md">
+            Upload your CSV file exported from the Garmin Golf App.
+          </p>
           <p className="text-sm text-yellow-600">
-            <b>Warning:</b> This app requires consistent localization between exports. Otherwise,
-            your clubs will not be recognized across sessions.
+            <b>Warning:</b> This app requires consistent localization between
+            exports. Otherwise, your clubs will not be recognized across
+            sessions.
           </p>
 
           <div className="flex flex-col">
@@ -123,7 +130,8 @@ export const Upload = () => {
           <button
             className={clsx(
               "btn self-end",
-              (csvFile === null || inputRef.current?.value === "") && "is-disabled",
+              (csvFile === null || inputRef.current?.value === "") &&
+                "is-disabled",
             )}
             type="submit"
           >
@@ -142,9 +150,12 @@ export const Upload = () => {
       {step === "success" && (
         <div className="flex flex-col items-center gap-4 py-8">
           <CheckCircleIcon className="h-16 w-16 text-green-500" />
-          <h3 className="text-xl font-semibold text-green-700">Upload Successful!</h3>
+          <h3 className="text-xl font-semibold text-green-700">
+            Upload Successful!
+          </h3>
           <p className="text-md text-gray-600">
-            Session &ldquo;{uploadedFilename}&rdquo; has been uploaded and selected.
+            Session &ldquo;{uploadedFilename}&rdquo; has been uploaded and
+            selected.
           </p>
           <div className="flex gap-4">
             <button onClick={resetForm} className="btn btn-secondary">
