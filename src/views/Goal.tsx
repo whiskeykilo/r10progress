@@ -3,7 +3,7 @@ import { ProgressBar } from "./ProgressBar";
 
 export const Goal = ({ goal }: { goal: GoalType }) => {
   return (
-    <div className="mt-4 max-w-2xl rounded-md bg-white p-4">
+    <div className="mt-4 max-w-2xl rounded-md bg-white p-4 dark:bg-gray-800 dark:text-white">
       <h3 className="text-lg font-semibold">{goal.title}</h3>
       <hr />
       <div className="flex flex-col justify-between text-lg lg:flex-row">

@@ -87,8 +87,10 @@ export const AIAnalysis = () => {
     <BasePageLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">AI Golf Analysis</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            AI Golf Analysis
+          </h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Get personalized insights and recommendations for your golf game
             using advanced AI analysis.
           </p>
@@ -124,15 +126,15 @@ export const AIAnalysis = () => {
                 </div>
               </div>
             ) : loadingState.analyzing || loadingState.generatingReport ? (
-              <div className="rounded-lg bg-white p-6 shadow-sm">
+              <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
                 <LoadingIndicator state={loadingState} />
               </div>
             ) : (
-              <div className="rounded-lg bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Start Analysis
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Get detailed insights about your swing patterns and
                   consistency.
                 </p>

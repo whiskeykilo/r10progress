@@ -12,32 +12,34 @@ export const PreviousReports = ({
   onSelectReport,
   isSupporter,
 }: PreviousReportsProps) => (
-  <div className="rounded-lg bg-white p-6 shadow-sm">
-    <h2 className="text-lg font-semibold text-gray-900">
+  <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
       {isSupporter ? "Previous Reports" : "Example Report"}
     </h2>
-    <div className="mt-4 divide-y divide-gray-200">
+    <div className="mt-4 divide-y divide-gray-200 dark:divide-gray-700">
       {reports.length === 0 ? (
-        <p className="text-sm text-gray-500">No previous reports found.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          No previous reports found.
+        </p>
       ) : (
         reports.map((report) => (
           <div
             key={report.id}
-            className="flex cursor-pointer items-center justify-between py-4 hover:bg-gray-50"
+            className="flex cursor-pointer items-center justify-between py-4 hover:bg-gray-50 dark:hover:bg-gray-700"
             onClick={() => onSelectReport(report)}
           >
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {report.id === "example"
                   ? "Example Report"
                   : `Analysis from ${format(new Date(report.createdAt), "PPP")}`}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {report.shotCount} shots analyzed
               </p>
             </div>
             <svg
-              className="h-5 w-5 text-gray-400"
+              className="h-5 w-5 text-gray-400 dark:text-gray-500"
               viewBox="0 0 20 20"
               fill="currentColor"
             >

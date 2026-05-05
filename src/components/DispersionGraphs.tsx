@@ -4,7 +4,7 @@ import { DispersionCirclesGraph } from "./panels/graphs/DispersionCirclesGraph";
 import { OutlierDetectionSettings } from "./panels/OutlierDetectionSettings";
 
 export const DispersionGraphs = () => (
-  <div className="flex h-auto flex-col gap-3 rounded-xl bg-white p-4">
+  <div className="flex h-auto flex-col gap-3 rounded-xl bg-white p-4 dark:bg-gray-800">
     <BaseTabs
       categories={{
         "All Shots": [
@@ -13,7 +13,7 @@ export const DispersionGraphs = () => (
             content: (
               <div>
                 <div className="mb-4">
-                  <h4 className="text-xl font-bold text-gray-800">
+                  <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     Shot Visualization
                   </h4>
                   <OutlierDetectionSettings />
@@ -29,7 +29,7 @@ export const DispersionGraphs = () => (
             content: (
               <div>
                 <div>
-                  <h4 className="text-xl font-bold text-gray-800">
+                  <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     Dispersion Circle Graph
                   </h4>
                   <OutlierDetectionSettings />

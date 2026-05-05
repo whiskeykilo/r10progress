@@ -1,36 +1,31 @@
-import { useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { SettingsContext } from "../../provider/SettingsContext";
+import clsx from "clsx";
+import { useSettings } from "../../provider/SettingsContext";
+
+const units = [
+  { value: "yards" as const, label: "Yards" },
+  { value: "meters" as const, label: "Meters" },
+];
 
 export const UnitSettings = () => {
-  const { register, watch, setValue } = useForm<{ unit: string }>({
-    defaultValues: { unit: "meters" },
-  });
-  const unit = watch("unit") as "yards" | "meters";
-
-  const { settings, setSettings } = useContext(SettingsContext);
-
-  useEffect(() => {
-    setSettings((prev) => ({
-      ...prev,
-      unit,
-    }));
-  }, [unit, setSettings]);
-
-  useEffect(() => {
-    setValue("unit", settings.unit);
-  }, [settings.unit, setValue]);
+  const { settings, setSettings } = useSettings();
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className="flex items-center gap-2">
-        <input type="radio" {...register("unit")} value="yards" />
-        Yards
-      </label>
-      <label className="flex items-center gap-2">
-        <input type="radio" {...register("unit")} value="meters" />
-        Meters
-      </label>
+    <div className="flex gap-2">
+      {units.map((u) => (
+        <button
+          key={u.value}
+          type="button"
+          onClick={() => setSettings((prev) => ({ ...prev, unit: u.value }))}
+          className={clsx(
+            "rounded-lg px-5 py-2 text-sm font-medium transition-colors",
+            settings.unit === u.value
+              ? "bg-sky-600 text-white shadow-sm"
+              : "bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-sky-50 hover:text-sky-700 dark:bg-gray-600 dark:text-gray-200 dark:ring-gray-500 dark:hover:bg-gray-500",
+          )}
+        >
+          {u.label}
+        </button>
+      ))}
     </div>
   );
 };

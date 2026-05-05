@@ -30,7 +30,7 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
   const [, setGoals] = useAtom(goalAtom);
   const clubs = useClubsPerSession();
   return (
-    <div className="mt-4 rounded-md bg-white p-4">
+    <div className="mt-4 rounded-md bg-white p-4 dark:bg-gray-800">
       <form
         onSubmit={formMethods.handleSubmit((data) => {
           setGoals((goals) => [

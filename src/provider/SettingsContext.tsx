@@ -25,7 +25,7 @@ interface SettingsContextProps {
 const DEFAULT_SETTINGS: SettingsType = {
   useIQR: false,
   useAboveAverageShots: false,
-  unit: "meters",
+  unit: "yards",
 };
 
 export const SettingsContext = createContext<SettingsContextProps>({

@@ -16,7 +16,7 @@ export const Dashboard = () => {
           Go to shot tables
         </Link>
       </div>
-      <div className="rounded-md bg-white p-4">
+      <div className="rounded-md bg-white p-4 dark:bg-gray-800">
         <ClubDistances />
       </div>
     </BasePageLayout>

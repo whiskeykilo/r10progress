@@ -5,6 +5,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css"; // Theme
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useDarkMode } from "../../hooks/useDarkMode";
 import { SessionContext } from "../../provider/SessionContext";
 import { dashboardRoutes } from "../../routes";
 import { GolfSwingData } from "../../types/GolfSwingData";
@@ -17,6 +18,7 @@ import { BaseDisclosure } from "../base/BaseDisclosure";
 
 export const AllDataCombinedTable = () => {
   const { sessions, deleteRowFromSession } = useContext(SessionContext);
+  const { resolvedTheme } = useDarkMode();
 
   // Column Definitions: Defines & controls grid columns.
   const [columnDefs, setColumnDefs] = useState<ColDef<GolfSwingData>[]>([]);
@@ -186,7 +188,9 @@ export const AllDataCombinedTable = () => {
   return jsonFileWithoutEmptyRows?.length > 0 ? (
     <BaseDisclosure title="All Data">
       <div
-        className="ag-theme-quartz"
+        className={
+          resolvedTheme === "dark" ? "ag-theme-quartz-dark" : "ag-theme-quartz"
+        }
         style={{ height: 500 }}
         onContextMenu={(e) => e.preventDefault()}
       >

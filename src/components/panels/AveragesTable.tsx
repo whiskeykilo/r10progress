@@ -1,6 +1,7 @@
 import { ColDef } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useContext, useMemo } from "react";
+import { useDarkMode } from "../../hooks/useDarkMode";
 import { SessionContext } from "../../provider/SessionContext";
 import {
   AveragedSwing,
@@ -20,6 +21,7 @@ const capitalizeFirstLetter = (s: string) => {
 
 export const AveragesTable = () => {
   const { sessions } = useContext(SessionContext);
+  const { resolvedTheme } = useDarkMode();
 
   const averages = useAveragedSwings();
 
@@ -41,7 +43,9 @@ export const AveragesTable = () => {
   return (
     <BaseDisclosure title="Average Values">
       <div
-        className="ag-theme-quartz"
+        className={
+          resolvedTheme === "dark" ? "ag-theme-quartz-dark" : "ag-theme-quartz"
+        }
         style={{ display: "flex", flexDirection: "column" }}
       >
         <BaseLabel className="py-2">
