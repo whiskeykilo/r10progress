@@ -6,7 +6,7 @@ const router = Router();
 const DEFAULT_SETTINGS = {
   useIQR: false,
   useAboveAverageShots: false,
-  unit: "meters",
+  unit: "yards",
 };
 
 router.get("/", async (_req, res) => {

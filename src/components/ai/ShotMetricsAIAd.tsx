@@ -1,5 +1,5 @@
 export const ShotMetricsAIAd = () => (
-  <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+  <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
     <div className="flex items-center">
       <div className="flex-shrink-0">
         <svg
@@ -17,10 +17,10 @@ export const ShotMetricsAIAd = () => (
         </svg>
       </div>
       <div className="ml-3">
-        <h3 className="text-sm font-medium text-gray-900">
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
           Looking for more comprehensive analysis?
         </h3>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
           Try{" "}
           <a
             href="https://shotmetrics-ai.com"

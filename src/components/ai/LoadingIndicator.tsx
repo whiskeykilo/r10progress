@@ -24,7 +24,9 @@ export const LoadingIndicator = ({ state }: { state: LoadingState }) => (
             />
           </svg>
         )}
-        <span className="ml-2 text-sm text-gray-600">Analyzing shots...</span>
+        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+          Analyzing shots...
+        </span>
       </div>
     </div>
     <div className="flex items-center space-x-4">
@@ -48,12 +50,12 @@ export const LoadingIndicator = ({ state }: { state: LoadingState }) => (
             />
           </svg>
         )}
-        <span className="ml-2 text-sm text-gray-600">
+        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
           Generating detailed report...
         </span>
       </div>
     </div>
-    <p className="text-sm text-gray-500">
+    <p className="text-sm text-gray-500 dark:text-gray-400">
       This process can take up to 30 seconds to complete.
     </p>
   </div>

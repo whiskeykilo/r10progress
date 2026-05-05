@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="h-full bg-white">
+<html lang="en" class="h-full">
   <head>
     <!-- Set canonical to app.r10progress.com -->
     <link rel="canonical" href="https://app.r10progress.com" />
@@ -43,7 +43,18 @@
       content="Upload data from Garmin Approach R10 Radar, analyze your golf shots over time and sessions with R10Progress."
     />
 
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (
+          t === "dark" ||
+          (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
 
     <script
       defer
@@ -52,7 +63,7 @@
       src="/api/wildflower/script.outbound-links.tagged-events.js"
     ></script>
   </head>
-  <body class="h-full">
+  <body class="h-full bg-white dark:bg-gray-900 dark:text-white">
     <div id="root" />
 
     <script type="module" src="/src/main.tsx"></script>

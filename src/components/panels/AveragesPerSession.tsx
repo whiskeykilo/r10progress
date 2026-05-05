@@ -55,8 +55,8 @@ export const AveragesPerSession = () => {
   }, [sessions, clubSelected, clubDataByDate, averages, yField, club]);
 
   return (
-    <div className="flex h-auto w-full flex-col gap-3 rounded-xl bg-white p-4">
-      <h4 className="mb-4 text-xl font-bold text-gray-800">
+    <div className="flex h-auto w-full flex-col gap-3 rounded-xl bg-white p-4 dark:bg-gray-800">
+      <h4 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">
         Averages per Session
       </h4>
       <div className="mb-6 flex flex-col gap-2 md:flex-row">
@@ -71,7 +71,7 @@ export const AveragesPerSession = () => {
             />
           </div>
         </div>
-        <div className="h-auto w-0 border-l-2 border-gray-300" />
+        <div className="h-auto w-0 border-l-2 border-gray-300 dark:border-gray-600" />
         <div>
           <BaseLabel>Choose the club to display</BaseLabel>
           <div className="flex flex-row gap-4">

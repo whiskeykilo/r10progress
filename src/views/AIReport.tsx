@@ -25,7 +25,7 @@ const ScoreIndicator = ({ score }: { score: number }) => {
 
   return (
     <div className="flex items-center space-x-2">
-      <div className={`h-2 w-20 rounded-full bg-gray-200`}>
+      <div className="h-2 w-20 rounded-full bg-gray-200 dark:bg-gray-700">
         <div
           className={`h-2 rounded-full ${getColor(score)}`}
           style={{ width: `${score}%` }}
@@ -48,24 +48,36 @@ const AnalysisSection = ({
     recommendation: string;
   };
 }) => (
-  <div className="rounded-lg bg-white p-4 shadow-sm">
-    <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+  <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
+    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+      {title}
+    </h3>
     <div className="mt-2 space-y-3">
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500">Score</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Score</span>
         <ScoreIndicator score={data.score} />
       </div>
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500">Consistency</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Consistency
+        </span>
         <ScoreIndicator score={data.consistency} />
       </div>
       <div className="mt-3">
-        <h4 className="text-sm font-medium text-gray-700">Pattern</h4>
-        <p className="mt-1 text-sm text-gray-600">{data.pattern}</p>
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Pattern
+        </h4>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {data.pattern}
+        </p>
       </div>
       <div className="mt-3">
-        <h4 className="text-sm font-medium text-gray-700">Recommendation</h4>
-        <p className="mt-1 text-sm text-gray-600">{data.recommendation}</p>
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Recommendation
+        </h4>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {data.recommendation}
+        </p>
       </div>
     </div>
   </div>
@@ -76,9 +88,11 @@ const DrillCard = ({
 }: {
   drill: AIAnalysisResult["practiceRecommendations"]["drills"][0];
 }) => (
-  <div className="rounded-lg bg-white p-4 shadow-sm">
+  <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
     <div className="flex items-center justify-between">
-      <h3 className="text-lg font-medium text-gray-900">{drill.name}</h3>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+        {drill.name}
+      </h3>
       <span
         className={`rounded-full px-2 py-1 text-xs font-medium ${
           drill.difficulty === "beginner"
@@ -91,18 +105,24 @@ const DrillCard = ({
         {drill.difficulty}
       </span>
     </div>
-    <p className="mt-2 text-sm text-gray-600">{drill.purpose}</p>
+    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+      {drill.purpose}
+    </p>
     <div className="mt-4">
-      <h4 className="text-sm font-medium text-gray-700">Steps</h4>
-      <ul className="mt-2 list-inside list-decimal space-y-2 text-sm text-gray-600">
+      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Steps
+      </h4>
+      <ul className="mt-2 list-inside list-decimal space-y-2 text-sm text-gray-600 dark:text-gray-400">
         {drill.steps.map((step, index) => (
           <li key={index}>{step}</li>
         ))}
       </ul>
     </div>
     <div className="mt-4">
-      <h4 className="text-sm font-medium text-gray-700">Success Metrics</h4>
-      <ul className="mt-2 list-inside list-disc space-y-2 text-sm text-gray-600">
+      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Success Metrics
+      </h4>
+      <ul className="mt-2 list-inside list-disc space-y-2 text-sm text-gray-600 dark:text-gray-400">
         {drill.successMetrics.map((metric, index) => (
           <li key={index}>{metric}</li>
         ))}
@@ -233,7 +253,7 @@ export const AIReport = () => {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
               AI Golf Analysis
               {navState.cached && (
                 <span
@@ -244,7 +264,7 @@ export const AIReport = () => {
                 </span>
               )}
             </h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Analysis from {format(new Date(report.createdAt), "PPP")} •{" "}
               {report.shotCount} shots analyzed
               {report.filename && (
@@ -264,20 +284,20 @@ export const AIReport = () => {
             )}
             <button
               onClick={() => navigate(routes.aiAnalysis)}
-              className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200"
+              className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             >
               Back to Reports
             </button>
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Performance Overview
           </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Overall Score
               </h3>
               <ScoreIndicator
@@ -285,19 +305,25 @@ export const AIReport = () => {
               />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Consistency</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Consistency
+              </h3>
               <ScoreIndicator
                 score={analysis.performanceMetrics.consistencyScore}
               />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Accuracy</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Accuracy
+              </h3>
               <ScoreIndicator
                 score={analysis.performanceMetrics.accuracyScore}
               />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Efficiency</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Efficiency
+              </h3>
               <ScoreIndicator
                 score={analysis.performanceMetrics.efficiencyScore}
               />
@@ -306,7 +332,7 @@ export const AIReport = () => {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             Impact Conditions
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -326,7 +352,7 @@ export const AIReport = () => {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             Ball Flight
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -346,15 +372,15 @@ export const AIReport = () => {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             Practice Plan
           </h2>
-          <div className="rounded-lg bg-white p-6 shadow-sm">
+          <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 High Priority Focus
               </h3>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
                 {analysis.practiceRecommendations.highPriorityFocus}
               </p>
             </div>
@@ -366,26 +392,32 @@ export const AIReport = () => {
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Statistical Trends
           </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Distance</h3>
-              <p className="mt-1 text-lg font-medium capitalize text-gray-900">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Distance
+              </h3>
+              <p className="mt-1 text-lg font-medium capitalize text-gray-900 dark:text-white">
                 {analysis.statistics.trends.distanceTrend}
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Accuracy</h3>
-              <p className="mt-1 text-lg font-medium capitalize text-gray-900">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Accuracy
+              </h3>
+              <p className="mt-1 text-lg font-medium capitalize text-gray-900 dark:text-white">
                 {analysis.statistics.trends.accuracyTrend}
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Consistency</h3>
-              <p className="mt-1 text-lg font-medium capitalize text-gray-900">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Consistency
+              </h3>
+              <p className="mt-1 text-lg font-medium capitalize text-gray-900 dark:text-white">
                 {analysis.statistics.trends.consistencyTrend}
               </p>
             </div>

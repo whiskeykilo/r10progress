@@ -60,9 +60,11 @@ export const ShotScatterPlot = () => {
   if (!chartData) return null;
 
   return (
-    <div className="flex h-auto flex-col gap-3 rounded-xl bg-white p-4">
-      <h4 className="text-xl font-bold text-gray-800">Shot Scatter Plot</h4>
-      <p className="mb-4 text-gray-600">
+    <div className="flex h-auto flex-col gap-3 rounded-xl bg-white p-4 dark:bg-gray-800">
+      <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+        Shot Scatter Plot
+      </h4>
+      <p className="mb-4 text-gray-600 dark:text-gray-400">
         Use this graph to visualize the combination of any two metrics.
         <br />
         More recent data points are colored darker. Hover over a data point to
@@ -86,7 +88,7 @@ export const ShotScatterPlot = () => {
             />
           </div>
         </div>
-        <div className="h-auto w-0 border-l-2 border-gray-300"></div>
+        <div className="h-auto w-0 border-l-2 border-gray-300 dark:border-gray-600"></div>
         <div>
           <BaseLabel>Choose the club to display</BaseLabel>
           <div className="flex flex-row gap-4">

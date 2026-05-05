@@ -26,7 +26,7 @@ export const SessionList = () => {
   if (Object.keys(sessions).length === 0) {
     return (
       <div className="mt-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           No sessions found.{" "}
           <Link
             to={dashboardRoutes.upload}
@@ -42,7 +42,7 @@ export const SessionList = () => {
 
   return (
     <div className="mt-4 ">
-      <h3 className="text-lg font-normal">Manage Sessions</h3>
+      <h3 className="text-lg font-normal dark:text-white">Manage Sessions</h3>
       <DeletionModal
         callback={async () => {
           if (sessionToDelete) {
@@ -54,7 +54,7 @@ export const SessionList = () => {
         open={open}
         setOpen={setOpen}
       />
-      <ul className="mt-4 divide-y-2 bg-white">
+      <ul className="mt-4 divide-y-2 bg-white dark:bg-gray-800">
         {sessions &&
           Object.keys(sessions).map((key) => {
             const session = sessions[key];
@@ -65,10 +65,10 @@ export const SessionList = () => {
               >
                 <div className="min-w-0">
                   <div className="flex items-start gap-x-3">
-                    <p className="text-sm font-semibold leading-6 text-gray-900">
+                    <p className="text-sm font-semibold leading-6 text-gray-900 dark:text-white">
                       {session.date}
                     </p>
-                    <p className="mt-0.5 whitespace-nowrap rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                    <p className="mt-0.5 whitespace-nowrap rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-700 dark:text-gray-300">
                       {session.results.length} shots
                     </p>
                   </div>
@@ -123,11 +123,11 @@ const DeletionModal = ({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300"
                     onClick={() => setOpen(false)}
                   >
                     <span className="sr-only">Close</span>
@@ -144,12 +144,12 @@ const DeletionModal = ({
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                     <Dialog.Title
                       as="h3"
-                      className="text-base font-semibold leading-6 text-gray-900"
+                      className="text-base font-semibold leading-6 text-gray-900 dark:text-white"
                     >
                       Delete Session
                     </Dialog.Title>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Are you sure you want to delete this session? All of the
                         data will be permanently removed. This action cannot be
                         undone.
@@ -167,7 +167,7 @@ const DeletionModal = ({
                   </button>
                   <button
                     type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
                     onClick={() => setOpen(false)}
                   >
                     Cancel

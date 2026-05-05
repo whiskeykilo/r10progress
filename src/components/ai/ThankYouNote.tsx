@@ -1,5 +1,5 @@
 export const ThankYouNote = () => (
-  <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+  <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
     <div className="flex items-center">
       <div className="flex-shrink-0">
         <svg
@@ -17,7 +17,7 @@ export const ThankYouNote = () => (
         </svg>
       </div>
       <div className="ml-2">
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-gray-600 dark:text-gray-400">
           Thank you for supporting the development of R10 Progress! Your support
           helps me create better tools for golfers.
         </p>

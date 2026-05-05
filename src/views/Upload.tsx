@@ -92,7 +92,7 @@ export const Upload = () => {
 
   return (
     <BasePageLayout>
-      <h2 className="text-2xl font-bold">Upload Session</h2>
+      <h2 className="text-2xl font-bold dark:text-white">Upload Session</h2>
 
       {step === "select" && (
         <form
@@ -113,7 +113,10 @@ export const Upload = () => {
           </p>
 
           <div className="flex flex-col">
-            <label className="text-sm text-gray-500" htmlFor="file">
+            <label
+              className="text-sm text-gray-500 dark:text-gray-400"
+              htmlFor="file"
+            >
               Select CSV file
             </label>
             <input
@@ -143,7 +146,9 @@ export const Upload = () => {
       {step === "uploading" && (
         <div className="flex flex-col items-center gap-4 py-8">
           <BaseLoadingSpinner />
-          <p className="text-md text-gray-600">Uploading {filename}...</p>
+          <p className="text-md text-gray-600 dark:text-gray-300">
+            Uploading {filename}...
+          </p>
         </div>
       )}
 
@@ -153,7 +158,7 @@ export const Upload = () => {
           <h3 className="text-xl font-semibold text-green-700">
             Upload Successful!
           </h3>
-          <p className="text-md text-gray-600">
+          <p className="text-md text-gray-600 dark:text-gray-300">
             Session &ldquo;{uploadedFilename}&rdquo; has been uploaded and
             selected.
           </p>

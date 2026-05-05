@@ -42,9 +42,9 @@ export const ClubStats = ({ average }: { average: AveragedSwing }) => {
   );
   console.log(average);
   return (
-    <div className="rounded-lg bg-white p-2 px-4 py-5 shadow">
+    <div className="rounded-lg bg-white p-2 px-4 py-5 shadow dark:bg-gray-800">
       <div className="flex flex-row gap-2 ">
-        <h4 className="text-lg font-semibold leading-6 text-gray-900">
+        <h4 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
           {average?.name || "Swing"}
         </h4>
       </div>
@@ -52,12 +52,12 @@ export const ClubStats = ({ average }: { average: AveragedSwing }) => {
         {stats.map((item) => (
           <div
             key={item.name}
-            className="overflow-hidden rounded-lg border-2 border-gray-100 px-4 py-5 sm:p-6"
+            className="overflow-hidden rounded-lg border-2 border-gray-100 px-4 py-5 dark:border-gray-700 sm:p-6"
           >
-            <dt className="truncate text-sm font-medium text-gray-500">
+            <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
               {item.name}
             </dt>
-            <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
+            <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {item.stat}
             </dd>
           </div>

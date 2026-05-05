@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
+import { useDarkMode } from "../../hooks/useDarkMode";
 
 interface ContextMenuItem {
   label: string;
@@ -23,6 +24,8 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({
   items,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useDarkMode();
+  const dark = resolvedTheme === "dark";
 
   useEffect(() => {
     if (!open) return;
@@ -44,10 +47,12 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({
         position: "fixed",
         top: position.y,
         left: position.x,
-        background: "white",
-        border: "1px solid #ccc",
+        background: dark ? "#1f2937" : "white",
+        border: dark ? "1px solid #374151" : "1px solid #ccc",
         borderRadius: 4,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        boxShadow: dark
+          ? "0 2px 8px rgba(0,0,0,0.5)"
+          : "0 2px 8px rgba(0,0,0,0.15)",
         zIndex: 2000,
         minWidth: 160,
         padding: 4,
@@ -74,10 +79,12 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({
             cursor: item.disabled ? "default" : "pointer",
             fontSize: 14,
             color: item.disabled
-              ? "#9ca3af" // gray-400 for disabled
+              ? "#9ca3af"
               : item.danger
-                ? "#dc2626" // red-600 for danger
-                : "#222",
+                ? "#dc2626"
+                : dark
+                  ? "#f3f4f6"
+                  : "#222",
             fontWeight: item.danger ? 600 : 400,
             gap: 8,
             opacity: item.disabled ? 0.5 : 1,

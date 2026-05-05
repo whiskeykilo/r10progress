@@ -4,7 +4,7 @@ import { AveragesTable } from "../components/panels/AveragesTable";
 
 export const Sessions = () => (
   <BasePageLayout>
-    <h2 className="text-2xl font-bold">Sessions</h2>
+    <h2 className="text-2xl font-bold dark:text-white">Sessions</h2>
     <AllDataCombinedTable />
     <AveragesTable />
   </BasePageLayout>

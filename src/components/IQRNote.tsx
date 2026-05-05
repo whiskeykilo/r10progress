@@ -12,7 +12,7 @@ export const IQRNote = () => {
       : "";
   return (
     <div className="flex flex-row gap-1">
-      <p className="text-sm text-gray-500">{text}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{text}</p>
       <Link to={"/settings"} className="text-sm text-blue-500 hover:underline">
         Change settings
       </Link>

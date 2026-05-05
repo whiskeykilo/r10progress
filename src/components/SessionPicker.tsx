@@ -104,11 +104,11 @@ export const SessionPicker = () => {
     <div className="flex items-baseline gap-4">
       <Listbox multiple value={selected} onChange={handleSelectionChange}>
         <div className="relative z-20 mt-1 max-w-full flex-grow lg:flex-grow-0">
-          <Listbox.Label className="flex w-full flex-col text-sm font-medium text-gray-700">
+          <Listbox.Label className="flex w-full flex-col text-sm font-medium text-gray-700 dark:text-gray-300">
             Session Selection
             <Listbox.Button
               title="Select a session to filter data in the table and averages."
-              className={`relative cursor-pointer rounded-lg bg-white py-3 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-300 sm:text-sm lg:w-full lg:min-w-64 ${isLoading ? "opacity-50" : ""}`}
+              className={`relative cursor-pointer rounded-lg bg-white py-3 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-300 dark:bg-gray-800 dark:text-white sm:text-sm lg:w-full lg:min-w-64 ${isLoading ? "opacity-50" : ""}`}
             >
               <span className="block truncate">
                 {isLoading ? "Loading..." : selectionDisplayText}
@@ -127,11 +127,13 @@ export const SessionPicker = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800 dark:ring-white/10 sm:text-sm">
               <Listbox.Option
                 className={({ active }) =>
                   `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                    active ? "bg-sky-100 text-sky-900" : "text-gray-900"
+                    active
+                      ? "bg-sky-100 text-sky-900 dark:bg-sky-900/30 dark:text-sky-200"
+                      : "text-gray-900 dark:text-gray-100"
                   }`
                 }
                 value="All"
@@ -158,7 +160,9 @@ export const SessionPicker = () => {
                   key={sessionKey}
                   className={({ active }) =>
                     `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                      active ? "bg-sky-100 text-sky-900" : "text-gray-900"
+                      active
+                        ? "bg-sky-100 text-sky-900 dark:bg-sky-900/30 dark:text-sky-200"
+                        : "text-gray-900 dark:text-gray-100"
                     }`
                   }
                   value={sessionKey}

@@ -6,9 +6,7 @@ import {
   BeakerIcon,
   ChartBarSquareIcon,
   Cog6ToothIcon,
-  EnvelopeIcon,
   FolderIcon,
-  HeartIcon,
   HomeIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -124,11 +122,20 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                   {/* Sidebar component, swap this element with another sidebar if you like */}
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sky-600 px-6 pb-4">
                     <div className="flex h-16 shrink-0 items-center">
-                      <div className="flex h-16 shrink-0 items-center">
+                      <NavLink
+                        to="/dashboard"
+                        className="flex items-center gap-3"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <img
+                          src="/logo.png"
+                          alt="R10Progress"
+                          className="h-12 w-12 rounded-xl"
+                        />
                         <span className="text-2xl font-bold text-white">
                           r10progress
                         </span>
-                      </div>
+                      </NavLink>
                     </div>
                     <div className="block lg:hidden">
                       <SessionPicker />
@@ -141,6 +148,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                               <li key={item.name}>
                                 <NavLink
                                   to={item.href}
+                                  onClick={() => setSidebarOpen(false)}
                                   className={({ isActive }) =>
                                     clsx(
                                       isActive
@@ -172,6 +180,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                         <li className="mt-auto">
                           <NavLink
                             to="/settings"
+                            onClick={() => setSidebarOpen(false)}
                             className={({ isActive }) =>
                               clsx(
                                 isActive
@@ -211,7 +220,13 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sky-600 px-6 pb-4">
             <div className="flex h-16 shrink-0 items-center">
-              <span className="text-2xl font-bold text-white">r10progress</span>
+              <NavLink to="/dashboard">
+                <img
+                  src="/logo.png"
+                  alt="R10Progress"
+                  className="h-12 w-12 rounded-xl"
+                />
+              </NavLink>
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -250,30 +265,6 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                   </ul>
                 </li>
                 <li className="mt-auto">
-                  <a
-                    href="https://buymeacoffee.com/aronschueler"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-sky-200 hover:bg-sky-700 hover:text-white"
-                  >
-                    <HeartIcon
-                      className="h-6 w-6 shrink-0 text-sky-200 group-hover:text-white"
-                      aria-hidden="true"
-                    />
-                    Support me
-                  </a>
-
-                  <a
-                    href="mailto:info@lakur.tech"
-                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-sky-200 hover:bg-sky-700 hover:text-white"
-                  >
-                    <EnvelopeIcon
-                      className="h-6 w-6 shrink-0 text-sky-200 group-hover:text-white"
-                      aria-hidden="true"
-                    />
-                    Contact me
-                  </a>
-
                   <NavLink
                     to="/settings"
                     className={({ isActive }) =>
@@ -298,10 +289,10 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
         </div>
 
         <div className="lg:pl-72">
-          <div className="sticky top-0 z-40 flex shrink-0 items-end justify-between gap-x-4 border-b border-gray-200 bg-white p-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="sticky top-0 z-40 flex shrink-0 items-end justify-between gap-x-4 border-b border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:gap-x-6 sm:px-6 lg:px-8">
             <button
               type="button"
-              className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+              className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
