@@ -37,4 +37,15 @@ async function migrate(db: Client) {
       analysis   TEXT NOT NULL
     );
   `);
+
+  // Idempotent column add for content-hash dedup. SQLite has no
+  // ADD COLUMN IF NOT EXISTS, so check via PRAGMA table_info first.
+  const cols = await db.execute("PRAGMA table_info(reports)");
+  const hasInputHash = cols.rows.some((r) => r.name === "input_hash");
+  if (!hasInputHash) {
+    await db.execute("ALTER TABLE reports ADD COLUMN input_hash TEXT");
+  }
+  await db.execute(
+    "CREATE INDEX IF NOT EXISTS idx_reports_input_hash ON reports(input_hash)",
+  );
 }

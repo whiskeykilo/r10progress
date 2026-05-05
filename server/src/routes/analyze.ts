@@ -1,8 +1,13 @@
+import { createHash } from "crypto";
 import { Router } from "express";
 import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { getDb } from "../db";
+import { SYSTEM_PROMPT } from "../prompts/system";
+import { AIAnalysisResultSchema, PROMPT_VERSION } from "../schema/aiReport";
+import { aggregateShots } from "../utils/aggregate";
 
 const router = Router();
 
@@ -10,7 +15,18 @@ const BodySchema = z.object({
   shots: z.array(z.record(z.unknown())),
   timeframe: z.string(),
   filename: z.string(),
+  force: z.boolean().optional(),
 });
+
+// Reasoning-capable analytical task with strict structured output. gpt-5-mini
+// gives us real reasoning at mid-tier cost; reasoning_effort "low" caps
+// reasoning-token spend while preserving the quality lift over gpt-4o-mini.
+const MODEL = "gpt-5-mini";
+const REASONING_EFFORT = "low" as const;
+
+// Headroom for reasoning tokens + structured output. Reasoning tokens count
+// against this limit; if responses come back truncated, raise this first.
+const MAX_COMPLETION_TOKENS = 6000;
 
 router.post("/", async (req, res) => {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -25,122 +41,88 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  const { shots, timeframe, filename } = body.data;
+  const { shots, timeframe, filename, force } = body.data;
 
-  const shotsForPrompt = shots.slice(0, 200).map((s) => ({
-    clubName: s["Club Name"] ?? s["Schlägername"] ?? s["Nombre del palo"],
-    clubType: s["Club Type"] ?? s["Schlägerart"] ?? s["Tipo de palo"],
-    ballSpeed:
-      s["Ball Speed"] ?? s["Ballgeschwindigkeit"] ?? s["Velocidad de bola"],
-    clubSpeed: s["Club Speed"] ?? s["Schl.gsch."] ?? s["Velocidad del palo"],
-    launchAngle:
-      s["Launch Angle"] ?? s["Abflugwinkel"] ?? s["Ángulo de lanzamiento"],
-    launchDirection:
-      s["Launch Direction"] ??
-      s["Abflugrichtung"] ??
-      s["Dirección de lanzamiento"],
-    carryDistance:
-      s["Carry Distance"] ?? s["Carry-Distanz"] ?? s["Dist.​vuelo"],
-    totalDistance:
-      s["Total Distance"] ?? s["Gesamtstrecke"] ?? s["Distan​cia total"],
-    spinRate: s["Spin Rate"] ?? s["Drehrate"] ?? s["Tasa de giro"],
-    backspin: s["Backspin"],
-    sidespin: s["Sidespin"],
-    clubFace: s["Club Face"] ?? s["Schlagfläche"] ?? s["Cara del palo"],
-    clubPath: s["Club Path"] ?? s["Schwungbahn"] ?? s["Línea del palo"],
-    faceToPath:
-      s["Face to Path"] ?? s["Schlagflächenstellung"] ?? s["Cara a línea"],
-    attackAngle:
-      s["Attack Angle"] ?? s["Anstellwinkel"] ?? s["Ángulo de ataque"],
-    smashFactor:
-      s["Smash Factor"] ?? s["Smash-Faktor"] ?? s["Calidad del impacto"],
-    spinAxis: s["Spin Axis"] ?? s["Drehachse"] ?? s["Eje de giro"],
-    apexHeight:
-      s["Apex Height"] ?? s["Höhe des Scheitelpunkts"] ?? s["Altura máxima"],
-    carryDeviation:
-      s["Carry Deviation Distance"] ??
-      s["Carry-Abweichungsdistanz"] ??
-      s["Distancia de desviación de vuelo"],
-    totalDeviation:
-      s["Total Deviation Distance"] ??
-      s["Gesamtabweichungsdistanz"] ??
-      s["Distancia de desviación total"],
-    date: s["Date"] ?? s["Datum"] ?? s["Fecha"],
-  }));
+  // Aggregate raw shots → compact, decision-ready payload. This is what the
+  // model actually sees and what we hash for content-based caching.
+  const aggregate = aggregateShots(shots, { timeframe, filename });
+  const aggregateJson = JSON.stringify(aggregate);
+  const inputHash = createHash("sha256")
+    .update(`${PROMPT_VERSION}\n${MODEL}\n${aggregateJson}`)
+    .digest("hex");
 
-  const prompt = `You are an expert golf coach and data analyst. Analyze the following ${shotsForPrompt.length} golf shots from a Garmin R10 launch monitor and provide detailed coaching insights.
+  const db = await getDb();
 
-Timeframe: ${timeframe}
-Session files: ${filename}
-
-Shot data (JSON):
-${JSON.stringify(shotsForPrompt, null, 2)}
-
-Respond with a JSON object matching this exact TypeScript interface. No markdown, no explanation — raw JSON only:
-
-{
-  "technicalAnalysis": {
-    "impactConditions": {
-      "faceControl":    { "score": number, "consistency": number, "pattern": string, "recommendation": string },
-      "pathControl":    { "score": number, "consistency": number, "pattern": string, "recommendation": string },
-      "strikeQuality":  { "score": number, "consistency": number, "pattern": string, "recommendation": string }
-    },
-    "ballFlight": {
-      "launchConditions":   { "score": number, "consistency": number, "pattern": string, "recommendation": string },
-      "spinControl":        { "score": number, "consistency": number, "pattern": string, "recommendation": string },
-      "dispersionControl":  { "score": number, "consistency": number, "pattern": string, "recommendation": string }
-    }
-  },
-  "performanceMetrics": {
-    "consistencyScore": number,
-    "accuracyScore":    number,
-    "efficiencyScore":  number,
-    "overallScore":     number
-  },
-  "practiceRecommendations": {
-    "highPriorityFocus": string,
-    "drills": [{ "name": string, "purpose": string, "steps": string[], "successMetrics": string[], "difficulty": "beginner"|"intermediate"|"advanced" }]
-  },
-  "statistics": {
-    "consistencyMetrics": {
-      "ballSpeedConsistency":   number,
-      "launchAngleConsistency": number,
-      "spinRateConsistency":    number,
-      "dispersionPattern": {
-        "averageOffline": number,
-        "dispersionEllipse": { "width": number, "length": number }
-      }
-    },
-    "commonIssues": string[],
-    "trends": {
-      "distanceTrend":    "improving"|"declining"|"stable",
-      "accuracyTrend":    "improving"|"declining"|"stable",
-      "consistencyTrend": "improving"|"declining"|"stable"
+  // Cache lookup unless caller explicitly asked to regenerate.
+  if (!force) {
+    const cached = await db.execute({
+      sql: "SELECT id, created_at, shot_count, timeframe, filename, analysis FROM reports WHERE input_hash = ? ORDER BY created_at DESC LIMIT 1",
+      args: [inputHash],
+    });
+    const row = cached.rows[0];
+    if (row) {
+      console.log(
+        `[analyze] cache hit for ${inputHash.slice(0, 8)} → report ${row.id}`,
+      );
+      res.json({
+        id: row.id,
+        createdAt: new Date((row.created_at as number) * 1000).toISOString(),
+        shotCount: row.shot_count,
+        timeframe: row.timeframe,
+        filename: row.filename,
+        analysis: JSON.parse(row.analysis as string),
+        cached: true,
+      });
+      return;
     }
   }
-}
 
-All score/consistency values are 0-100.`;
+  const userMessage = `Timeframe: ${timeframe}
+Files: ${filename}
+
+Aggregated shot data (computed from ${aggregate.meta.totalShots} raw shots, ${aggregate.meta.outliersDropped} dropped as IQR outliers):
+${aggregateJson}`;
 
   try {
     const client = new OpenAI({ apiKey });
     const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-      max_tokens: 2000,
+      // gpt-5-mini isn't in the SDK's typed ChatModel union yet; the API
+      // accepts the string at runtime. Cast scoped narrowly.
+      model: MODEL as unknown as Parameters<
+        typeof client.chat.completions.create
+      >[0]["model"],
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ],
+      response_format: zodResponseFormat(
+        AIAnalysisResultSchema,
+        "ai_analysis_result",
+      ),
+      reasoning_effort: REASONING_EFFORT,
+      max_completion_tokens: MAX_COMPLETION_TOKENS,
     });
 
     const raw = completion.choices[0]?.message?.content;
     if (!raw) throw new Error("Empty response from OpenAI");
+    const analysis = AIAnalysisResultSchema.parse(JSON.parse(raw));
 
-    const analysis = JSON.parse(raw);
+    // Surface usage so we can confirm prompt-cache hits and tune token caps.
+    const usage = completion.usage;
+    if (usage) {
+      const cachedInput =
+        (usage as { prompt_tokens_details?: { cached_tokens?: number } })
+          .prompt_tokens_details?.cached_tokens ?? 0;
+      console.log(
+        `[analyze] usage prompt=${usage.prompt_tokens} cached=${cachedInput} completion=${usage.completion_tokens} total=${usage.total_tokens}`,
+      );
+    }
+
     const id = uuidv4();
     const now = Math.floor(Date.now() / 1000);
 
-    const db = await getDb();
     await db.execute({
-      sql: "INSERT INTO reports (id, created_at, shot_count, timeframe, filename, analysis) VALUES (?, ?, ?, ?, ?, ?)",
+      sql: "INSERT INTO reports (id, created_at, shot_count, timeframe, filename, analysis, input_hash) VALUES (?, ?, ?, ?, ?, ?, ?)",
       args: [
         id,
         now,
@@ -148,6 +130,7 @@ All score/consistency values are 0-100.`;
         timeframe,
         filename,
         JSON.stringify(analysis),
+        inputHash,
       ],
     });
 
@@ -158,6 +141,7 @@ All score/consistency values are 0-100.`;
       timeframe,
       filename,
       analysis,
+      cached: false,
     });
   } catch (err) {
     console.error("OpenAI error:", err);

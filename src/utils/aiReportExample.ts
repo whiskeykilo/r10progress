@@ -1,3 +1,7 @@
+// IMPORTANT: keep this interface in sync with the canonical Zod schema at
+// server/src/schema/aiReport.ts. The two are duplicated because the server is
+// CommonJS and the frontend is ESM/bundler with no shared workspace. If they
+// drift, the GET /api/reports response will type-mismatch the renderer.
 export interface AnalysisReport {
   id: string;
   userId: string;
