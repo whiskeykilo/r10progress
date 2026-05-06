@@ -2,8 +2,10 @@ import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { apiGet, apiPost } from "../api";
+import { BaseDialog } from "../components/base/BaseDialog";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { routes } from "../routes";
+import { GoalForm } from "./GoalForm";
 import {
   AIAnalysisResult,
   aiReportExample,
@@ -40,6 +42,7 @@ const ScoreIndicator = ({ score }: { score: number }) => {
 const AnalysisSection = ({
   title,
   data,
+  onCreateGoal,
 }: {
   title: string;
   data: {
@@ -48,6 +51,7 @@ const AnalysisSection = ({
     pattern: string;
     recommendation: string;
   };
+  onCreateGoal: (title: string) => void;
 }) => (
   <div className="app-card-compact">
     <h3 className="text-lg font-medium text-gray-900 dark:text-white">
@@ -64,6 +68,18 @@ const AnalysisSection = ({
         </span>
         <ScoreIndicator score={data.consistency} />
       </div>
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Recommendation Confidence
+        </span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {data.consistency >= 80
+            ? "High"
+            : data.consistency >= 60
+              ? "Medium"
+              : "Low"}
+        </span>
+      </div>
       <div className="mt-3">
         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Pattern
@@ -79,6 +95,13 @@ const AnalysisSection = ({
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
           {data.recommendation}
         </p>
+        <button
+          type="button"
+          onClick={() => onCreateGoal(data.recommendation)}
+          className="app-focus-ring mt-2 inline-flex items-center rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700"
+        >
+          Create Goal from Recommendation
+        </button>
       </div>
     </div>
   </div>
@@ -141,8 +164,14 @@ export const AIReport = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [goalSuggestion, setGoalSuggestion] = useState("");
 
   const canRegenerate = !!navState.shots && navState.shots.length > 0;
+  const handleCreateGoal = (suggestion: string) => {
+    setGoalSuggestion(suggestion);
+    setGoalDialogOpen(true);
+  };
   const handleRegenerate = async () => {
     if (!canRegenerate || regenerating) return;
     setRegenerating(true);
@@ -340,14 +369,17 @@ export const AIReport = () => {
             <AnalysisSection
               title="Face Control"
               data={analysis.technicalAnalysis.impactConditions.faceControl}
+              onCreateGoal={handleCreateGoal}
             />
             <AnalysisSection
               title="Path Control"
               data={analysis.technicalAnalysis.impactConditions.pathControl}
+              onCreateGoal={handleCreateGoal}
             />
             <AnalysisSection
               title="Strike Quality"
               data={analysis.technicalAnalysis.impactConditions.strikeQuality}
+              onCreateGoal={handleCreateGoal}
             />
           </div>
         </div>
@@ -360,14 +392,17 @@ export const AIReport = () => {
             <AnalysisSection
               title="Launch Conditions"
               data={analysis.technicalAnalysis.ballFlight.launchConditions}
+              onCreateGoal={handleCreateGoal}
             />
             <AnalysisSection
               title="Spin Control"
               data={analysis.technicalAnalysis.ballFlight.spinControl}
+              onCreateGoal={handleCreateGoal}
             />
             <AnalysisSection
               title="Dispersion Control"
               data={analysis.technicalAnalysis.ballFlight.dispersionControl}
+              onCreateGoal={handleCreateGoal}
             />
           </div>
         </div>
@@ -425,6 +460,16 @@ export const AIReport = () => {
           </div>
         </div>
       </div>
+      <BaseDialog
+        open={goalDialogOpen}
+        onClose={() => setGoalDialogOpen(false)}
+        title="Create Goal from AI Recommendation"
+      >
+        <GoalForm
+          initialTitle={goalSuggestion}
+          closeAction={() => setGoalDialogOpen(false)}
+        />
+      </BaseDialog>
     </BasePageLayout>
   );
 };

@@ -115,7 +115,7 @@ export const SessionPicker = () => {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center" aria-live="polite" aria-busy={isLoading}>
       <Listbox multiple value={selected} onChange={handleSelectionChange}>
         <div
           className="relative z-20 max-w-full"
@@ -123,6 +123,7 @@ export const SessionPicker = () => {
         >
           <Listbox.Label className="sr-only">Session Selection</Listbox.Label>
           <Listbox.Button
+            aria-label="Select sessions to include in analysis"
             title="Select a session to filter data in the table and averages."
             className={`app-focus-ring relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm ${isLoading ? "opacity-50" : ""}`}
           >

@@ -117,27 +117,28 @@ export const Upload = () => {
             >
               Select CSV file
             </label>
-            <input
-              ref={inputRef}
-              type="file"
-              id="file"
-              accept=".csv"
-              className="btn"
-              onChange={handleFileChange}
-            />
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <input
+                ref={inputRef}
+                type="file"
+                id="file"
+                accept=".csv"
+                className="btn w-fit self-start"
+                onChange={handleFileChange}
+              />
+              <button
+                className={clsx(
+                  "btn",
+                  (csvFile === null || inputRef.current?.value === "") &&
+                    "is-disabled",
+                )}
+                type="submit"
+              >
+                Upload
+              </button>
+            </div>
             {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
           </div>
-
-          <button
-            className={clsx(
-              "btn self-end",
-              (csvFile === null || inputRef.current?.value === "") &&
-                "is-disabled",
-            )}
-            type="submit"
-          >
-            Upload
-          </button>
         </form>
       )}
 

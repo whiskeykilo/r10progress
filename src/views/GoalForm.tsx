@@ -18,12 +18,19 @@ import {
 } from "../types/GolfSwingData";
 import { getAllDataFromSession } from "../utils/getAllDataFromSession";
 
-export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
+export const GoalForm = ({
+  closeAction,
+  initialTitle = "",
+}: {
+  closeAction: () => void;
+  initialTitle?: string;
+}) => {
   const formMethods = useForm<{
     title: string;
     target: number;
     club?: string;
     metric: keyof GolfSwingDataDE | keyof GolfSwingDataEN;
+    direction: "increase" | "decrease";
   }>();
 
   const isEnglish = useIsEnglishDataset();
@@ -73,6 +80,8 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
               title: data.title,
               target: data.target,
               metric: data.metric,
+              club: data.club || undefined,
+              direction: data.direction,
             },
           ]);
           closeAction();
@@ -88,6 +97,7 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
             placeholder="Title"
             aria-label="Goal title"
             autoComplete="off"
+            defaultValue={initialTitle}
             {...formMethods.register("title", { required: true })}
             className="input w-full"
           />
@@ -118,12 +128,26 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
             className="input w-full"
             defaultValue=""
           >
+            <option value="">All clubs</option>
             {Object.keys(clubs).map((club) => (
               <option key={club} value={club}>
                 {club}
               </option>
             ))}
-            <option value="">All clubs</option>
+          </select>
+
+          <label htmlFor="goal-direction" className="sr-only">
+            Goal direction
+          </label>
+          <select
+            id="goal-direction"
+            aria-label="Goal direction"
+            {...formMethods.register("direction", { required: true })}
+            className="input w-full"
+            defaultValue="increase"
+          >
+            <option value="increase">Increase this metric</option>
+            <option value="decrease">Decrease this metric</option>
           </select>
 
           <label htmlFor="goal-target" className="sr-only">

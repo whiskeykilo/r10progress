@@ -76,115 +76,83 @@ export const calculateAverages: (
   calculateWithIqr = false,
   useAboveAverageShots = false,
 ) => {
-  if (input) {
-    const sessions = Object.keys(input).map((key) => ({
-      ...input[key],
-      results: translateSwingsToEnglish(input[key].results),
-    }));
+    if (input) {
+      const sessions = Object.keys(input).map((key) => ({
+        ...input[key],
+        results: translateSwingsToEnglish(input[key].results),
+      }));
+      const filteredSessions = sessions
+        .filter((session) => session.selected && session.results?.length > 0)
+        .map((session) => {
+          let results = session.results;
+          if (calculateWithIqr) {
+            results = dropOutliers(results);
+          }
+          if (useAboveAverageShots) {
+            results = getAboveAverageShots(results);
+          }
+          return { ...session, results };
+        });
 
-    // This will hold all averages for each club
-    const clubs: {
-      [key: string]: AveragedSwing | { count: number; name: string };
-    } = {};
+      const metricValuesByClub: Record<string, Record<string, number[]>> = {};
+      const clubCounts: Record<string, number> = {};
 
-    // Iterate over all sessions
-    for (const session of Object.values(sessions)) {
-      if (
-        !session.selected ||
-        !session.results ||
-        session.results.length === 0
-      ) {
-        continue;
-      }
-      if (calculateWithIqr) {
-        session.results = dropOutliers(session.results);
-      }
-      if (useAboveAverageShots) {
-        session.results = getAboveAverageShots(session.results);
-      }
-      // Iterate over all swings in the session
-      for (const swing of session.results) {
-        // Get the club name, which depends on the language
-        const club = getClubName(swing);
-        if (!club) {
-          continue;
-        }
-        // If the club name is not yet in the clubs object, add it
-        if (!clubs[club]) {
-          clubs[club] = { name: club, count: 1 };
-        } else {
-          clubs[club].count++;
-        }
-        // Iterate over all keys in the swing
-        for (const key of Object.keys(swing)) {
-          // Skip the club name
-          if (key === "Schlägername") {
-            continue;
+      for (const session of filteredSessions) {
+        for (const swing of session.results) {
+          const club = getClubName(swing);
+          if (!club) continue;
+
+          clubCounts[club] = (clubCounts[club] ?? 0) + 1;
+          if (!metricValuesByClub[club]) {
+            metricValuesByClub[club] = {};
           }
-          // @ts-expect-error - key is taken from Object keys
-          if (typeof swing[key] !== "number") {
-            continue;
-          }
-          // @ts-expect-error - key is taken from Object keys
-          // If the key is not yet in the club object, initialize it
-          if (!clubs[club][key]) {
-            // @ts-expect-error - key is taken from Object keys
-            clubs[club][key] = swing[key];
-          } else {
-            // @ts-expect-error - key is taken from Object keys
-            // Add the value to the array
-            clubs[club][key] = clubs[club][key] + swing[key];
+
+          for (const [key, value] of Object.entries(swing)) {
+            if (
+              key === "Schlägername" ||
+              typeof value !== "number" ||
+              isNaN(value)
+            ) {
+              continue;
+            }
+            if (!metricValuesByClub[club][key]) {
+              metricValuesByClub[club][key] = [];
+            }
+            metricValuesByClub[club][key].push(value);
           }
         }
       }
+
+      const clubs: AveragedSwing[] = Object.entries(metricValuesByClub).map(
+        ([club, metrics]) => {
+          const averaged: Record<string, number | string> = {
+            name: club,
+            count: clubCounts[club] ?? 0,
+          };
+
+          for (const [key, values] of Object.entries(metrics)) {
+            if (values.length === 0) {
+              averaged[key] = 0;
+              continue;
+            }
+            averaged[key] =
+              Math.round(
+                (values.reduce((acc, curr) => acc + curr, 0) / values.length) *
+                100,
+              ) / 100;
+          }
+
+          return averaged as AveragedSwing;
+        },
+      );
+
+      // Flatten to an array with the club name as key
+      const sortedClubs = clubs.sort(sortClubs);
+
+      return sortedClubs;
     }
-
-    // Use Interquartile Range to filter out outliers and calculate the average, except for the count
-    for (const club of Object.keys(clubs)) {
-      for (const key of Object.keys(clubs[club])) {
-        // Skip the count and name
-        if (key === "count" || key === "name") {
-          continue;
-        }
-        // Calculate the average
-        const values = sessions
-          .filter((session) => session.selected)
-          .map((session) => session.results)
-          .flat()
-          .filter((swing) => {
-            const swingClub = getClubName(swing);
-            return swingClub === club;
-          })
-          // @ts-expect-error - key is taken from Object keys
-          .map((swing) => swing[key])
-          .filter(
-            (value): value is number =>
-              typeof value === "number" && !isNaN(value),
-          );
-
-        if (values.length === 0) {
-          // @ts-expect-error - key is taken from Object keys
-          clubs[club][key] = 0;
-          continue;
-        }
-
-        // @ts-expect-error - key is taken from Object keys
-        clubs[club][key] =
-          Math.round(
-            (values.reduce((acc, curr) => acc + curr, 0) / values.length) * 100,
-          ) / 100;
-      }
-    }
-
-    // Flatten to an array with the club name as key
-    const sortedClubs = Object.keys(clubs)
-      .map((club) => ({ ...clubs[club], name: club }) as AveragedSwing)
-      .sort(sortClubs);
-
-    return sortedClubs;
-  }
-  return [];
-};
+    return [];
+  };
 
 // Sort irons, woods, and hybrids by their number
 // Put wedges first

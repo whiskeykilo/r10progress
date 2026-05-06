@@ -7,11 +7,13 @@ export const BaseListbox = ({
   setOption,
   value,
   valueText = "-",
+  ariaLabel = "Select option",
 }: {
   options: string[];
   setOption: (option: string) => void;
   value: string;
   valueText?: string;
+  ariaLabel?: string;
 }) =>
   options.length > 0 ? (
     <Listbox
@@ -21,7 +23,11 @@ export const BaseListbox = ({
       }}
     >
       <div className="relative mt-1 w-full min-w-48">
-        <Listbox.Button className="app-focus-ring relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm">
+        <Listbox.Button
+          aria-label={ariaLabel}
+          title={ariaLabel}
+          className="app-focus-ring relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm"
+        >
           <span className="block truncate">{valueText}</span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronUpDownIcon

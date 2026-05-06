@@ -202,32 +202,36 @@ export const AIAnalysis = () => {
                   Get detailed insights about your swing patterns and
                   consistency.
                 </p>
-                <div className="mt-4">
-                  <label
-                    htmlFor="analysis-scope"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div>
+                    <label
+                      htmlFor="analysis-scope"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Analysis scope
+                    </label>
+                    <select
+                      id="analysis-scope"
+                      value={analysisScope}
+                      onChange={(e) =>
+                        setAnalysisScope(e.target.value as AnalysisScope)
+                      }
+                      className="app-focus-ring mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 sm:w-80"
+                    >
+                      <option value="last-3-months">Last 3 months</option>
+                      <option value="last-10-sessions">Last 10 sessions</option>
+                      <option value="all-selected">
+                        All selected sessions
+                      </option>
+                    </select>
+                  </div>
+                  <button
+                    className="app-focus-ring inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+                    onClick={handleAnalyze}
                   >
-                    Analysis scope
-                  </label>
-                  <select
-                    id="analysis-scope"
-                    value={analysisScope}
-                    onChange={(e) =>
-                      setAnalysisScope(e.target.value as AnalysisScope)
-                    }
-                    className="app-focus-ring mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
-                  >
-                    <option value="last-3-months">Last 3 months</option>
-                    <option value="last-10-sessions">Last 10 sessions</option>
-                    <option value="all-selected">All selected sessions</option>
-                  </select>
+                    Analyze My Shots
+                  </button>
                 </div>
-                <button
-                  className="app-focus-ring mt-4 inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-                  onClick={handleAnalyze}
-                >
-                  Analyze My Shots
-                </button>
               </div>
             )}
           </div>

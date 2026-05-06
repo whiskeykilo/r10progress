@@ -32,6 +32,13 @@ export const Goal = ({ goal, onDelete, onUpdate }: GoalProps) => {
     setIsEditing(false);
   };
 
+  const formattedCurrent =
+    goal.current === null || goal.current === undefined
+      ? "N/A"
+      : Number.isFinite(Number(goal.current))
+        ? `${Number(goal.current).toFixed(1)}${goal.unit}`
+        : "N/A";
+
   return (
     <div className="mt-2 max-w-2xl rounded-md bg-white p-4 dark:bg-gray-800 dark:text-white">
       {isEditing ? (
@@ -48,7 +55,7 @@ export const Goal = ({ goal, onDelete, onUpdate }: GoalProps) => {
       <hr />
       <div className="flex flex-col justify-between text-lg lg:flex-row">
         <p>
-          Current: <b>{goal.current + goal.unit}</b>
+          Current: <b>{formattedCurrent}</b>
         </p>
         <p>
           Target:{" "}
@@ -66,6 +73,14 @@ export const Goal = ({ goal, onDelete, onUpdate }: GoalProps) => {
         </p>
         <p>
           Progress: <b>{goal.progressText}</b>
+        </p>
+        <p>
+          Direction:{" "}
+          <b>
+            {goal.direction === "increase"
+              ? "Higher is better"
+              : "Lower is better"}
+          </b>
         </p>
       </div>
       <ProgressBar progress={goal.progress} />

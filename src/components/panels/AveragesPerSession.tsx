@@ -77,6 +77,7 @@ export const AveragesPerSession = () => {
             setOption={setYField as (option: string) => void}
             value={yField}
             valueText={yField as string}
+            ariaLabel="Select metric for averages chart"
           />
         </div>
       </div>

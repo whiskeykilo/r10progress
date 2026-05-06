@@ -8,6 +8,7 @@ export type Goal = {
   progressText: string;
   progress: number;
   unit: string;
+  direction: "increase" | "decrease";
 };
 
 export type PartialGoal = {
@@ -16,4 +17,5 @@ export type PartialGoal = {
   target: number;
   club?: string;
   metric: keyof GolfSwingDataDE | keyof GolfSwingDataEN;
+  direction?: "increase" | "decrease";
 };

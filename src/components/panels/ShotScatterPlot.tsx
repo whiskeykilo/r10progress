@@ -96,6 +96,7 @@ export const ShotScatterPlot = () => {
               setOption={(option) => setXField(option as keyof GolfSwingData)}
               value={xField}
               valueText={xField}
+              ariaLabel="Select x-axis metric"
             />
           </div>
           <div className="w-full sm:w-56">
@@ -104,6 +105,7 @@ export const ShotScatterPlot = () => {
               setOption={(option) => setYField(option as keyof GolfSwingData)}
               value={yField}
               valueText={yField}
+              ariaLabel="Select y-axis metric"
             />
           </div>
         </div>
