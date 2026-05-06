@@ -34,18 +34,20 @@ export const GappingChart = ({
   const unit = useUnit();
 
   const chartData = useMemo(() => {
+    type ClubDistance = { name: string; distance: number };
     const metricKeys =
       distanceMetric === "total" ? TOTAL_DISTANCE_KEYS : CARRY_DISTANCE_KEYS;
 
-    const clubs = averages
+    const clubs: ClubDistance[] = averages
       .map((club) => ({
         name: club.name,
-        distance:
-          metricKeys
-            .map((key) => club[key as keyof typeof club])
-            .find(
-              (value) => typeof value === "number" && Number.isFinite(value),
-            ) ?? 0,
+        distance: metricKeys.reduce<number>((selectedDistance, key) => {
+          if (selectedDistance > 0) return selectedDistance;
+          const value = club[key as keyof typeof club];
+          return typeof value === "number" && Number.isFinite(value)
+            ? value
+            : selectedDistance;
+        }, 0),
       }))
       .filter((club) => !!club.name && club.distance > 0)
       .sort((a, b) => a.distance - b.distance);

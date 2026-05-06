@@ -64,11 +64,11 @@ describe("filterShotsByQuality", () => {
     const clubs = filtered.map((shot) => shot["Club Type"]);
 
     expect(clubs).toContain("Pitching Wedge");
-    expect(filtered.some((shot) => shot["Club Type"] === "7 Iron")).toBe(true);
+    expect(filtered.some((shot) => shot["Carry Distance"] === 156)).toBe(true);
     expect(
       filtered.some(
         (shot) =>
-          shot["Club Type"] === "7 Iron" && shot["Smash Factor"] === 1.1,
+          shot["Carry Distance"] === 155 && shot["Smash Factor"] === 1.1,
       ),
     ).toBe(false);
   });

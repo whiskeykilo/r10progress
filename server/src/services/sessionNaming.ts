@@ -91,10 +91,7 @@ function getClubClass(club: string): ClubClass | null {
     return "Hybrids";
   }
 
-  if (
-    normalized.includes("wedge") ||
-    /\b(lw|sw|gw|aw|pw)\b/.test(normalized)
-  ) {
+  if (normalized.includes("wedge") || /\b(lw|sw|gw|aw|pw)\b/.test(normalized)) {
     return "Wedges";
   }
 
