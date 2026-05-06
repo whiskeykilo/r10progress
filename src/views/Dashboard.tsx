@@ -32,10 +32,10 @@ const NoSessionSelectedHint = () => {
           to view your averages.
         </p>
         <Link
-          to={dashboardRoutes.sessions}
+          to={dashboardRoutes.upload}
           className="app-focus-ring mt-2 inline-block rounded-sm text-sm font-medium text-yellow-900 underline hover:text-yellow-700 dark:text-yellow-200 dark:hover:text-yellow-100"
         >
-          Go to shot tables
+          Go to upload
         </Link>
       </div>
     );

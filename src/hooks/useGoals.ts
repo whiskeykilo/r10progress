@@ -58,7 +58,9 @@ export const useGoals: () => Goal[] = () => {
 
     apiGet<PartialGoal[]>("/api/goals")
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
+        // Respect an intentionally empty saved list ([]). Only seed defaults
+        // when the response is not a valid array.
+        if (Array.isArray(data)) {
           setGoals(data);
           return;
         }

@@ -1,4 +1,5 @@
 import { ChangeEvent } from "react";
+import clsx from "clsx";
 import { useSettings } from "../../provider/SettingsContext";
 
 type MultiplierKey =
@@ -39,22 +40,38 @@ export const RangeBallCompensationSettings = () => {
 
   return (
     <div className="space-y-4">
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={settings.applyRangeBallCompensation}
-          onChange={(event) =>
-            setSettings((prev) => ({
-              ...prev,
-              applyRangeBallCompensation: event.target.checked,
-            }))
-          }
-          className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-        />
+      <div className="flex items-center justify-between gap-4">
         <span className="text-sm font-medium text-gray-900 dark:text-white">
           Apply range ball compensation
         </span>
-      </label>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={settings.applyRangeBallCompensation}
+          aria-label="Apply range ball compensation"
+          onClick={() =>
+            setSettings((prev) => ({
+              ...prev,
+              applyRangeBallCompensation: !prev.applyRangeBallCompensation,
+            }))
+          }
+          className={clsx(
+            "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-600 focus:ring-offset-2 dark:focus:ring-offset-gray-800",
+            settings.applyRangeBallCompensation
+              ? "bg-sky-600"
+              : "bg-gray-200 dark:bg-gray-600",
+          )}
+        >
+          <span
+            className={clsx(
+              "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+              settings.applyRangeBallCompensation
+                ? "translate-x-5"
+                : "translate-x-0",
+            )}
+          />
+        </button>
+      </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-400">
         Distance fields only. Raw imported shot data remains unchanged.

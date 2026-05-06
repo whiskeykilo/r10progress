@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
 const MODEL = "gpt-5.4-nano";
-const MAX_COMPLETION_TOKENS = 32;
+const MAX_COMPLETION_TOKENS = 64;
 
 type ShotRecord = Record<string, unknown>;
 
@@ -24,8 +24,7 @@ function getStringField(
 
 function buildSessionSummary(results: ShotRecord[]): string {
   const clubs = new Map<string, number>();
-  let minDistance: number | null = null;
-  let maxDistance: number | null = null;
+  const dateCounts = new Map<string, number>();
 
   for (const shot of results) {
     const club = getStringField(shot, ["clubType", "club type", "club"]);
@@ -33,31 +32,85 @@ function buildSessionSummary(results: ShotRecord[]): string {
       clubs.set(club, (clubs.get(club) ?? 0) + 1);
     }
 
-    const distanceField = shot.CarryDistance ?? shot["carry distance"];
-    if (typeof distanceField === "number" && Number.isFinite(distanceField)) {
-      minDistance =
-        minDistance === null
-          ? distanceField
-          : Math.min(minDistance, distanceField);
-      maxDistance =
-        maxDistance === null
-          ? distanceField
-          : Math.max(maxDistance, distanceField);
+    const parsedDate = parseShotDate(
+      getStringField(shot, ["Date", "Datum", "Fecha"]),
+    );
+    if (parsedDate) {
+      dateCounts.set(parsedDate, (dateCounts.get(parsedDate) ?? 0) + 1);
     }
   }
 
-  const topClubs = [...clubs.entries()]
+  const clubsByCount = [...clubs.entries()]
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
     .map(([club, count]) => `${club} (${count})`)
     .join(", ");
 
-  const distanceSummary =
-    minDistance !== null && maxDistance !== null
-      ? `${Math.round(minDistance)}-${Math.round(maxDistance)}`
-      : "unknown";
+  const clubCount = clubs.size;
+  const sessionDate =
+    [...dateCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "unknown";
 
-  return `shots=${results.length}; top_clubs=${topClubs || "unknown"}; carry_range=${distanceSummary}`;
+  return [
+    `session_date=${sessionDate}`,
+    `total_shots=${results.length}`,
+    `unique_clubs=${clubCount}`,
+    `clubs_hit=${clubsByCount || "unknown"}`,
+  ].join("; ");
+}
+
+function parseShotDate(value: string | undefined): string | null {
+  if (!value) return null;
+
+  const normalized = value.trim();
+  if (!normalized) return null;
+
+  const yyyyMmDd = normalized.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (yyyyMmDd) {
+    return formatMonthDay(
+      Number(yyyyMmDd[1]),
+      Number(yyyyMmDd[2]),
+      Number(yyyyMmDd[3]),
+    );
+  }
+
+  const ddMmYyyy = normalized.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if (ddMmYyyy) {
+    const first = Number(ddMmYyyy[1]);
+    const second = Number(ddMmYyyy[2]);
+    const year = Number(ddMmYyyy[3]);
+    const month = first > 12 ? second : first;
+    const day = first > 12 ? first : second;
+    return formatMonthDay(year, month, day);
+  }
+
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function formatMonthDay(year: number, month: number, day: number): string | null {
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return null;
+  }
+
+  const isoDate = new Date(Date.UTC(year, month - 1, day));
+  if (Number.isNaN(isoDate.getTime())) return null;
+  return isoDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 function sanitizeName(name: string, fallback: string): string {
@@ -85,12 +138,34 @@ export async function generateSessionDisplayName(
       messages: [
         {
           role: "system",
-          content:
-            "Create concise golf session titles. Return only the title text. Max 6 words.",
+          content: `You are naming a golf practice session based on the shots/clubs that were hit.
+Generate a short, natural session name (3-6 words) the way a golfer would
+actually label it in their notes - not corporate or AI-flavored.
+
+Use these patterns:
+- "Wedge Work – Mar 15" (only wedges hit)
+- "Driver + Woods – Apr 2" (only long clubs)
+- "7i Session – Apr 2" (single club)
+- "Full Bag – Mar 15" (5+ clubs spanning wedges through driver)
+- "Iron Session – Apr 2" (mostly irons)
+- "Short Game Day – Apr 2" (wedges + maybe a few short irons)
+- "Quick Range – Apr 2" (under 20 shots, mixed)
+- "Bag Gapping – Mar 15" (full spread, looks like distance testing)
+- "Range Session – Mar 15" (fallback)
+
+Rules:
+- Always append a date ("Mar 15")
+- Never use words like: Performance, Analysis, Tracking, Data, Metrics, Session Report.
+- Title case for words; club names stay in their natural form (7i, Driver, PW).
+- No emojis, no quotes, no punctuation other than the en dash before the date.
+- Output ONLY the name, nothing else.
+
+Shot data summary:
+{shot_summary}`,
         },
         {
           role: "user",
-          content: `Generate a short session title from this summary: ${summary}`,
+          content: `shot_summary: ${summary}`,
         },
       ],
       max_completion_tokens: MAX_COMPLETION_TOKENS,

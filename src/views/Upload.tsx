@@ -228,17 +228,19 @@ export const Upload = () => {
             handleUpload();
           }}
         >
-          <p className="text-base">
-            Upload your CSV file exported from the Garmin Golf App.
-          </p>
-          <a
-            href="https://support.garmin.com/en-US/?faq=pit4ClEw6f019Cbs3Uhw59"
-            target="_blank"
-            rel="noreferrer"
-            className="w-fit text-sm text-blue-600 underline hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Need help? Follow Garmin&apos;s CSV export instructions.
-          </a>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="text-base">
+              Upload your CSV file exported from the Garmin Golf App.
+            </p>
+            <a
+              href="https://support.garmin.com/en-US/?faq=pit4ClEw6f019Cbs3Uhw59"
+              target="_blank"
+              rel="noreferrer"
+              className="w-fit text-sm italic text-blue-600 underline hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Need help? Follow Garmin&apos;s CSV export instructions.
+            </a>
+          </div>
           <p className="text-sm text-yellow-600">
             <b>Warning:</b> This app requires consistent localization between
             exports. Otherwise, your clubs will not be recognized across
