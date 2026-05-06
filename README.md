@@ -24,6 +24,13 @@ This is a self-hosted fork of [thraizz/r10progress](https://github.com/thraizz/r
 3. Open R10Progress and upload the CSV.
 4. Browse charts and tables to analyze your performance.
 
+## Filtering and View Modes
+
+- **Shot Quality Filter (default)**: combines a smash-factor floor for true irons (3i-9i) with carry-distance SD filtering. Default SD mode is asymmetric (`2σ` low / `3σ` high).
+- **IQR Fallback (optional)**: statistical outlier removal on total distance. Use this if Shot Quality does not have enough data.
+- **Best Shots View (optional)**: "View: best shots only" is a display mode to inspect potential, not a data-cleaning method for course-management distances.
+- **Outlier method selection**: Shot Quality and IQR are mutually exclusive in settings.
+
 ## Getting Started (Development)
 
 Requires Node 22 and pnpm.
@@ -49,12 +56,12 @@ The container serves the SPA and API on port 8080. SQLite data is persisted to t
 
 ### Environment variables
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `OPENAI_API_KEY` | — | Required for AI shot analysis |
-| `PORT` | `8080` | HTTP port |
-| `DATA_DIR` | `{cwd}/data` | Directory for `sqlite.db` |
-| `STATIC_DIR` | `{cwd}/dist` | Path to built SPA |
+| Variable         | Default      | Purpose                       |
+| ---------------- | ------------ | ----------------------------- |
+| `OPENAI_API_KEY` | —            | Required for AI shot analysis |
+| `PORT`           | `8080`       | HTTP port                     |
+| `DATA_DIR`       | `{cwd}/data` | Directory for `sqlite.db`     |
+| `STATIC_DIR`     | `{cwd}/dist` | Path to built SPA             |
 
 Pass variables with `-e`:
 

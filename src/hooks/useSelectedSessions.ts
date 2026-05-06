@@ -26,14 +26,13 @@ export const useSelectedSessionsWithSettings = () => {
 
   return Object.values(sessions).reduce((acc, session) => {
     let results = applyRangeBallCompensationToShots(session.results, settings);
-    if (settings.useIQR) {
+    if (settings.useShotQualityFilter) {
+      results = filterShotsByQuality(results, settings.shotQualitySdMode);
+    } else if (settings.useIQR) {
       results = dropOutliers(results);
     }
     if (settings.useAboveAverageShots) {
       results = getAboveAverageShots(results);
-    }
-    if (settings.useShotQualityFilter) {
-      results = filterShotsByQuality(results);
     }
 
     acc[session.date] = { ...session, results };

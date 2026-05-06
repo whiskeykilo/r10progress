@@ -23,7 +23,7 @@ export const DispersionGraphs = () => (
             ),
           },
         ],
-        "Dispersion Circle Graph": [
+        Dispersion: [
           {
             id: 2,
             content: (

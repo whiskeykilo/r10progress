@@ -60,32 +60,81 @@ const Toggle = ({
 
 export const OutlierDetectionSettings = () => {
   const { settings, setSettings } = useSettings();
+  const outlierMode = settings.useShotQualityFilter
+    ? "shotQuality"
+    : settings.useIQR
+      ? "iqr"
+      : "none";
+
+  const setOutlierMode = (mode: "shotQuality" | "iqr" | "none") => {
+    setSettings((prev) => ({
+      ...prev,
+      useShotQualityFilter: mode === "shotQuality",
+      useIQR: mode === "iqr",
+    }));
+  };
 
   return (
     <div className="mt-2 flex flex-col gap-4 pt-2">
+      <div>
+        <p className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          Outlier method
+        </p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => setOutlierMode("shotQuality")}
+            className={clsx(
+              "rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+              outlierMode === "shotQuality"
+                ? "border-sky-600 bg-sky-50 text-sky-800 dark:border-sky-500 dark:bg-sky-900/40 dark:text-sky-100"
+                : "border-gray-300 text-gray-700 hover:border-sky-400 dark:border-gray-600 dark:text-gray-200",
+            )}
+          >
+            Shot quality
+          </button>
+          <button
+            type="button"
+            onClick={() => setOutlierMode("iqr")}
+            className={clsx(
+              "rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+              outlierMode === "iqr"
+                ? "border-sky-600 bg-sky-50 text-sky-800 dark:border-sky-500 dark:bg-sky-900/40 dark:text-sky-100"
+                : "border-gray-300 text-gray-700 hover:border-sky-400 dark:border-gray-600 dark:text-gray-200",
+            )}
+          >
+            IQR fallback
+          </button>
+          <button
+            type="button"
+            onClick={() => setOutlierMode("none")}
+            className={clsx(
+              "rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+              outlierMode === "none"
+                ? "border-sky-600 bg-sky-50 text-sky-800 dark:border-sky-500 dark:bg-sky-900/40 dark:text-sky-100"
+                : "border-gray-300 text-gray-700 hover:border-sky-400 dark:border-gray-600 dark:text-gray-200",
+            )}
+          >
+            Off
+          </button>
+        </div>
+      </div>
       <Toggle
-        checked={settings.useIQR}
-        onChange={(val) => setSettings((prev) => ({ ...prev, useIQR: val }))}
-        label="IQR outlier detection"
-        description="Filter shots that fall outside the interquartile range"
-        tooltip="IQR stands for Interquartile Range. It hides unusually high or low shots, so your trends focus on your typical results."
-      />
-      <Toggle
-        checked={settings.useAboveAverageShots}
+        checked={settings.shotQualitySdMode === "asymmetric"}
         onChange={(val) =>
-          setSettings((prev) => ({ ...prev, useAboveAverageShots: val }))
+          setSettings((prev) => ({
+            ...prev,
+            shotQualitySdMode: val ? "asymmetric" : "symmetric",
+          }))
         }
-        label="Above-average shots only"
-        description="Only include shots that are above your average"
+        label="Shot quality SD mode: Asymmetric"
+        description="Asymmetric: 2σ low / 3σ high. Turn off for symmetric 2σ both sides."
+        tooltip="Smash-factor floor stays active for true irons. Asymmetric mode is more permissive on your best strikes."
       />
-      <Toggle
-        checked={settings.useShotQualityFilter}
-        onChange={(val) =>
-          setSettings((prev) => ({ ...prev, useShotQualityFilter: val }))
-        }
-        label="Shot quality filter"
-        description="Exclude obvious miss-hits using smash factor and carry consistency checks"
-      />
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        IQR fallback: statistical outlier removal based on total distance. Use
+        if Shot Quality Filter does not have enough data.
+      </p>
     </div>
   );
 };

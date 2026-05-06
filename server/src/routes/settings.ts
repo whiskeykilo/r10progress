@@ -6,7 +6,8 @@ const router = Router();
 const DEFAULT_SETTINGS = {
   useIQR: false,
   useAboveAverageShots: false,
-  useShotQualityFilter: false,
+  useShotQualityFilter: true,
+  shotQualitySdMode: "asymmetric",
   unit: "yards",
   applyRangeBallCompensation: false,
   rangeBallCompensation: {

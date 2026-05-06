@@ -5,6 +5,7 @@ import { CoachSharePanel } from "../components/panels/CoachSharePanel";
 import { OutlierDetectionSettings } from "../components/panels/OutlierDetectionSettings";
 import { RangeBallCompensationSettings } from "../components/panels/RangeBallCompensationSettings";
 import { UnitSettings } from "../components/panels/UnitSettings";
+import { ViewSettings } from "../components/panels/ViewSettings";
 import { useDarkMode, type Theme } from "../hooks/useDarkMode";
 
 const themeOptions: { value: Theme; label: string }[] = [
@@ -60,6 +61,10 @@ export const Settings = () => {
 
         <SettingCard title="Outlier Detection">
           <OutlierDetectionSettings />
+        </SettingCard>
+
+        <SettingCard title="View Options">
+          <ViewSettings />
         </SettingCard>
 
         <SettingCard title="Distance Compensation">

@@ -32,7 +32,22 @@ export const BaseGraph = ({ options }: { options: echarts.EChartsOption }) => {
   }, []);
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      chartInstance.current?.resize();
+    });
+
+    resizeObserver.observe(chartRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!chartInstance.current) return;
+    chartInstance.current.resize();
     chartInstance.current.setOption(options, true);
   }, [options]);
 

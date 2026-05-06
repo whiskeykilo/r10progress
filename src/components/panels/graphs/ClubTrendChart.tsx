@@ -76,7 +76,14 @@ export const ClubTrendChart = () => {
   }, [selectedClub, sessions]);
 
   const options: echarts.EChartsOption = {
-    grid: { ...chartOptionsGrid, left: 16, right: 16, top: 20, bottom: 46 },
+    grid: {
+      ...chartOptionsGrid,
+      left: 56,
+      right: 16,
+      top: 34,
+      bottom: 12,
+      containLabel: true,
+    },
     tooltip: {
       trigger: "axis",
       formatter: (params: any) => {
@@ -98,13 +105,23 @@ export const ClubTrendChart = () => {
           .join("<br/>");
       },
     },
-    legend: { top: 0, right: 10 },
+    legend: { top: 2, right: 10 },
     xAxis: {
       type: "category",
       data: trendData.map((entry) => entry.sessionLabel),
-      axisLabel: { interval: 0, rotate: 20 },
+      axisLabel: {
+        interval: 0,
+        rotate: 0,
+        width: 96,
+        overflow: "truncate",
+      },
     },
-    yAxis: { type: "value", name: unit },
+    yAxis: {
+      type: "value",
+      name: unit,
+      nameLocation: "middle",
+      nameGap: 36,
+    },
     series: [
       {
         name: "Carry Avg",

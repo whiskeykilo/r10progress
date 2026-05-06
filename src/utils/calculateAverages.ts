@@ -91,7 +91,8 @@ export const calculateAverages: (
           settings ?? {
             useIQR: false,
             useAboveAverageShots: false,
-            useShotQualityFilter: false,
+            useShotQualityFilter: true,
+            shotQualitySdMode: "asymmetric",
             unit: "yards",
             applyRangeBallCompensation: false,
             rangeBallCompensation: {
@@ -107,14 +108,15 @@ export const calculateAverages: (
         .filter((session) => session.selected && session.results?.length > 0)
         .map((session) => {
           let results = session.results;
-          if (calculateWithIqr) {
+          const shouldUseShotQuality = Boolean(settings?.useShotQualityFilter);
+          const shouldUseIqr = calculateWithIqr || Boolean(settings?.useIQR);
+          if (shouldUseShotQuality) {
+            results = filterShotsByQuality(results, settings?.shotQualitySdMode);
+          } else if (shouldUseIqr) {
             results = dropOutliers(results);
           }
           if (useAboveAverageShots) {
             results = getAboveAverageShots(results);
-          }
-          if (settings?.useShotQualityFilter) {
-            results = filterShotsByQuality(results);
           }
           return { ...session, results };
         });
@@ -327,9 +329,44 @@ export const getAboveAverageShots = (swings: GolfSwingData[]) => {
 
 const MIN_IRON_SMASH = 1.2;
 const MIN_GROUP_SIZE = 4;
-const MAX_STDDEV_FROM_MEAN = 2;
+const DEFAULT_LOW_SIDE_SD = 2;
+const DEFAULT_HIGH_SIDE_SD = 2;
+const ASYMMETRIC_HIGH_SIDE_SD = 3;
+export type ShotQualitySdMode = "symmetric" | "asymmetric";
 
-export const filterShotsByQuality = (swings: GolfSwingData[]) => {
+const WEDGE_KEYWORDS = [
+  "wedge",
+  "sandwedge",
+  "pitching",
+  "gap",
+  "lob",
+  "wedges",
+  "keil",
+  "cuña",
+];
+
+const TRUE_IRON_PATTERNS = [
+  /\b[3-9]\s*iron\b/i,
+  /\biron\s*[3-9]\b/i,
+  /\b[3-9]\s*eisen\b/i,
+  /\beisen\s*[3-9]\b/i,
+  /\b[3-9]\s*hierro\b/i,
+  /\bhierro\s*[3-9]\b/i,
+  /\b[3-9]\s*ijzer\b/i,
+  /\bijzer\s*[3-9]\b/i,
+];
+
+const isWedgeClub = (clubName: string) =>
+  WEDGE_KEYWORDS.some((keyword) => clubName.toLowerCase().includes(keyword));
+
+export const isTrueIronClub = (clubName: string) =>
+  !isWedgeClub(clubName) &&
+  TRUE_IRON_PATTERNS.some((pattern) => pattern.test(clubName));
+
+export const filterShotsByQuality = (
+  swings: GolfSwingData[],
+  sdMode: ShotQualitySdMode = "asymmetric",
+) => {
   const carryByClub: Record<string, number[]> = {};
 
   swings.forEach((shot) => {
@@ -361,7 +398,7 @@ export const filterShotsByQuality = (swings: GolfSwingData[]) => {
     if (!club) return false;
 
     const smash = getSmashFactor(shot);
-    const isIron = /\biron\b/i.test(club);
+    const isIron = isTrueIronClub(club);
     if (
       isIron &&
       typeof smash === "number" &&
@@ -383,7 +420,13 @@ export const filterShotsByQuality = (swings: GolfSwingData[]) => {
       return true;
     }
 
-    return Math.abs(carry - stats.mean) <= MAX_STDDEV_FROM_MEAN * stats.stdDev;
+    const lowerSideSd = DEFAULT_LOW_SIDE_SD;
+    const upperSideSd =
+      sdMode === "asymmetric" ? ASYMMETRIC_HIGH_SIDE_SD : DEFAULT_HIGH_SIDE_SD;
+    const lowerBound = stats.mean - lowerSideSd * stats.stdDev;
+    const upperBound = stats.mean + upperSideSd * stats.stdDev;
+
+    return carry >= lowerBound && carry <= upperBound;
   });
 };
 

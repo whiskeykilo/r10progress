@@ -14,6 +14,7 @@ export type SettingsType = {
   useIQR: boolean;
   useAboveAverageShots: boolean;
   useShotQualityFilter: boolean;
+  shotQualitySdMode: "symmetric" | "asymmetric";
   unit: "meters" | "yards";
   applyRangeBallCompensation: boolean;
   rangeBallCompensation: {
@@ -33,7 +34,8 @@ interface SettingsContextProps {
 const DEFAULT_SETTINGS: SettingsType = {
   useIQR: false,
   useAboveAverageShots: false,
-  useShotQualityFilter: false,
+  useShotQualityFilter: true,
+  shotQualitySdMode: "asymmetric",
   unit: "yards",
   applyRangeBallCompensation: false,
   rangeBallCompensation: {

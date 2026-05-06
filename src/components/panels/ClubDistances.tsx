@@ -17,6 +17,9 @@ export const ClubDistances = () => {
   const { averages } = useBestShots();
   const [selectedClub, setSelectedClub] = useState("");
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [gappingDistanceMetric, setGappingDistanceMetric] = useState<
+    "carry" | "total"
+  >("carry");
   const clubOptions = useMemo(
     () =>
       averages
@@ -69,14 +72,48 @@ export const ClubDistances = () => {
     <div className="relative flex flex-col gap-4">
       <MetricTrendCard title="Trends" />
       <div className="rounded-xl bg-white p-4 dark:bg-gray-800">
-        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-          Gapping Chart
-        </h4>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-          Compare average carry gaps between clubs to spot overlaps and missing
-          yardages.
-        </p>
-        <GappingChart />
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              Gapping Chart
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Compare average distance gaps between clubs to spot overlaps and
+              missing yardages.
+            </p>
+          </div>
+          <div
+            className="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700"
+            role="group"
+            aria-label="Select distance metric for gapping chart"
+          >
+            <button
+              type="button"
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                gappingDistanceMetric === "carry"
+                  ? "dark:text-brand-300 bg-white text-brand-700 shadow dark:bg-gray-800"
+                  : "text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-800"
+              }`}
+              onClick={() => setGappingDistanceMetric("carry")}
+              aria-pressed={gappingDistanceMetric === "carry"}
+            >
+              Carry Distance
+            </button>
+            <button
+              type="button"
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                gappingDistanceMetric === "total"
+                  ? "dark:text-brand-300 bg-white text-brand-700 shadow dark:bg-gray-800"
+                  : "text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-800"
+              }`}
+              onClick={() => setGappingDistanceMetric("total")}
+              aria-pressed={gappingDistanceMetric === "total"}
+            >
+              Total Distance
+            </button>
+          </div>
+        </div>
+        <GappingChart distanceMetric={gappingDistanceMetric} />
       </div>
       <ClubTrendChart />
       <div className="rounded-xl bg-white p-4 dark:bg-gray-800">

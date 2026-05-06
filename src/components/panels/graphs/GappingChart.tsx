@@ -6,35 +6,71 @@ import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid } from "../../base/chartOptions";
 
 const GAP_ALERT_THRESHOLD = 18;
+const CARRY_DISTANCE_KEYS = [
+  "Carry Distance",
+  "Carry-Distanz",
+  "Dist.​vuelo",
+  "Dist. vuelo",
+  "Carry-afstand",
+] as const;
+const TOTAL_DISTANCE_KEYS = [
+  "Total Distance",
+  "Gesamtstrecke",
+  "Distan​cia total",
+  "Distancia total",
+  "Totale afstand",
+] as const;
 
-export const GappingChart = () => {
+type GappingDistanceMetric = "carry" | "total";
+
+type GappingChartProps = {
+  distanceMetric?: GappingDistanceMetric;
+};
+
+export const GappingChart = ({
+  distanceMetric = "carry",
+}: GappingChartProps) => {
   const { averages } = useBestShots();
   const unit = useUnit();
 
   const chartData = useMemo(() => {
+    const metricKeys =
+      distanceMetric === "total" ? TOTAL_DISTANCE_KEYS : CARRY_DISTANCE_KEYS;
+
     const clubs = averages
       .map((club) => ({
         name: club.name,
-        carry:
-          typeof club["Carry Distance"] === "number"
-            ? club["Carry Distance"]
-            : 0,
+        distance:
+          metricKeys
+            .map((key) => club[key as keyof typeof club])
+            .find(
+              (value) => typeof value === "number" && Number.isFinite(value),
+            ) ?? 0,
       }))
-      .filter((club) => !!club.name && club.carry > 0)
-      .sort((a, b) => a.carry - b.carry);
+      .filter((club) => !!club.name && club.distance > 0)
+      .sort((a, b) => a.distance - b.distance);
 
     const gaps = clubs.map((club, index) => {
       if (index === 0) return "";
-      const previousCarry = clubs[index - 1].carry;
-      const gap = Math.round(club.carry - previousCarry);
+      const previousDistance = clubs[index - 1].distance;
+      const gap = Math.round(club.distance - previousDistance);
       return `+${gap} ${unit}`;
     });
 
     return { clubs, gaps };
-  }, [averages, unit]);
+  }, [averages, distanceMetric, unit]);
+
+  const metricLabel = distanceMetric === "total" ? "Total" : "Carry";
 
   const options: echarts.EChartsOption = {
-    grid: { ...chartOptionsGrid, left: 18, right: 12, top: 20, bottom: 55 },
+    grid: {
+      ...chartOptionsGrid,
+      left: 58,
+      right: 12,
+      top: 12,
+      bottom: 12,
+      containLabel: true,
+    },
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
@@ -45,7 +81,7 @@ export const GappingChart = () => {
         const gap = chartData.gaps[index];
         return [
           `${first.axisValue}`,
-          `Carry: ${first.value} ${unit}`,
+          `${metricLabel}: ${first.value} ${unit}`,
           gap || "",
         ]
           .filter(Boolean)
@@ -55,16 +91,23 @@ export const GappingChart = () => {
     xAxis: {
       type: "category",
       data: chartData.clubs.map((club) => club.name),
-      axisLabel: { interval: 0, rotate: 25 },
+      axisLabel: {
+        interval: 0,
+        rotate: 0,
+        width: 72,
+        overflow: "truncate",
+      },
     },
     yAxis: {
       type: "value",
-      name: `Carry (${unit})`,
+      name: `${metricLabel} (${unit})`,
+      nameLocation: "middle",
+      nameGap: 44,
     },
     series: [
       {
         type: "bar",
-        data: chartData.clubs.map((club) => Math.round(club.carry)),
+        data: chartData.clubs.map((club) => Math.round(club.distance)),
         label: {
           show: true,
           position: "top",

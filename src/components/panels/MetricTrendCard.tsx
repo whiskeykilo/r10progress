@@ -23,6 +23,13 @@ const NON_CLUB_METRICS = new Set([
   "Relative Humidity",
 ]);
 
+const DEFAULT_CARRY_METRICS = [
+  "Carry Distance",
+  "Carry-Distanz",
+  "Dist.​vuelo",
+  "Carry-afstand",
+];
+
 export const MetricTrendCard = ({
   metric = "Carry Distance",
   title = "Trend Snapshot",
@@ -87,10 +94,28 @@ export const MetricTrendCard = ({
       return;
     }
 
-    setSelectedMetric((current) =>
-      availableMetrics.includes(current) ? current : availableMetrics[0],
-    );
-  }, [availableMetrics]);
+    setSelectedMetric((current) => {
+      if (availableMetrics.includes(current)) {
+        return current;
+      }
+
+      const configuredDefault = availableMetrics.find(
+        (availableMetric) => availableMetric === metric,
+      );
+      if (configuredDefault) {
+        return configuredDefault;
+      }
+
+      const carryDefault = availableMetrics.find((availableMetric) =>
+        DEFAULT_CARRY_METRICS.includes(availableMetric),
+      );
+      if (carryDefault) {
+        return carryDefault;
+      }
+
+      return availableMetrics[0];
+    });
+  }, [availableMetrics, metric]);
 
   const trend = useMemo(() => {
     if (!selectedClub || !selectedMetric) {

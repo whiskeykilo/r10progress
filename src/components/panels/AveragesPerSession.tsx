@@ -7,7 +7,6 @@ import {
 import { useAveragePerSession } from "../../utils/calculateAverages";
 import { getAllDataFromSession } from "../../utils/getAllDataFromSession";
 import { getPairsForYfield } from "../../utils/utils";
-import { BaseLabel } from "../base/BaseLabel";
 import { BaseListbox } from "../base/BaseListbox";
 import { AverageMetricsGraph } from "./graphs/AverageMetricsGraph";
 
@@ -71,7 +70,6 @@ export const AveragesPerSession = () => {
           Averages
         </h4>
         <div className="w-full sm:max-w-56">
-          <BaseLabel>Choose the fields to display</BaseLabel>
           <BaseListbox
             options={fields}
             setOption={setYField as (option: string) => void}
@@ -81,7 +79,7 @@ export const AveragesPerSession = () => {
           />
         </div>
       </div>
-      <div className="block h-[560px] w-full">
+      <div className="block h-[460px] w-full">
         <AverageMetricsGraph metric={yField} data={data} />
       </div>
     </div>
