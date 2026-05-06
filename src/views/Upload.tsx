@@ -92,10 +92,6 @@ export const Upload = () => {
 
   return (
     <BasePageLayout>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Upload Session
-      </h1>
-
       {step === "select" && (
         <form
           ref={formRef}

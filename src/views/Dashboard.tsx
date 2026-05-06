@@ -9,11 +9,9 @@ import { dashboardRoutes } from "../routes";
 export const Dashboard = () => {
   return (
     <BasePageLayout>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Dashboard
-      </h1>
+      <h1 className="sr-only">Dashboard</h1>
       <NoSessionSelectedHint />
-      <div className="mt-4 flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <DispersionGraphs />
         <AveragesPerSession />
         <ShotScatterPlot />

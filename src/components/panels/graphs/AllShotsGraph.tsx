@@ -16,7 +16,7 @@ export const AllShotsGraph = () => {
   maximumDeviation = Math.ceil(maximumDeviation / 10) * 10;
 
   const options: echarts.EChartsOption = {
-    grid: { ...chartOptionsGrid, bottom: "25%" },
+    grid: { ...chartOptionsGrid, bottom: 45 },
     tooltip: {
       trigger: "item",
       formatter: (params: any) => {
@@ -32,14 +32,20 @@ export const AllShotsGraph = () => {
       name: `Deviation (${unit})`,
       min: -maximumDeviation,
       max: maximumDeviation,
+      axisLabel: {
+        formatter: (value: number) => `${value} ${unit}`,
+      },
     },
     yAxis: {
       type: "value",
       name: `Carry (${unit})`,
+      axisLabel: {
+        formatter: (value: number) => `${value} ${unit}`,
+      },
     },
     legend: {
       orient: "horizontal",
-      top: "75%",
+      top: "bottom",
     },
     series: Object.entries(shots.shotsByClub).map(([club, shots]) => ({
       type: "scatter",

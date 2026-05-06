@@ -115,7 +115,7 @@ export const DispersionCirclesGraph = () => {
   const options: echarts.EChartsOption = {
     grid: {
       ...chartOptionsGrid,
-      bottom: "25%",
+      bottom: 45,
       backgroundColor: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
         { offset: 0, color: "#91B491" }, // Lighter green at top
         { offset: 1, color: "#739E73" }, // Darker green at bottom
@@ -136,14 +136,20 @@ export const DispersionCirclesGraph = () => {
       name: `Deviation (${unit})`,
       min: -maximumDeviation,
       max: maximumDeviation,
+      axisLabel: {
+        formatter: (value: number) => `${value} ${unit}`,
+      },
     },
     yAxis: {
       type: "value",
       name: `Carry (${unit})`,
+      axisLabel: {
+        formatter: (value: number) => `${value} ${unit}`,
+      },
     },
     legend: {
       orient: "horizontal",
-      top: "75%",
+      top: "bottom",
     },
     series,
   };

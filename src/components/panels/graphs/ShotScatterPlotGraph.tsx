@@ -1,4 +1,8 @@
-import { GolfSwingData } from "../../../types/GolfSwingData.ts";
+import {
+  GolfSwingData,
+  golfSwingDataKeysInDegrees,
+  golfSwingDataKeysInMeters,
+} from "../../../types/GolfSwingData.ts";
 import { useUnit } from "../../../hooks/useUnit.ts";
 
 import { BaseGraph } from "../../base/BaseGraph.tsx";
@@ -20,13 +24,23 @@ export const ShotScatterPlotGraph = ({
   chartData: PointWithDate[];
 }) => {
   const unit = useUnit();
+  const xAxisName = formatAxisName(xField as keyof GolfSwingData, unit);
+  const yAxisName = formatAxisName(yField as keyof GolfSwingData, unit);
   const chartOptions: echarts.EChartsOption = {
-    grid: chartOptionsGrid,
+    grid: {
+      ...chartOptionsGrid,
+      left: 30,
+      right: 16,
+      top: 18,
+      bottom: 42,
+    },
     tooltip: chartOptionsDateTooltip(xField, yField),
     visualMap: chartOptionsVisualRecencyMap(chartData),
     xAxis: {
       type: "value",
-      name: xField,
+      name: xAxisName,
+      nameLocation: "middle",
+      nameGap: 28,
       axisLabel: {
         formatter: golfSwingDataAxisFormatter(
           xField as keyof GolfSwingData,
@@ -36,7 +50,9 @@ export const ShotScatterPlotGraph = ({
     },
     yAxis: {
       type: "value",
-      name: yField,
+      name: yAxisName,
+      nameLocation: "middle",
+      nameGap: 52,
       axisLabel: {
         formatter: golfSwingDataAxisFormatter(
           yField as keyof GolfSwingData,
@@ -59,4 +75,26 @@ export const ShotScatterPlotGraph = ({
       <BaseGraph options={chartOptions} />
     </div>
   );
+};
+
+const formatAxisName = (field: keyof GolfSwingData, distanceUnit: string) => {
+  if (golfSwingDataKeysInMeters.includes(field)) {
+    return `${field} (${distanceUnit})`;
+  }
+  if (golfSwingDataKeysInDegrees.includes(field)) {
+    return `${field} (deg)`;
+  }
+  const fieldName = String(field).toLowerCase();
+  if (fieldName.includes("spin")) {
+    return `${field} (rpm)`;
+  }
+  if (
+    fieldName.includes("speed") ||
+    fieldName.includes("geschwindigkeit") ||
+    fieldName.includes("snelh") ||
+    fieldName.includes("velocidad")
+  ) {
+    return `${field} (mph)`;
+  }
+  return String(field);
 };

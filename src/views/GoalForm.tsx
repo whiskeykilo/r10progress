@@ -1,9 +1,11 @@
 import { useAtom } from "jotai";
+import { useContext, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useClubsPerSession } from "../hooks/useClubsPerSesssion";
 import { goalAtom } from "../hooks/useGoals";
 import { useIsEnglishDataset } from "../hooks/useIsEnglishDataset.ts";
 import { useUnit } from "../hooks/useUnit.ts";
+import { SessionContext } from "../provider/SessionContext";
 import {
   GolfSwingDataDE,
   GolfSwingDataEN,
@@ -12,7 +14,9 @@ import {
   germanDegreeMetrics,
   germanMetersMetrics,
   golfSwingDataKeysInMeters,
+  nonNumericGolfSwingDataKeys,
 } from "../types/GolfSwingData";
+import { getAllDataFromSession } from "../utils/getAllDataFromSession";
 
 export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
   const formMethods = useForm<{
@@ -24,9 +28,36 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
 
   const isEnglish = useIsEnglishDataset();
   const unit = useUnit();
-  const metricOptions = isEnglish
+  const { sessions } = useContext(SessionContext);
+  const metricOptionsBase = isEnglish
     ? [...englishDegreeMetrics, ...englishMetersMetrics]
     : [...germanDegreeMetrics, ...germanMetersMetrics];
+  const metricOptions = useMemo(() => {
+    if (!sessions) return metricOptionsBase;
+
+    const allData = getAllDataFromSession(sessions);
+    if (allData.length === 0) return metricOptionsBase;
+
+    const availableNumericFields = new Set<string>();
+    allData.forEach((row) => {
+      Object.entries(row).forEach(([key, value]) => {
+        if (
+          !nonNumericGolfSwingDataKeys.includes(
+            key as keyof (GolfSwingDataEN & GolfSwingDataDE),
+          ) &&
+          typeof value === "number" &&
+          Number.isFinite(value)
+        ) {
+          availableNumericFields.add(key);
+        }
+      });
+    });
+
+    const filtered = metricOptionsBase.filter((metric) =>
+      availableNumericFields.has(metric),
+    );
+    return filtered.length > 0 ? filtered : metricOptionsBase;
+  }, [sessions, metricOptionsBase]);
   const [, setGoals] = useAtom(goalAtom);
   const clubs = useClubsPerSession();
   const selectedMetric = formMethods.watch("metric");
@@ -37,7 +68,7 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
           setGoals((goals) => [
             ...goals,
             {
-              id: (goals.length + 1).toString(),
+              id: crypto.randomUUID(),
               title: data.title,
               target: data.target,
               metric: data.metric,

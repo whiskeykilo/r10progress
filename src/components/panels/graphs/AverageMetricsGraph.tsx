@@ -29,31 +29,35 @@ export const AverageMetricsGraph = ({
     type: "bar",
     data: sessions.map((sessionLabel) => {
       const match = data.find(
-        (d) =>
-          d.club === club &&
-          d.x &&
-          d.x === sessionLabel,
+        (d) => d.club === club && d.x && d.x === sessionLabel,
       );
       return match?.y ?? null;
     }),
   }));
 
   const options: echarts.EChartsOption = {
-    grid: { ...chartOptionsGrid, bottom: "25%" },
+    grid: {
+      ...chartOptionsGrid,
+      bottom: hasClubData ? 45 : 46,
+    },
     tooltip: {
       trigger: "axis",
       formatter: (params: any) => {
         const session = params?.[0]?.axisValueLabel;
         const rows = (params as any[])
           .filter((p) => p.value !== null && p.value !== undefined)
-          .map((p) => `${p.seriesName}: ${formatAxisValue(p.value, metricUnit)}`);
+          .map(
+            (p) => `${p.seriesName}: ${formatAxisValue(p.value, metricUnit)}`,
+          );
         return [`Session: ${session}`, ...rows].join("<br/>");
       },
     },
     xAxis: {
       type: "category",
-      name: "Session",
       data: sessions,
+      axisLabel: {
+        show: false,
+      },
     },
     yAxis: {
       type: "value",
@@ -66,7 +70,8 @@ export const AverageMetricsGraph = ({
     legend: {
       show: !!hasClubData,
       orient: "horizontal",
-      top: "75%",
+      type: "scroll",
+      bottom: 0,
     },
   };
 

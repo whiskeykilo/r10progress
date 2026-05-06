@@ -13,29 +13,29 @@ export const goalAtom = atom<PartialGoal[]>([]);
 export const useGoals: () => Goal[] = () => {
   const isEnglish = useIsEnglishDataset();
   const [goals, setGoals] = useAtom(goalAtom);
-  useEffect(
-    () =>
-      setGoals(
-        isEnglish
-          ? [
-              {
-                id: "1",
-                title: "Driving distance",
-                target: 200,
-                metric: "Carry Distance",
-              },
-            ]
-          : [
-              {
-                id: "1",
-                title: "Driving distance",
-                target: 200,
-                metric: "Gesamtstrecke",
-              },
-            ],
-      ),
-    [isEnglish, setGoals],
-  );
+  useEffect(() => {
+    if (goals.length > 0) return;
+
+    setGoals(
+      isEnglish
+        ? [
+          {
+            id: "1",
+            title: "Driving distance",
+            target: 200,
+            metric: "Carry Distance",
+          },
+        ]
+        : [
+          {
+            id: "1",
+            title: "Driving distance",
+            target: 200,
+            metric: "Gesamtstrecke",
+          },
+        ],
+    );
+  }, [goals.length, isEnglish, setGoals]);
   const averages = useAveragedSwings();
   const unitSetting = useUnit();
 
@@ -45,7 +45,7 @@ export const useGoals: () => Goal[] = () => {
   ) => {
     const current =
       averages.find((average) => average.name === "Driver")?.[
-        "Carry Distance"
+      "Carry Distance"
       ] ||
       averages.find((average) => average.name === "Driver")?.["Gesamtstrecke"];
 

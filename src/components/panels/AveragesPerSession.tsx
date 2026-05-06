@@ -1,7 +1,8 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { SessionContext } from "../../provider/SessionContext";
-import { GolfSwingData } from "../../types/GolfSwingData";
+import { GolfSwingData, nonNumericGolfSwingDataKeys } from "../../types/GolfSwingData";
 import { useAveragePerSession } from "../../utils/calculateAverages";
+import { getAllDataFromSession } from "../../utils/getAllDataFromSession";
 import { getPairsForYfield } from "../../utils/utils";
 import { BaseLabel } from "../base/BaseLabel";
 import { BaseListbox } from "../base/BaseListbox";
@@ -21,12 +22,28 @@ export const AveragesPerSession = () => {
   const { sessions } = useContext(SessionContext);
 
   const fields = useMemo(() => {
-    if (sessions) {
-      return Object.keys(sessions).length > 0
-        ? Object.keys(sessions[Object.keys(sessions)[0]]?.results?.[0])
-        : [];
-    }
-    return [];
+    if (!sessions) return [];
+
+    const allData = getAllDataFromSession(sessions);
+    if (allData.length === 0) return [];
+
+    const allKeys = new Set<string>();
+    allData.forEach((row) => {
+      Object.keys(row).forEach((key) => allKeys.add(key));
+    });
+
+    return Array.from(allKeys)
+      .filter(
+        (field) =>
+          !nonNumericGolfSwingDataKeys.includes(field as keyof GolfSwingData),
+      )
+      .filter((field) =>
+        allData.some((row) => {
+          const value = row[field as keyof GolfSwingData];
+          return typeof value === "number" && Number.isFinite(value);
+        }),
+      )
+      .sort((a, b) => a.localeCompare(b));
   }, [sessions]);
 
   useEffect(() => {
@@ -46,11 +63,11 @@ export const AveragesPerSession = () => {
 
   return (
     <div className="flex h-auto w-full flex-col gap-3 rounded-xl bg-white p-4 dark:bg-gray-800">
-      <h4 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">
-        Averages per Session
-      </h4>
-      <div className="relative block h-[600px] w-full">
-        <div className="absolute right-2 top-2 z-10 w-full max-w-56 rounded-md bg-white/90 p-2 shadow-sm backdrop-blur-sm dark:bg-gray-800/90">
+      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+          Averages
+        </h4>
+        <div className="w-full sm:max-w-56">
           <BaseLabel>Choose the fields to display</BaseLabel>
           <BaseListbox
             options={fields}
@@ -59,6 +76,8 @@ export const AveragesPerSession = () => {
             valueText={yField as string}
           />
         </div>
+      </div>
+      <div className="block h-[560px] w-full">
         <AverageMetricsGraph metric={yField} data={data} />
       </div>
     </div>

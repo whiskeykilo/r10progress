@@ -32,19 +32,9 @@ const navigation: NavType[] = [
     icon: HomeIcon,
   },
   {
-    name: "Upload",
-    href: dashboardRoutes.upload,
-    icon: ArrowUpTrayIcon,
-  },
-  {
     name: "Club Distances",
     href: dashboardRoutes.visualization,
     icon: ChartBarSquareIcon,
-  },
-  {
-    name: "Sessions",
-    href: dashboardRoutes.sessions,
-    icon: FolderIcon,
   },
   {
     name: "Goals",
@@ -55,6 +45,16 @@ const navigation: NavType[] = [
     name: "AI Analysis",
     href: dashboardRoutes.aiAnalysis,
     icon: BeakerIcon,
+  },
+  {
+    name: "Sessions",
+    href: dashboardRoutes.sessions,
+    icon: FolderIcon,
+  },
+  {
+    name: "Upload",
+    href: dashboardRoutes.upload,
+    icon: ArrowUpTrayIcon,
   },
 ];
 

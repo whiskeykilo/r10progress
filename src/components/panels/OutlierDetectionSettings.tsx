@@ -62,7 +62,7 @@ export const OutlierDetectionSettings = () => {
   const { settings, setSettings } = useSettings();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mt-2 flex flex-col gap-4 pt-2">
       <Toggle
         checked={settings.useIQR}
         onChange={(val) => setSettings((prev) => ({ ...prev, useIQR: val }))}
