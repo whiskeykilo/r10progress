@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { DispersionGraphs } from "../components/DispersionGraphs";
 import { AveragesPerSession } from "../components/panels/AveragesPerSession";
+import { PreRoundSummary } from "../components/panels/PreRoundSummary";
 import { ShotScatterPlot } from "../components/panels/ShotScatterPlot";
 import { useSelectedSessions } from "../hooks/useSelectedSessions";
 import { dashboardRoutes } from "../routes";
@@ -11,6 +12,7 @@ export const Dashboard = () => {
     <BasePageLayout title="Dashboard">
       <NoSessionSelectedHint />
       <div className="flex flex-col gap-6">
+        <PreRoundSummary />
         <DispersionGraphs />
         <AveragesPerSession />
         <ShotScatterPlot />

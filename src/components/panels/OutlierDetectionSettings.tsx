@@ -78,6 +78,14 @@ export const OutlierDetectionSettings = () => {
         label="Above-average shots only"
         description="Only include shots that are above your average"
       />
+      <Toggle
+        checked={settings.useShotQualityFilter}
+        onChange={(val) =>
+          setSettings((prev) => ({ ...prev, useShotQualityFilter: val }))
+        }
+        label="Shot quality filter"
+        description="Exclude obvious miss-hits using smash factor and carry consistency checks"
+      />
     </div>
   );
 };

@@ -21,6 +21,8 @@ async function migrate(db: Client) {
       filename TEXT PRIMARY KEY,
       results  TEXT NOT NULL,
       display_name TEXT,
+      tags TEXT,
+      notes TEXT,
       created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
     );
 
@@ -57,6 +59,14 @@ async function migrate(db: Client) {
   );
   if (!hasDisplayName) {
     await db.execute("ALTER TABLE sessions ADD COLUMN display_name TEXT");
+  }
+  const hasTags = sessionCols.rows.some((r) => r.name === "tags");
+  if (!hasTags) {
+    await db.execute("ALTER TABLE sessions ADD COLUMN tags TEXT");
+  }
+  const hasNotes = sessionCols.rows.some((r) => r.name === "notes");
+  if (!hasNotes) {
+    await db.execute("ALTER TABLE sessions ADD COLUMN notes TEXT");
   }
   await db.execute(
     "CREATE INDEX IF NOT EXISTS idx_reports_input_hash ON reports(input_hash)",

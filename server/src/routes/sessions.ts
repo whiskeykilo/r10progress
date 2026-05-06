@@ -8,13 +8,24 @@ const router = Router();
 router.get("/", async (_req, res) => {
   const db = await getDb();
   const result = await db.execute(
-    "SELECT filename, display_name, results, created_at FROM sessions ORDER BY created_at DESC",
+    "SELECT filename, display_name, tags, notes, results, created_at FROM sessions ORDER BY created_at DESC",
   );
 
   const sessions: Record<string, unknown> = {};
   for (const row of result.rows) {
     sessions[row.filename as string] = {
       display_name: (row.display_name as string | null) ?? undefined,
+      tags: (() => {
+        const value = row.tags as string | null;
+        if (!value) return [];
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      })(),
+      notes: (row.notes as string | null) ?? "",
       results: JSON.parse(row.results as string),
       created_at: row.created_at,
     };
@@ -37,8 +48,14 @@ router.post("/:filename", async (req, res) => {
     filename,
   );
   await db.execute({
-    sql: "INSERT OR REPLACE INTO sessions (filename, display_name, results) VALUES (?, ?, ?)",
-    args: [filename, displayName, JSON.stringify(body.data.results)],
+    sql: "INSERT OR REPLACE INTO sessions (filename, display_name, tags, notes, results) VALUES (?, ?, ?, ?, ?)",
+    args: [
+      filename,
+      displayName,
+      JSON.stringify([]),
+      "",
+      JSON.stringify(body.data.results),
+    ],
   });
   res.json({ ok: true, display_name: displayName });
 });
@@ -98,6 +115,36 @@ router.patch("/:filename", async (req, res) => {
     return;
   }
   res.json({ ok: true });
+});
+
+router.patch("/:filename/meta", async (req, res) => {
+  const { filename } = req.params;
+  const body = z
+    .object({
+      tags: z.array(z.string().trim()).optional(),
+      notes: z.string().optional(),
+    })
+    .safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "Invalid body" });
+    return;
+  }
+
+  const tags = body.data.tags?.map((tag) => tag.trim()).filter(Boolean) ?? [];
+  const notes = body.data.notes?.trim() ?? "";
+
+  const db = await getDb();
+  const result = await db.execute({
+    sql: "UPDATE sessions SET tags = ?, notes = ? WHERE filename = ?",
+    args: [JSON.stringify(tags), notes, filename],
+  });
+
+  if (result.rowsAffected === 0) {
+    res.status(404).json({ error: "Session not found" });
+    return;
+  }
+
+  res.json({ ok: true, tags, notes });
 });
 
 export default router;

@@ -5,6 +5,8 @@ export type Session = {
   selected: boolean;
   date: string;
   displayName?: string;
+  tags?: string[];
+  notes?: string;
 };
 export type Sessions = {
   [key: string]: Session;

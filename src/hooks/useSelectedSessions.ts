@@ -2,7 +2,11 @@ import { useContext } from "react";
 import { SessionContext } from "../provider/SessionContext";
 import { SettingsContext } from "../provider/SettingsContext";
 import { Sessions } from "../types/Sessions";
-import { dropOutliers, getAboveAverageShots } from "../utils/calculateAverages";
+import {
+  dropOutliers,
+  filterShotsByQuality,
+  getAboveAverageShots,
+} from "../utils/calculateAverages";
 import { applyRangeBallCompensationToShots } from "../utils/rangeBallCompensation";
 
 export const useSelectedSessions = () => {
@@ -27,6 +31,9 @@ export const useSelectedSessionsWithSettings = () => {
     }
     if (settings.useAboveAverageShots) {
       results = getAboveAverageShots(results);
+    }
+    if (settings.useShotQualityFilter) {
+      results = filterShotsByQuality(results);
     }
 
     acc[session.date] = { ...session, results };

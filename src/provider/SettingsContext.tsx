@@ -13,6 +13,7 @@ import { UserContext } from "./UserContext";
 export type SettingsType = {
   useIQR: boolean;
   useAboveAverageShots: boolean;
+  useShotQualityFilter: boolean;
   unit: "meters" | "yards";
   applyRangeBallCompensation: boolean;
   rangeBallCompensation: {
@@ -32,6 +33,7 @@ interface SettingsContextProps {
 const DEFAULT_SETTINGS: SettingsType = {
   useIQR: false,
   useAboveAverageShots: false,
+  useShotQualityFilter: false,
   unit: "yards",
   applyRangeBallCompensation: false,
   rangeBallCompensation: {

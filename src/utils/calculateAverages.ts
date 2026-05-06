@@ -8,6 +8,7 @@ import { translateSwingsToEnglish } from "./csvLocalization";
 import {
   getCarryDistance,
   getClubName,
+  getSmashFactor,
   getTotalDeviationDistance,
   getTotalDistance,
 } from "./golfSwingData.helpers";
@@ -82,97 +83,101 @@ export const calculateAverages: (
   calculateWithIqr = false,
   useAboveAverageShots = false,
 ) => {
-  if (input) {
-    const sessions = Object.keys(input).map((key) => ({
-      ...input[key],
-      results: applyRangeBallCompensationToShots(
-        translateSwingsToEnglish(input[key].results),
-        settings ?? {
-          useIQR: false,
-          useAboveAverageShots: false,
-          unit: "yards",
-          applyRangeBallCompensation: false,
-          rangeBallCompensation: {
-            wedges: 1.05,
-            shortIrons: 1.06,
-            midLongIrons: 1.07,
-            hybridsWoodsDriver: 1.08,
+    if (input) {
+      const sessions = Object.keys(input).map((key) => ({
+        ...input[key],
+        results: applyRangeBallCompensationToShots(
+          translateSwingsToEnglish(input[key].results),
+          settings ?? {
+            useIQR: false,
+            useAboveAverageShots: false,
+            useShotQualityFilter: false,
+            unit: "yards",
+            applyRangeBallCompensation: false,
+            rangeBallCompensation: {
+              wedges: 1.05,
+              shortIrons: 1.06,
+              midLongIrons: 1.07,
+              hybridsWoodsDriver: 1.08,
+            },
           },
-        },
-      ),
-    }));
-    const filteredSessions = sessions
-      .filter((session) => session.selected && session.results?.length > 0)
-      .map((session) => {
-        let results = session.results;
-        if (calculateWithIqr) {
-          results = dropOutliers(results);
-        }
-        if (useAboveAverageShots) {
-          results = getAboveAverageShots(results);
-        }
-        return { ...session, results };
-      });
-
-    const metricValuesByClub: Record<string, Record<string, number[]>> = {};
-    const clubCounts: Record<string, number> = {};
-
-    for (const session of filteredSessions) {
-      for (const swing of session.results) {
-        const club = getClubName(swing);
-        if (!club) continue;
-
-        clubCounts[club] = (clubCounts[club] ?? 0) + 1;
-        if (!metricValuesByClub[club]) {
-          metricValuesByClub[club] = {};
-        }
-
-        for (const [key, value] of Object.entries(swing)) {
-          if (
-            key === "Schlägername" ||
-            typeof value !== "number" ||
-            isNaN(value)
-          ) {
-            continue;
+        ),
+      }));
+      const filteredSessions = sessions
+        .filter((session) => session.selected && session.results?.length > 0)
+        .map((session) => {
+          let results = session.results;
+          if (calculateWithIqr) {
+            results = dropOutliers(results);
           }
-          if (!metricValuesByClub[club][key]) {
-            metricValuesByClub[club][key] = [];
+          if (useAboveAverageShots) {
+            results = getAboveAverageShots(results);
           }
-          metricValuesByClub[club][key].push(value);
+          if (settings?.useShotQualityFilter) {
+            results = filterShotsByQuality(results);
+          }
+          return { ...session, results };
+        });
+
+      const metricValuesByClub: Record<string, Record<string, number[]>> = {};
+      const clubCounts: Record<string, number> = {};
+
+      for (const session of filteredSessions) {
+        for (const swing of session.results) {
+          const club = getClubName(swing);
+          if (!club) continue;
+
+          clubCounts[club] = (clubCounts[club] ?? 0) + 1;
+          if (!metricValuesByClub[club]) {
+            metricValuesByClub[club] = {};
+          }
+
+          for (const [key, value] of Object.entries(swing)) {
+            if (
+              key === "Schlägername" ||
+              typeof value !== "number" ||
+              isNaN(value)
+            ) {
+              continue;
+            }
+            if (!metricValuesByClub[club][key]) {
+              metricValuesByClub[club][key] = [];
+            }
+            metricValuesByClub[club][key].push(value);
+          }
         }
       }
-    }
 
-    const clubs: AveragedSwing[] = Object.entries(metricValuesByClub).map(
-      ([club, metrics]) => {
-        const averaged: Record<string, number | string> = {
-          name: club,
-          count: clubCounts[club] ?? 0,
-        };
+      const clubs: AveragedSwing[] = Object.entries(metricValuesByClub).map(
+        ([club, metrics]) => {
+          const averaged: Record<string, number | string> = {
+            name: club,
+            count: clubCounts[club] ?? 0,
+          };
 
-        for (const [key, values] of Object.entries(metrics)) {
-          if (values.length === 0) {
-            averaged[key] = 0;
-            continue;
-          }
-          averaged[key] =
-            Math.round(
-              (values.reduce((acc, curr) => acc + curr, 0) / values.length) *
+          for (const [key, values] of Object.entries(metrics)) {
+            if (values.length === 0) {
+              averaged[key] = 0;
+              continue;
+            }
+            averaged[key] =
+              Math.round(
+                (values.reduce((acc, curr) => acc + curr, 0) / values.length) *
                 100,
-            ) / 100;
-        }
+              ) / 100;
+          }
 
-        return averaged as unknown as AveragedSwing;
-      },
-    );
+          return averaged as unknown as AveragedSwing;
+        },
+      );
 
-    // Flatten to an array with the club name as key
-    const sortedClubs = clubs.sort(sortClubs);
+      // Flatten to an array with the club name as key
+      const sortedClubs = clubs.sort(sortClubs);
 
-    return sortedClubs;
-  }
-  return [];
-};
+      return sortedClubs;
+    }
+    return [];
+  };
 
 // Sort irons, woods, and hybrids by their number
 // Put wedges first
@@ -318,6 +323,68 @@ export const getAboveAverageShots = (swings: GolfSwingData[]) => {
   });
 
   return filteredSwings;
+};
+
+const MIN_IRON_SMASH = 1.2;
+const MIN_GROUP_SIZE = 4;
+const MAX_STDDEV_FROM_MEAN = 2;
+
+export const filterShotsByQuality = (swings: GolfSwingData[]) => {
+  const carryByClub: Record<string, number[]> = {};
+
+  swings.forEach((shot) => {
+    const club = getClubName(shot);
+    const carry = getCarryDistance(shot);
+    if (!club || typeof carry !== "number" || !Number.isFinite(carry)) return;
+    if (!carryByClub[club]) {
+      carryByClub[club] = [];
+    }
+    carryByClub[club].push(carry);
+  });
+
+  const statsByClub = Object.fromEntries(
+    Object.entries(carryByClub).map(([club, carries]) => {
+      const mean =
+        carries.reduce((sum, value) => sum + value, 0) / carries.length;
+      const variance =
+        carries.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+        carries.length;
+      return [
+        club,
+        { mean, stdDev: Math.sqrt(variance), count: carries.length },
+      ];
+    }),
+  );
+
+  return swings.filter((shot) => {
+    const club = getClubName(shot);
+    if (!club) return false;
+
+    const smash = getSmashFactor(shot);
+    const isIron = /\biron\b/i.test(club);
+    if (
+      isIron &&
+      typeof smash === "number" &&
+      Number.isFinite(smash) &&
+      smash < MIN_IRON_SMASH
+    ) {
+      return false;
+    }
+
+    const carry = getCarryDistance(shot);
+    const stats = statsByClub[club];
+    if (
+      typeof carry !== "number" ||
+      !Number.isFinite(carry) ||
+      !stats ||
+      stats.count < MIN_GROUP_SIZE ||
+      stats.stdDev === 0
+    ) {
+      return true;
+    }
+
+    return Math.abs(carry - stats.mean) <= MAX_STDDEV_FROM_MEAN * stats.stdDev;
+  });
 };
 
 /**

@@ -3,6 +3,8 @@ import { useBestShots } from "../../utils/calculateAverages";
 import { BaseLabel } from "../base/BaseLabel";
 import { BaseListbox } from "../base/BaseListbox";
 import { ClubStats } from "../ClubStats";
+import { ClubTrendChart } from "./graphs/ClubTrendChart";
+import { GappingChart } from "./graphs/GappingChart";
 import { MetricTrendCard } from "./MetricTrendCard";
 
 const toClubAnchorId = (clubName: string) =>
@@ -66,6 +68,17 @@ export const ClubDistances = () => {
   return (
     <div className="relative flex flex-col gap-4">
       <MetricTrendCard title="Trends" />
+      <div className="rounded-xl bg-white p-4 dark:bg-gray-800">
+        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          Gapping Chart
+        </h4>
+        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+          Compare average carry gaps between clubs to spot overlaps and missing
+          yardages.
+        </p>
+        <GappingChart />
+      </div>
+      <ClubTrendChart />
       <div className="rounded-xl bg-white p-4 dark:bg-gray-800">
         <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Club Distance Averages

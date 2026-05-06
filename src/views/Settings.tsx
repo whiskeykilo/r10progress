@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { SessionList } from "../components/SessionList";
 import { BasePageLayout } from "../components/base/BasePageLayout";
+import { CoachSharePanel } from "../components/panels/CoachSharePanel";
 import { OutlierDetectionSettings } from "../components/panels/OutlierDetectionSettings";
 import { RangeBallCompensationSettings } from "../components/panels/RangeBallCompensationSettings";
 import { UnitSettings } from "../components/panels/UnitSettings";
@@ -67,6 +68,10 @@ export const Settings = () => {
 
         <SettingCard title="Sessions">
           <SessionList />
+        </SettingCard>
+
+        <SettingCard title="Coach Share">
+          <CoachSharePanel />
         </SettingCard>
 
         <footer className="mt-2 flex justify-center">

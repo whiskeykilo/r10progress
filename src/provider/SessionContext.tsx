@@ -31,6 +31,10 @@ export interface SessionContextInterface {
     row: GolfSwingData,
   ) => Promise<void>;
   regenerateSessionName: (id: string) => Promise<void>;
+  updateSessionMetadata: (
+    id: string,
+    meta: { tags: string[]; notes: string },
+  ) => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextInterface>({
@@ -42,6 +46,7 @@ const SessionContext = createContext<SessionContextInterface>({
   deleteSession: () => Promise.resolve(),
   deleteRowFromSession: () => Promise.resolve(),
   regenerateSessionName: () => Promise.resolve(),
+  updateSessionMetadata: () => Promise.resolve(),
   exportSessionsToJson: () => {},
 });
 
@@ -59,13 +64,18 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const raw =
-        await apiGet<
-          Record<
-            string,
-            { results: unknown[]; created_at: number; display_name?: string }
-          >
-        >("/api/sessions");
+      const raw = await apiGet<
+        Record<
+          string,
+          {
+            results: unknown[];
+            created_at: number;
+            display_name?: string;
+            tags?: string[];
+            notes?: string;
+          }
+        >
+      >("/api/sessions");
       const sessionResult: Sessions = {};
       for (const [filename, data] of Object.entries(raw)) {
         const session = reduceSessionToDefinedValues({
@@ -76,6 +86,8 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
           selected: true,
           date: getDateFromResults(session.results),
           displayName: data.display_name,
+          tags: data.tags ?? [],
+          notes: data.notes ?? "",
         };
       }
       setSessionsCallback(sessionResult);
@@ -149,6 +161,24 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     [setSessions],
   );
 
+  const updateSessionMetadata = useCallback(
+    async (id: string, meta: { tags: string[]; notes: string }) => {
+      const response = await apiPatch<{ tags?: string[]; notes?: string }>(
+        `/api/sessions/${encodeURIComponent(id)}/meta`,
+        meta,
+      );
+      setSessions((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          tags: response.tags ?? meta.tags,
+          notes: response.notes ?? meta.notes,
+        },
+      }));
+    },
+    [setSessions],
+  );
+
   const memoizedValue = useMemo(
     () => ({
       initialized,
@@ -160,6 +190,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       exportSessionsToJson,
       deleteRowFromSession,
       regenerateSessionName,
+      updateSessionMetadata,
     }),
     [
       initialized,
@@ -171,6 +202,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       exportSessionsToJson,
       deleteRowFromSession,
       regenerateSessionName,
+      updateSessionMetadata,
     ],
   );
 

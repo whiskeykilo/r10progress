@@ -4,6 +4,14 @@ const MODEL = "gpt-5.4-nano";
 const MAX_COMPLETION_TOKENS = 64;
 
 type ShotRecord = Record<string, unknown>;
+type ClubClass =
+  | "Wedges"
+  | "Short Irons"
+  | "Long Irons"
+  | "Hybrids"
+  | "Woods"
+  | "Driver"
+  | "Putter";
 
 function getStringField(
   shot: ShotRecord,
@@ -24,12 +32,17 @@ function getStringField(
 
 function buildSessionSummary(results: ShotRecord[]): string {
   const clubs = new Map<string, number>();
+  const clubClasses = new Map<ClubClass, number>();
   const dateCounts = new Map<string, number>();
 
   for (const shot of results) {
     const club = getStringField(shot, ["clubType", "club type", "club"]);
     if (club) {
       clubs.set(club, (clubs.get(club) ?? 0) + 1);
+      const clubClass = getClubClass(club);
+      if (clubClass) {
+        clubClasses.set(clubClass, (clubClasses.get(clubClass) ?? 0) + 1);
+      }
     }
 
     const parsedDate = parseShotDate(
@@ -44,6 +57,15 @@ function buildSessionSummary(results: ShotRecord[]): string {
     .sort((a, b) => b[1] - a[1])
     .map(([club, count]) => `${club} (${count})`)
     .join(", ");
+  const classesByCount = [...clubClasses.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([clubClass, count]) => `${clubClass} (${count})`)
+    .join(", ");
+  const topClassCombo = [...clubClasses.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([clubClass]) => clubClass)
+    .join(" & ");
 
   const clubCount = clubs.size;
   const sessionDate =
@@ -54,7 +76,37 @@ function buildSessionSummary(results: ShotRecord[]): string {
     `total_shots=${results.length}`,
     `unique_clubs=${clubCount}`,
     `clubs_hit=${clubsByCount || "unknown"}`,
+    `club_classes_hit=${classesByCount || "unknown"}`,
+    `primary_class_combo=${topClassCombo || "unknown"}`,
   ].join("; ");
+}
+
+function getClubClass(club: string): ClubClass | null {
+  const normalized = club.trim().toLowerCase();
+  if (!normalized) return null;
+
+  if (normalized.includes("driver")) return "Driver";
+  if (normalized.includes("wood")) return "Woods";
+  if (normalized.includes("hybrid") || normalized.includes("rescue")) {
+    return "Hybrids";
+  }
+
+  if (
+    normalized.includes("wedge") ||
+    /\b(lw|sw|gw|aw|pw)\b/.test(normalized)
+  ) {
+    return "Wedges";
+  }
+
+  if (/^\d+\s*i$/.test(normalized) || /^\d+\s*iron$/.test(normalized)) {
+    const ironNumber = Number.parseInt(normalized, 10);
+    if (Number.isFinite(ironNumber)) {
+      return ironNumber <= 6 ? "Long Irons" : "Short Irons";
+    }
+  }
+
+  if (normalized.includes("putter")) return "Putter";
+  return null;
 }
 
 function parseShotDate(value: string | undefined): string | null {
@@ -149,6 +201,8 @@ actually label it in their notes - not corporate or AI-flavored.
 Use these patterns:
 - "Wedge Work – Mar 15" (only wedges hit)
 - "Driver + Woods – Apr 2" (only long clubs)
+- "Wedges & Driver – Apr 2" (two club classes touched)
+- "Woods & Long Irons – Apr 2" (two class combo from mixed long clubs)
 - "7i Session – Apr 2" (single club)
 - "Full Bag – Mar 15" (5+ clubs spanning wedges through driver)
 - "Iron Session – Apr 2" (mostly irons)
@@ -161,7 +215,8 @@ Rules:
 - Always append a date ("Mar 15")
 - Never use words like: Performance, Analysis, Tracking, Data, Metrics, Session Report.
 - Title case for words; club names stay in their natural form (7i, Driver, PW).
-- No emojis, no quotes, no punctuation other than the en dash before the date.
+- If exactly two meaningful club classes are prominent, prefer "Class A & Class B – Date".
+- No emojis, no quotes, and no punctuation other than ampersand in class combos and the en dash before the date.
 - Output ONLY the name, nothing else.
 
 Shot data summary:
