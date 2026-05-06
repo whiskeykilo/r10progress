@@ -30,6 +30,7 @@ export interface SessionContextInterface {
     sessionId: string,
     row: GolfSwingData,
   ) => Promise<void>;
+  regenerateSessionName: (id: string) => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextInterface>({
@@ -40,6 +41,7 @@ const SessionContext = createContext<SessionContextInterface>({
   fetchSnapshot: () => Promise.resolve(undefined),
   deleteSession: () => Promise.resolve(),
   deleteRowFromSession: () => Promise.resolve(),
+  regenerateSessionName: () => Promise.resolve(),
   exportSessionsToJson: () => {},
 });
 
@@ -59,7 +61,10 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     try {
       const raw =
         await apiGet<
-          Record<string, { results: unknown[]; created_at: number }>
+          Record<
+            string,
+            { results: unknown[]; created_at: number; display_name?: string }
+          >
         >("/api/sessions");
       const sessionResult: Sessions = {};
       for (const [filename, data] of Object.entries(raw)) {
@@ -70,6 +75,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
           ...session,
           selected: true,
           date: getDateFromResults(session.results),
+          displayName: data.display_name,
         };
       }
       setSessionsCallback(sessionResult);
@@ -126,6 +132,23 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     [sessions, setSessions],
   );
 
+  const regenerateSessionName = useCallback(
+    async (id: string) => {
+      const response = await apiPost<{ display_name?: string }>(
+        `/api/sessions/${encodeURIComponent(id)}/rename`,
+        {},
+      );
+      setSessions((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          displayName: response.display_name ?? prev[id]?.displayName,
+        },
+      }));
+    },
+    [setSessions],
+  );
+
   const memoizedValue = useMemo(
     () => ({
       initialized,
@@ -136,6 +159,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       deleteSession,
       exportSessionsToJson,
       deleteRowFromSession,
+      regenerateSessionName,
     }),
     [
       initialized,
@@ -146,6 +170,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       deleteSession,
       exportSessionsToJson,
       deleteRowFromSession,
+      regenerateSessionName,
     ],
   );
 

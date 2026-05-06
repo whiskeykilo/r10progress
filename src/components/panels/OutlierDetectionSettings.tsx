@@ -6,14 +6,32 @@ type ToggleProps = {
   onChange: (val: boolean) => void;
   label: string;
   description?: string;
+  tooltip?: string;
 };
 
-const Toggle = ({ checked, onChange, label, description }: ToggleProps) => (
+const Toggle = ({
+  checked,
+  onChange,
+  label,
+  description,
+  tooltip,
+}: ToggleProps) => (
   <div className="flex items-center justify-between gap-4">
     <div>
-      <p className="text-sm font-medium text-gray-900 dark:text-white">
-        {label}
-      </p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-medium text-gray-900 dark:text-white">
+          {label}
+        </p>
+        {tooltip && (
+          <span
+            className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-gray-300 text-xs font-semibold text-gray-500 dark:border-gray-600 dark:text-gray-300"
+            title={tooltip}
+            aria-label={tooltip}
+          >
+            ?
+          </span>
+        )}
+      </div>
       {description && (
         <p className="text-xs text-gray-500 dark:text-gray-400">
           {description}
@@ -50,6 +68,7 @@ export const OutlierDetectionSettings = () => {
         onChange={(val) => setSettings((prev) => ({ ...prev, useIQR: val }))}
         label="IQR outlier detection"
         description="Filter shots that fall outside the interquartile range"
+        tooltip="IQR stands for Interquartile Range. It hides unusually high or low shots, so your trends focus on your typical results."
       />
       <Toggle
         checked={settings.useAboveAverageShots}

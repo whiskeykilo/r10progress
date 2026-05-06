@@ -13,14 +13,6 @@ export const Dashboard = () => {
         Dashboard
       </h1>
       <NoSessionSelectedHint />
-      <div className="flex gap-4">
-        <Link to={dashboardRoutes.visualization} className="btn">
-          Go to club distances
-        </Link>
-        <Link to={dashboardRoutes.sessions} className="btn">
-          Go to shot tables
-        </Link>
-      </div>
       <div className="mt-4 flex flex-col gap-6">
         <DispersionGraphs />
         <AveragesPerSession />

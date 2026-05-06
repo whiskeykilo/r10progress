@@ -20,6 +20,7 @@ async function migrate(db: Client) {
     CREATE TABLE IF NOT EXISTS sessions (
       filename TEXT PRIMARY KEY,
       results  TEXT NOT NULL,
+      display_name TEXT,
       created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
     );
 
@@ -44,6 +45,11 @@ async function migrate(db: Client) {
   const hasInputHash = cols.rows.some((r) => r.name === "input_hash");
   if (!hasInputHash) {
     await db.execute("ALTER TABLE reports ADD COLUMN input_hash TEXT");
+  }
+  const sessionCols = await db.execute("PRAGMA table_info(sessions)");
+  const hasDisplayName = sessionCols.rows.some((r) => r.name === "display_name");
+  if (!hasDisplayName) {
+    await db.execute("ALTER TABLE sessions ADD COLUMN display_name TEXT");
   }
   await db.execute(
     "CREATE INDEX IF NOT EXISTS idx_reports_input_hash ON reports(input_hash)",

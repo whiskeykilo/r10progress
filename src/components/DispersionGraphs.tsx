@@ -16,9 +16,9 @@ export const DispersionGraphs = () => (
                   <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     Shot Visualization
                   </h4>
-                  <OutlierDetectionSettings />
                 </div>
                 <AllShotsGraph />
+                <OutlierDetectionSettings />
               </div>
             ),
           },
@@ -32,9 +32,9 @@ export const DispersionGraphs = () => (
                   <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     Dispersion Circle Graph
                   </h4>
-                  <OutlierDetectionSettings />
                 </div>
                 <DispersionCirclesGraph />
+                <OutlierDetectionSettings />
               </div>
             ),
           },

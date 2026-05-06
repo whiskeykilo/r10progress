@@ -12,11 +12,15 @@ import { dashboardRoutes } from "../routes";
 // This list allows the users to see all the sessions that are available to them.
 // They can see the recorded date, the amount of shots and have an option to delete the session.
 export const SessionList = () => {
-  const { sessions, deleteSession: _deleteSession } =
-    useContext(SessionContext);
+  const {
+    sessions,
+    deleteSession: _deleteSession,
+    regenerateSessionName,
+  } = useContext(SessionContext);
 
   const [open, setOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [renamingSession, setRenamingSession] = useState<string | null>(null);
 
   const showDeletionModal = (id: string) => {
     setSessionToDelete(id);
@@ -68,7 +72,7 @@ export const SessionList = () => {
                 <div className="min-w-0">
                   <div className="flex items-start gap-x-3">
                     <p className="text-sm font-semibold leading-6 text-gray-900 dark:text-white">
-                      {session.date}
+                      {session.displayName ?? session.date}
                     </p>
                     <p className="mt-0.5 whitespace-nowrap rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-700 dark:text-gray-300">
                       {session.results.length} shots
@@ -76,6 +80,20 @@ export const SessionList = () => {
                   </div>
                 </div>
                 <div className="flex flex-none items-center gap-x-4">
+                  <button
+                    onClick={async () => {
+                      setRenamingSession(key);
+                      try {
+                        await regenerateSessionName(key);
+                      } finally {
+                        setRenamingSession(null);
+                      }
+                    }}
+                    className="app-focus-ring rounded-md bg-gray-200 px-2.5 py-1.5 text-sm text-gray-900 shadow-sm hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                    disabled={renamingSession === key}
+                  >
+                    {renamingSession === key ? "Renaming..." : "Rename"}
+                  </button>
                   <button
                     onClick={() => showDeletionModal(key)}
                     className="app-focus-ring flex gap-1 rounded-md bg-red-600 px-2.5 py-1.5 text-sm text-white shadow-sm hover:bg-red-500"

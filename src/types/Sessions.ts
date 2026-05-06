@@ -4,6 +4,7 @@ export type Session = {
   results: GolfSwingData[];
   selected: boolean;
   date: string;
+  displayName?: string;
 };
 export type Sessions = {
   [key: string]: Session;

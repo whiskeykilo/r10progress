@@ -92,9 +92,12 @@ export const SessionPicker = () => {
   const selectionDisplayText = useMemo(() => {
     if (selected.length === 0) return "None";
     if (selected.includes("All")) return "All sessions";
-    if (selected.length === 1) return selected[0];
+    if (selected.length === 1) {
+      const key = selected[0];
+      return sessions[key]?.displayName ?? key;
+    }
     return `${selected.length} sessions`;
-  }, [selected]);
+  }, [selected, sessions]);
 
   if (!sessions) {
     return <div className="flex items-center">Loading sessions...</div>;
@@ -172,7 +175,7 @@ export const SessionPicker = () => {
                           selected ? "font-medium" : "font-normal"
                         }`}
                       >
-                        {sessionKey}
+                        {sessions[sessionKey]?.displayName ?? sessionKey}
                       </span>
                       {selected ? (
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sky-600">
