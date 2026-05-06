@@ -68,6 +68,34 @@ docker run -p 8080:8080 -v r10progress-data:/data \
 
 Fork and submit a PR.
 
+### Local pre-push safety checks
+
+To reduce GitHub CI and Docker build failures before you push, run:
+
+```bash
+pnpm verify:push
+```
+
+This mirrors the CI checks:
+
+- frontend install with lockfile
+- `pnpm lint`
+- frontend typecheck (`pnpm tsc --noEmit`)
+- `pnpm test`
+- server typecheck (`pnpm --dir server tsc --noEmit`)
+- Docker image build (`docker build .`)
+
+To enforce this automatically on `git push`:
+
+```bash
+pnpm hooks:install
+```
+
+Optional skips:
+
+- `SKIP_INSTALL=1 pnpm verify:push` (skip dependency reinstall)
+- `SKIP_DOCKER=1 pnpm verify:push` (skip Docker validation)
+
 ## Support
 
 File an issue on GitHub.

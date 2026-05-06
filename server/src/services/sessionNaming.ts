@@ -91,7 +91,11 @@ function parseShotDate(value: string | undefined): string | null {
   });
 }
 
-function formatMonthDay(year: number, month: number, day: number): string | null {
+function formatMonthDay(
+  year: number,
+  month: number,
+  day: number,
+): string | null {
   if (
     !Number.isInteger(year) ||
     !Number.isInteger(month) ||
