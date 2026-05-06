@@ -76,83 +76,83 @@ export const calculateAverages: (
   calculateWithIqr = false,
   useAboveAverageShots = false,
 ) => {
-    if (input) {
-      const sessions = Object.keys(input).map((key) => ({
-        ...input[key],
-        results: translateSwingsToEnglish(input[key].results),
-      }));
-      const filteredSessions = sessions
-        .filter((session) => session.selected && session.results?.length > 0)
-        .map((session) => {
-          let results = session.results;
-          if (calculateWithIqr) {
-            results = dropOutliers(results);
-          }
-          if (useAboveAverageShots) {
-            results = getAboveAverageShots(results);
-          }
-          return { ...session, results };
-        });
+  if (input) {
+    const sessions = Object.keys(input).map((key) => ({
+      ...input[key],
+      results: translateSwingsToEnglish(input[key].results),
+    }));
+    const filteredSessions = sessions
+      .filter((session) => session.selected && session.results?.length > 0)
+      .map((session) => {
+        let results = session.results;
+        if (calculateWithIqr) {
+          results = dropOutliers(results);
+        }
+        if (useAboveAverageShots) {
+          results = getAboveAverageShots(results);
+        }
+        return { ...session, results };
+      });
 
-      const metricValuesByClub: Record<string, Record<string, number[]>> = {};
-      const clubCounts: Record<string, number> = {};
+    const metricValuesByClub: Record<string, Record<string, number[]>> = {};
+    const clubCounts: Record<string, number> = {};
 
-      for (const session of filteredSessions) {
-        for (const swing of session.results) {
-          const club = getClubName(swing);
-          if (!club) continue;
+    for (const session of filteredSessions) {
+      for (const swing of session.results) {
+        const club = getClubName(swing);
+        if (!club) continue;
 
-          clubCounts[club] = (clubCounts[club] ?? 0) + 1;
-          if (!metricValuesByClub[club]) {
-            metricValuesByClub[club] = {};
+        clubCounts[club] = (clubCounts[club] ?? 0) + 1;
+        if (!metricValuesByClub[club]) {
+          metricValuesByClub[club] = {};
+        }
+
+        for (const [key, value] of Object.entries(swing)) {
+          if (
+            key === "Schlägername" ||
+            typeof value !== "number" ||
+            isNaN(value)
+          ) {
+            continue;
           }
-
-          for (const [key, value] of Object.entries(swing)) {
-            if (
-              key === "Schlägername" ||
-              typeof value !== "number" ||
-              isNaN(value)
-            ) {
-              continue;
-            }
-            if (!metricValuesByClub[club][key]) {
-              metricValuesByClub[club][key] = [];
-            }
-            metricValuesByClub[club][key].push(value);
+          if (!metricValuesByClub[club][key]) {
+            metricValuesByClub[club][key] = [];
           }
+          metricValuesByClub[club][key].push(value);
         }
       }
-
-      const clubs: AveragedSwing[] = Object.entries(metricValuesByClub).map(
-        ([club, metrics]) => {
-          const averaged: Record<string, number | string> = {
-            name: club,
-            count: clubCounts[club] ?? 0,
-          };
-
-          for (const [key, values] of Object.entries(metrics)) {
-            if (values.length === 0) {
-              averaged[key] = 0;
-              continue;
-            }
-            averaged[key] =
-              Math.round(
-                (values.reduce((acc, curr) => acc + curr, 0) / values.length) *
-                100,
-              ) / 100;
-          }
-
-          return averaged as AveragedSwing;
-        },
-      );
-
-      // Flatten to an array with the club name as key
-      const sortedClubs = clubs.sort(sortClubs);
-
-      return sortedClubs;
     }
-    return [];
-  };
+
+    const clubs: AveragedSwing[] = Object.entries(metricValuesByClub).map(
+      ([club, metrics]) => {
+        const averaged: Record<string, number | string> = {
+          name: club,
+          count: clubCounts[club] ?? 0,
+        };
+
+        for (const [key, values] of Object.entries(metrics)) {
+          if (values.length === 0) {
+            averaged[key] = 0;
+            continue;
+          }
+          averaged[key] =
+            Math.round(
+              (values.reduce((acc, curr) => acc + curr, 0) / values.length) *
+                100,
+            ) / 100;
+        }
+
+        return averaged as unknown as AveragedSwing;
+      },
+    );
+
+    // Flatten to an array with the club name as key
+    const sortedClubs = clubs.sort(sortClubs);
+
+    return sortedClubs;
+  }
+  return [];
+};
 
 // Sort irons, woods, and hybrids by their number
 // Put wedges first

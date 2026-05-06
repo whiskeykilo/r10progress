@@ -49,25 +49,25 @@ export const useGoals: () => Goal[] = () => {
       }
     }
 
-    const defaults = isEnglish
+    const defaults: PartialGoal[] = isEnglish
       ? [
-        {
-          id: "1",
-          title: "Driving distance",
-          target: 200,
-          metric: "Carry Distance",
-          direction: "increase" as const,
-        },
-      ]
+          {
+            id: "1",
+            title: "Driving distance",
+            target: 200,
+            metric: "Carry Distance",
+            direction: "increase" as const,
+          },
+        ]
       : [
-        {
-          id: "1",
-          title: "Driving distance",
-          target: 200,
-          metric: "Gesamtstrecke",
-          direction: "increase" as const,
-        },
-      ];
+          {
+            id: "1",
+            title: "Driving distance",
+            target: 200,
+            metric: "Gesamtstrecke",
+            direction: "increase" as const,
+          },
+        ];
     setGoals(defaults);
   }, [isEnglish, setGoals]);
 
@@ -91,15 +91,15 @@ export const useGoals: () => Goal[] = () => {
       .map(
         (average) =>
           average[partialGoal.metric as keyof typeof average] as
-          | number
-          | undefined,
+            | number
+            | undefined,
       )
       .filter((value): value is number => typeof value === "number");
 
     const current =
       metricValues.length > 0
         ? metricValues.reduce((sum, value) => sum + value, 0) /
-        metricValues.length
+          metricValues.length
         : null;
 
     const direction = partialGoal.direction ?? "increase";

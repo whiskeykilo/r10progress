@@ -115,7 +115,7 @@ export const MetricTrendCard = ({
         };
       })
       .filter((value): value is NonNullable<typeof value> => value !== null)
-      .sort((a, b) => a.date.getTime() - b.date.getTime());
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     const recent = sessionValues.slice(-3);
     const previous = sessionValues.slice(-6, -3);
