@@ -3,13 +3,17 @@
 @tailwind utilities;
 
 .btn {
-  @apply rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600;
+  @apply rounded-md bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600;
 
   &.is-disabled {
     @apply pointer-events-none bg-gray-50 text-gray-600 opacity-50 hover:bg-gray-50;
   }
   &.btn-secondary {
-    @apply bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+    @apply bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600;
+  }
+
+  &.btn-danger {
+    @apply bg-red-600 hover:bg-red-500 focus-visible:outline-red-600;
   }
 }
 
@@ -21,6 +25,22 @@ input {
   &.has-error {
     @apply border-red-500;
   }
+}
+
+select {
+  @apply rounded-md border-2 border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-sky-600;
+}
+
+.app-card {
+  @apply rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800;
+}
+
+.app-card-compact {
+  @apply rounded-md bg-white p-4 shadow-sm dark:bg-gray-800;
+}
+
+.app-focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
 }
 
 // div.mt-2:nth-child(4) {

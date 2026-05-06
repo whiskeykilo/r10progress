@@ -92,7 +92,9 @@ export const Upload = () => {
 
   return (
     <BasePageLayout>
-      <h2 className="text-2xl font-bold dark:text-white">Upload Session</h2>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Upload Session
+      </h1>
 
       {step === "select" && (
         <form
@@ -103,7 +105,7 @@ export const Upload = () => {
             handleUpload();
           }}
         >
-          <p className="text-md">
+          <p className="text-base">
             Upload your CSV file exported from the Garmin Golf App.
           </p>
           <p className="text-sm text-yellow-600">
@@ -146,8 +148,8 @@ export const Upload = () => {
       {step === "uploading" && (
         <div className="flex flex-col items-center gap-4 py-8">
           <BaseLoadingSpinner />
-          <p className="text-md text-gray-600 dark:text-gray-300">
-            Uploading {filename}...
+          <p className="text-base text-gray-600 dark:text-gray-300">
+            Uploading {filename}…
           </p>
         </div>
       )}
@@ -158,7 +160,7 @@ export const Upload = () => {
           <h3 className="text-xl font-semibold text-green-700">
             Upload Successful!
           </h3>
-          <p className="text-md text-gray-600 dark:text-gray-300">
+          <p className="text-base text-gray-600 dark:text-gray-300">
             Session &ldquo;{uploadedFilename}&rdquo; has been uploaded and
             selected.
           </p>
@@ -175,7 +177,7 @@ export const Upload = () => {
 
       {step === "error" && (
         <div className="flex flex-col items-center gap-4 py-8">
-          <p className="text-md text-red-600">{error}</p>
+          <p className="text-base text-red-600">{error}</p>
           <button onClick={resetForm} className="btn">
             Try Again
           </button>

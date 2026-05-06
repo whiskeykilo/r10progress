@@ -126,11 +126,11 @@ export const AIAnalysis = () => {
                 </div>
               </div>
             ) : loadingState.analyzing || loadingState.generatingReport ? (
-              <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+              <div className="app-card">
                 <LoadingIndicator state={loadingState} />
               </div>
             ) : (
-              <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+              <div className="app-card">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Start Analysis
                 </h2>
@@ -139,7 +139,7 @@ export const AIAnalysis = () => {
                   consistency.
                 </p>
                 <button
-                  className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="app-focus-ring mt-4 inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
                   onClick={handleAnalyze}
                 >
                   Analyze My Shots

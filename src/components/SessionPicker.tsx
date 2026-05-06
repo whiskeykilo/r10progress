@@ -104,23 +104,21 @@ export const SessionPicker = () => {
     <div className="flex items-baseline gap-4">
       <Listbox multiple value={selected} onChange={handleSelectionChange}>
         <div className="relative z-20 mt-1 max-w-full flex-grow lg:flex-grow-0">
-          <Listbox.Label className="flex w-full flex-col text-sm font-medium text-gray-700 dark:text-gray-300">
-            Session Selection
-            <Listbox.Button
-              title="Select a session to filter data in the table and averages."
-              className={`relative cursor-pointer rounded-lg bg-white py-3 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-300 dark:bg-gray-800 dark:text-white sm:text-sm lg:w-full lg:min-w-64 ${isLoading ? "opacity-50" : ""}`}
-            >
-              <span className="block truncate">
-                {isLoading ? "Loading..." : selectionDisplayText}
-              </span>
-              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                <ChevronUpDownIcon
-                  className="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-              </span>
-            </Listbox.Button>
-          </Listbox.Label>
+          <Listbox.Label className="sr-only">Session Selection</Listbox.Label>
+          <Listbox.Button
+            title="Select a session to filter data in the table and averages."
+            className={`app-focus-ring relative cursor-pointer rounded-lg bg-white py-3 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm lg:w-full lg:min-w-64 ${isLoading ? "opacity-50" : ""}`}
+          >
+            <span className="block truncate">
+              {isLoading ? "Loading…" : selectionDisplayText}
+            </span>
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </span>
+          </Listbox.Button>
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"

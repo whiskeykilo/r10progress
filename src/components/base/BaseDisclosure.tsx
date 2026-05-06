@@ -12,7 +12,7 @@ export const BaseDisclosure = ({ title, children }: BaseDisclosureProps) => {
       {({ open }) => (
         <>
           <Disclosure.Button className="flex w-full justify-between rounded-lg bg-sky-100 px-4 py-2 text-left text-sm font-medium text-sky-900 hover:bg-sky-200 focus:outline-none focus-visible:ring focus-visible:ring-sky-500/75 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/50">
-            <h3 className="text-xl font-bold">{title}</h3>
+            <span className="text-xl font-bold">{title}</span>
             <ChevronUpIcon
               className={`${
                 open ? "rotate-180 transform" : ""

@@ -48,7 +48,7 @@ const AnalysisSection = ({
     recommendation: string;
   };
 }) => (
-  <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
+  <div className="app-card-compact">
     <h3 className="text-lg font-medium text-gray-900 dark:text-white">
       {title}
     </h3>
@@ -88,7 +88,7 @@ const DrillCard = ({
 }: {
   drill: AIAnalysisResult["practiceRecommendations"]["drills"][0];
 }) => (
-  <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
+  <div className="app-card-compact">
     <div className="flex items-center justify-between">
       <h3 className="text-lg font-medium text-gray-900 dark:text-white">
         {drill.name}
@@ -190,7 +190,7 @@ export const AIReport = () => {
     return (
       <BasePageLayout>
         <div className="flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-600 border-t-transparent"></div>
         </div>
       </BasePageLayout>
     );
@@ -258,7 +258,7 @@ export const AIReport = () => {
               {navState.cached && (
                 <span
                   title="Reused a previously generated report for this exact shot selection. Click Regenerate for a fresh take."
-                  className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                  className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700"
                 >
                   Cached
                 </span>
@@ -277,21 +277,21 @@ export const AIReport = () => {
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                className="app-focus-ring disabled:bg-brand-300 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed"
               >
                 {regenerating ? "Regenerating…" : "Regenerate"}
               </button>
             )}
             <button
               onClick={() => navigate(routes.aiAnalysis)}
-              className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              className="app-focus-ring rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             >
               Back to Reports
             </button>
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+        <div className="app-card">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Performance Overview
           </h2>
@@ -375,7 +375,7 @@ export const AIReport = () => {
           <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             Practice Plan
           </h2>
-          <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <div className="app-card">
             <div className="mb-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 High Priority Focus
@@ -392,7 +392,7 @@ export const AIReport = () => {
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+        <div className="app-card">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Statistical Trends
           </h2>

@@ -21,10 +21,10 @@ export const BaseTabs: React.FC<TabsProps> = ({ categories }) => {
               className={({ selected }) =>
                 clsx(
                   "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
-                  "ring-white ring-opacity-60 ring-offset-2 ring-offset-indigo-400 focus:outline-none focus:ring-2",
+                  "ring-offset-brand-400 ring-white ring-opacity-60 ring-offset-2 focus:outline-none focus:ring-2",
                   selected
-                    ? "bg-white text-indigo-700 shadow dark:bg-gray-800 dark:text-indigo-400"
-                    : "text-indigo-900 hover:bg-white dark:text-indigo-300 dark:hover:bg-gray-800",
+                    ? "dark:text-brand-400 bg-white text-brand-700 shadow dark:bg-gray-800"
+                    : "text-brand-900 dark:text-brand-300 hover:bg-white dark:hover:bg-gray-800",
                 )
               }
             >

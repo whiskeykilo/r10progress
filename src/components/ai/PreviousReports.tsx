@@ -23,10 +23,16 @@ export const PreviousReports = ({
         </p>
       ) : (
         reports.map((report) => (
-          <div
+          <button
             key={report.id}
-            className="flex cursor-pointer items-center justify-between py-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+            type="button"
+            className="flex w-full items-center justify-between rounded-md py-4 text-left hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-gray-700"
             onClick={() => onSelectReport(report)}
+            aria-label={
+              report.id === "example"
+                ? "Open example report"
+                : `Open report from ${format(new Date(report.createdAt), "PPP")}`
+            }
           >
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -42,6 +48,7 @@ export const PreviousReports = ({
               className="h-5 w-5 text-gray-400 dark:text-gray-500"
               viewBox="0 0 20 20"
               fill="currentColor"
+              aria-hidden="true"
             >
               <path
                 fillRule="evenodd"
@@ -49,7 +56,7 @@ export const PreviousReports = ({
                 clipRule="evenodd"
               />
             </svg>
-          </div>
+          </button>
         ))
       )}
     </div>

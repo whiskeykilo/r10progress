@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useId, useRef } from "react";
 import ReactDOM from "react-dom";
 import { useDarkMode } from "../../hooks/useDarkMode";
 
@@ -24,6 +24,7 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({
   items,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
   const { resolvedTheme } = useDarkMode();
   const dark = resolvedTheme === "dark";
 
@@ -38,11 +39,32 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeydown);
+    return () => document.removeEventListener("keydown", handleKeydown);
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const firstItem =
+      menuRef.current?.querySelector<HTMLButtonElement>("button");
+    firstItem?.focus();
+  }, [open]);
+
   if (!open || !position) return null;
 
   return ReactDOM.createPortal(
     <div
       ref={menuRef}
+      role="menu"
+      id={menuId}
+      aria-label="Context menu"
       style={{
         position: "fixed",
         top: position.y,
@@ -68,6 +90,7 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({
             }
           }}
           disabled={item.disabled}
+          role="menuitem"
           style={{
             display: "flex",
             alignItems: "center",

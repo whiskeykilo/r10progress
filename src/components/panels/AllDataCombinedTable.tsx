@@ -206,7 +206,7 @@ export const AllDataCombinedTable = () => {
         onClose={handleContextMenuClose}
         items={[
           {
-            label: isDeleting ? "Deleting..." : "Delete Shot",
+            label: isDeleting ? "Deleting…" : "Delete Shot",
             onClick: handleDeleteFromContextMenu,
             icon: <TrashIcon width={18} height={18} />,
             danger: true,
@@ -230,17 +230,17 @@ export const AllDataCombinedTable = () => {
             onClick={handleDeleteConfirm}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Deleting…" : "Delete"}
           </button>
         </div>
       </BaseDialog>
     </BaseDisclosure>
   ) : (
-    <p className="text-md text-sky-900">
+    <p className="text-base text-sky-900 dark:text-sky-200">
       No files uploaded yet.{" "}
       <Link
         to={dashboardRoutes.upload}
-        className="text-sky-600 underline hover:text-sky-800"
+        className="app-focus-ring rounded-sm text-sky-600 underline hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
       >
         Upload a file
       </Link>{" "}

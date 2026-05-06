@@ -5,7 +5,9 @@ import { ShotScatterPlot } from "../components/panels/ShotScatterPlot";
 
 export const Visualization = () => (
   <BasePageLayout>
-    <h2 className="text-2xl font-bold dark:text-white">Visualization</h2>
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      Visualization
+    </h1>
     <div className="flex flex-col gap-6">
       <DispersionGraphs />
       <AveragesPerSession />

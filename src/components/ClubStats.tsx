@@ -26,7 +26,7 @@ export const ClubStats = ({ average }: { average: AveragedSwing }) => {
         stat: (getSmashFactor(average) || 0).toPrecision(3),
       },
       {
-        name: "Deviation Tendance",
+        name: "Deviation Tendency",
         stat: getDeviationString(average, unit),
       },
       {
@@ -40,7 +40,6 @@ export const ClubStats = ({ average }: { average: AveragedSwing }) => {
     ],
     [average, unit],
   );
-  console.log(average);
   return (
     <div className="rounded-lg bg-white p-2 px-4 py-5 shadow dark:bg-gray-800">
       <div className="flex flex-row gap-2 ">

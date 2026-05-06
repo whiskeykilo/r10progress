@@ -7,6 +7,9 @@ import { dashboardRoutes } from "../routes";
 export const Dashboard = () => {
   return (
     <BasePageLayout>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Dashboard
+      </h1>
       <NoSessionSelectedHint />
       <div className="flex gap-4">
         <Link to={dashboardRoutes.visualization} className="btn">
@@ -27,14 +30,20 @@ const NoSessionSelectedHint = () => {
   const selectedSessions = useSelectedSessions();
   if (Object.keys(selectedSessions).length === 0) {
     return (
-      <div className="rounded-md bg-yellow-100 p-4">
-        <p className="text-lg font-semibold text-yellow-800">
+      <div className="rounded-md bg-yellow-100 p-4 dark:bg-yellow-900/30">
+        <p className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">
           No sessions selected
         </p>
-        <p className="text-sm text-yellow-800">
+        <p className="text-sm text-yellow-800 dark:text-yellow-300">
           You have not selected any sessions. Please select at least one session
           to view your averages.
         </p>
+        <Link
+          to={dashboardRoutes.sessions}
+          className="app-focus-ring mt-2 inline-block rounded-sm text-sm font-medium text-yellow-900 underline hover:text-yellow-700 dark:text-yellow-200 dark:hover:text-yellow-100"
+        >
+          Go to shot tables
+        </Link>
       </div>
     );
   }

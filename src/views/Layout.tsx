@@ -14,9 +14,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
       <header className="sticky top-0 z-20 flex flex-col gap-4 bg-sky-50 px-6 py-4">
         <div className="flex flex-row items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">r10progress</h1>
+            <p className="text-2xl font-bold text-gray-900">r10progress</p>
             {!isLoggedIn && (
-              <p className="text-md">
+              <p className="text-base text-gray-700">
                 A tool to track golf shot progress when using the Garmin
                 Approach R10.
               </p>
@@ -36,13 +36,19 @@ export const Layout = ({ children }: PropsWithChildren) => {
       </header>
       {children}
       <footer className="flex h-16 flex-row items-center justify-center gap-2 bg-sky-50 px-6 py-4">
-        <p className="text-md">
+        <p className="text-base text-gray-700 dark:text-gray-200">
           Created by{" "}
-          <a className="underline" href="https://aronschueler.de/">
+          <a
+            className="app-focus-ring rounded-sm underline"
+            href="https://aronschueler.de/"
+          >
             Aron Schüler
           </a>
         </p>
-        <a href="mailto:r10progress@lakur.tech" className="ml-2 flex underline">
+        <a
+          href="mailto:r10progress@lakur.tech"
+          className="app-focus-ring ml-2 flex rounded-sm underline"
+        >
           <EnvelopeIcon className="h-5 w-5" />
         </a>
       </footer>

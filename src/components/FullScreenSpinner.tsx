@@ -1,10 +1,10 @@
 export const FullScreenSpinner = () => (
-  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-white bg-opacity-90">
+  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-white/90 dark:bg-gray-900/90">
     <div className="flex flex-col items-center gap-4">
       <div className="">
         <svg
           aria-hidden="true"
-          className="h-16 w-16 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+          className="h-16 w-16 animate-spin fill-brand-600 text-gray-200 dark:text-gray-600"
           viewBox="0 0 100 101"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -19,7 +19,9 @@ export const FullScreenSpinner = () => (
           />
         </svg>
       </div>
-      <p className="text-lg font-semibold text-gray-900">Loading...</p>
+      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        Loading…
+      </p>
     </div>
   </div>
 );

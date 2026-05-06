@@ -30,7 +30,7 @@ export const SessionList = () => {
           No sessions found.{" "}
           <Link
             to={dashboardRoutes.upload}
-            className="text-sky-600 underline hover:text-sky-800"
+            className="app-focus-ring rounded-sm text-sky-600 underline hover:text-sky-800"
           >
             Upload a file
           </Link>{" "}
@@ -42,7 +42,9 @@ export const SessionList = () => {
 
   return (
     <div className="mt-4 ">
-      <h3 className="text-lg font-normal dark:text-white">Manage Sessions</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        Manage Sessions
+      </h3>
       <DeletionModal
         callback={async () => {
           if (sessionToDelete) {
@@ -76,7 +78,7 @@ export const SessionList = () => {
                 <div className="flex flex-none items-center gap-x-4">
                   <button
                     onClick={() => showDeletionModal(key)}
-                    className="flex gap-1 rounded-md bg-red-600 px-2.5 py-1.5 text-sm text-white shadow-sm hover:bg-red-500"
+                    className="app-focus-ring flex gap-1 rounded-md bg-red-600 px-2.5 py-1.5 text-sm text-white shadow-sm hover:bg-red-500"
                   >
                     <TrashIcon className="h-5 w-5" />
                     Delete
@@ -127,7 +129,7 @@ const DeletionModal = ({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300"
                     onClick={() => setOpen(false)}
                   >
                     <span className="sr-only">Close</span>
@@ -160,14 +162,14 @@ const DeletionModal = ({
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                    className="app-focus-ring inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                     onClick={callback}
                   >
                     Delete
                   </button>
                   <button
                     type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
+                    className="app-focus-ring mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
                     onClick={() => setOpen(false)}
                   >
                     Cancel

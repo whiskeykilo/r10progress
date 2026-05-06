@@ -34,7 +34,7 @@ export const AveragesTable = () => {
 
   if (!sessions) {
     return (
-      <p className="text-md text-sky-900">
+      <p className="text-base text-sky-900 dark:text-sky-200">
         Select a session to display data here.
       </p>
     );
