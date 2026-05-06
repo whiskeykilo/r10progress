@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useClubsPerSession } from "../hooks/useClubsPerSesssion";
 import { goalAtom } from "../hooks/useGoals";
@@ -25,13 +25,29 @@ export const GoalForm = ({
   closeAction: () => void;
   initialTitle?: string;
 }) => {
+  const createGoalId = () => {
+    if (
+      typeof crypto !== "undefined" &&
+      typeof crypto.randomUUID === "function"
+    ) {
+      return crypto.randomUUID();
+    }
+    return `goal-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+  };
+
   const formMethods = useForm<{
     title: string;
     target: number;
     club?: string;
     metric: keyof GolfSwingDataDE | keyof GolfSwingDataEN;
     direction: "increase" | "decrease";
-  }>();
+  }>({
+    defaultValues: {
+      title: initialTitle,
+      direction: "increase",
+      club: "",
+    },
+  });
 
   const isEnglish = useIsEnglishDataset();
   const unit = useUnit();
@@ -69,6 +85,15 @@ export const GoalForm = ({
   const [, setGoals] = useAtom(goalAtom);
   const clubs = useClubsPerSession();
   const selectedMetric = formMethods.watch("metric");
+
+  useEffect(() => {
+    const currentMetric = formMethods.getValues("metric");
+    if (!currentMetric && metricOptions.length > 0) {
+      formMethods.setValue("metric", metricOptions[0], {
+        shouldValidate: true,
+      });
+    }
+  }, [formMethods, metricOptions]);
   return (
     <div className="mt-4 rounded-md bg-white p-4 dark:bg-gray-800">
       <form
@@ -76,8 +101,8 @@ export const GoalForm = ({
           setGoals((goals) => [
             ...goals,
             {
-              id: crypto.randomUUID(),
-              title: data.title,
+              id: createGoalId(),
+              title: data.title.trim(),
               target: data.target,
               metric: data.metric,
               club: data.club || undefined,
@@ -160,7 +185,10 @@ export const GoalForm = ({
               golfSwingDataKeysInMeters.includes(selectedMetric) ? unit : "°"
             })`}
             aria-label="Target value"
-            {...formMethods.register("target", { required: true })}
+            {...formMethods.register("target", {
+              required: true,
+              valueAsNumber: true,
+            })}
             className="input w-full"
           />
         </div>

@@ -3,6 +3,12 @@ import { BaseLabel } from "../base/BaseLabel";
 import { BaseListbox } from "../base/BaseListbox";
 import { useAveragePerSession } from "../../utils/calculateAverages";
 import { parseDate } from "../../utils/utils";
+import {
+  GolfSwingData,
+  golfSwingDataKeysInDegrees,
+  golfSwingDataKeysInMeters,
+} from "../../types/GolfSwingData";
+import { useUnit } from "../../hooks/useUnit";
 
 type MetricTrendCardProps = {
   metric?: string;
@@ -21,6 +27,7 @@ export const MetricTrendCard = ({
   title = "Trend Snapshot",
 }: MetricTrendCardProps) => {
   const perSession = useAveragePerSession();
+  const distanceUnit = useUnit();
   const [selectedClub, setSelectedClub] = useState<string>("");
   const [selectedMetric, setSelectedMetric] = useState<string>(metric);
 
@@ -137,6 +144,11 @@ export const MetricTrendCard = ({
     return { recentAvg, previousAvg, delta, recentShots, confidence };
   }, [perSession, selectedClub, selectedMetric]);
 
+  const metricUnit = useMemo(
+    () => getMetricUnit(selectedMetric, distanceUnit),
+    [selectedMetric, distanceUnit],
+  );
+
   return (
     <div className="rounded-xl bg-white p-4 dark:bg-gray-800">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -175,19 +187,19 @@ export const MetricTrendCard = ({
         <div>
           <p className="text-gray-500 dark:text-gray-400">Recent avg (3)</p>
           <p className="font-medium text-gray-800 dark:text-gray-100">
-            {trend.recentAvg?.toFixed(2) ?? "N/A"}
+            {formatMetricValue(trend.recentAvg, metricUnit)}
           </p>
         </div>
         <div>
           <p className="text-gray-500 dark:text-gray-400">Previous avg (3)</p>
           <p className="font-medium text-gray-800 dark:text-gray-100">
-            {trend.previousAvg?.toFixed(2) ?? "N/A"}
+            {formatMetricValue(trend.previousAvg, metricUnit)}
           </p>
         </div>
         <div>
           <p className="text-gray-500 dark:text-gray-400">Delta</p>
           <p className="font-medium text-gray-800 dark:text-gray-100">
-            {trend.delta === null ? "N/A" : trend.delta.toFixed(2)}
+            {formatMetricValue(trend.delta, metricUnit)}
           </p>
         </div>
         <div>
@@ -199,4 +211,53 @@ export const MetricTrendCard = ({
       </div>
     </div>
   );
+};
+
+const getMetricUnit = (metric: string, distanceUnit: string) => {
+  if (!metric) return "";
+
+  const metricName = metric.toLowerCase();
+  if (golfSwingDataKeysInMeters.includes(metric as keyof GolfSwingData)) {
+    return distanceUnit;
+  }
+  if (golfSwingDataKeysInDegrees.includes(metric as keyof GolfSwingData)) {
+    return "deg";
+  }
+  if (metricName.includes("spin")) {
+    return "rpm";
+  }
+  if (
+    metricName.includes("speed") ||
+    metricName.includes("geschwindigkeit") ||
+    metricName.includes("snelh") ||
+    metricName.includes("velocidad")
+  ) {
+    return "mph";
+  }
+  if (metricName.includes("temperature") || metricName.includes("temperatur")) {
+    return "deg C";
+  }
+  if (
+    metricName.includes("humidity") ||
+    metricName.includes("feuchtigkeit") ||
+    metricName.includes("humedad") ||
+    metricName.includes("vochtigheid")
+  ) {
+    return "%";
+  }
+  if (
+    metricName.includes("pressure") ||
+    metricName.includes("druck") ||
+    metricName.includes("presion")
+  ) {
+    return "hPa";
+  }
+
+  return "";
+};
+
+const formatMetricValue = (value: number | null, unit: string) => {
+  if (value === null) return "N/A";
+  const baseValue = value.toFixed(2);
+  return unit ? `${baseValue} ${unit}` : baseValue;
 };

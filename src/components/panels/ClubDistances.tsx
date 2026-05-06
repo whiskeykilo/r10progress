@@ -65,7 +65,7 @@ export const ClubDistances = () => {
 
   return (
     <div className="relative flex flex-col gap-4">
-      <MetricTrendCard title="Trend & Confidence" />
+      <MetricTrendCard title="Trends" />
       <div className="rounded-xl bg-white p-4 dark:bg-gray-800">
         <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Club Distance Averages
