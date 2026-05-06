@@ -26,10 +26,58 @@ export const Upload = () => {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
     const file = event.target.files[0];
+    // #region agent log
+    fetch("http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "17fcd8",
+      },
+      body: JSON.stringify({
+        sessionId: "17fcd8",
+        runId: "pre-fix",
+        hypothesisId: "H1",
+        location: "src/views/Upload.tsx:handleFileChange",
+        message: "Upload file selected",
+        data: {
+          name: file?.name ?? null,
+          type: file?.type ?? null,
+          size: file?.size ?? null,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     try {
       if (file) {
-        if (file.type !== "text/csv" || !file.name.endsWith(".csv"))
+        if (file.type !== "text/csv" || !file.name.endsWith(".csv")) {
+          // #region agent log
+          fetch(
+            "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Debug-Session-Id": "17fcd8",
+              },
+              body: JSON.stringify({
+                sessionId: "17fcd8",
+                runId: "pre-fix",
+                hypothesisId: "H1",
+                location: "src/views/Upload.tsx:handleFileChange",
+                message: "Upload file rejected by type guard",
+                data: {
+                  name: file.name,
+                  type: file.type,
+                  endsWithCsv: file.name.endsWith(".csv"),
+                },
+                timestamp: Date.now(),
+              }),
+            },
+          ).catch(() => {});
+          // #endregion
           throw new Error("Please upload a valid CSV file.");
+        }
         setFilename(file.name);
         setError("");
         const reader = new FileReader();
@@ -41,7 +89,37 @@ export const Upload = () => {
           Papa.parse(csvData, {
             header: true,
             dynamicTyping: true,
-            complete: (results) => setCsvFile(results.data),
+            complete: (results) => {
+              // #region agent log
+              fetch(
+                "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-Debug-Session-Id": "17fcd8",
+                  },
+                  body: JSON.stringify({
+                    sessionId: "17fcd8",
+                    runId: "pre-fix",
+                    hypothesisId: "H2",
+                    location: "src/views/Upload.tsx:Papa.parse.complete",
+                    message: "CSV parsed before state update",
+                    data: {
+                      rows: results.data.length,
+                      firstRowKeys:
+                        typeof results.data[0] === "object" &&
+                        results.data[0] !== null
+                          ? Object.keys(results.data[0] as object).slice(0, 6)
+                          : [],
+                    },
+                    timestamp: Date.now(),
+                  }),
+                },
+              ).catch(() => {});
+              // #endregion
+              setCsvFile(results.data);
+            },
           });
         };
         reader.readAsText(file);
@@ -57,6 +135,31 @@ export const Upload = () => {
     try {
       const results = [...csvFile];
       results.shift();
+      // #region agent log
+      fetch(
+        "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "17fcd8",
+          },
+          body: JSON.stringify({
+            sessionId: "17fcd8",
+            runId: "pre-fix",
+            hypothesisId: "H2",
+            location: "src/views/Upload.tsx:handleUpload",
+            message: "Upload payload prepared",
+            data: {
+              filename,
+              csvRowsBeforeShift: csvFile.length,
+              csvRowsAfterShift: results.length,
+            },
+            timestamp: Date.now(),
+          }),
+        },
+      ).catch(() => {});
+      // #endregion
       await apiPost(`/api/sessions/${encodeURIComponent(filename)}`, {
         results,
       });
@@ -75,6 +178,30 @@ export const Upload = () => {
       setUploadedFilename(filename);
       setStep("success");
     } catch (err) {
+      // #region agent log
+      fetch(
+        "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "17fcd8",
+          },
+          body: JSON.stringify({
+            sessionId: "17fcd8",
+            runId: "pre-fix",
+            hypothesisId: "H3",
+            location: "src/views/Upload.tsx:handleUpload.catch",
+            message: "Upload request failed",
+            data: {
+              filename,
+              errorMessage: err instanceof Error ? err.message : String(err),
+            },
+            timestamp: Date.now(),
+          }),
+        },
+      ).catch(() => {});
+      // #endregion
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred.",
       );

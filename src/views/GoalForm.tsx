@@ -88,16 +88,67 @@ export const GoalForm = ({
 
   useEffect(() => {
     const currentMetric = formMethods.getValues("metric");
+    // #region agent log
+    fetch("http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "17fcd8",
+      },
+      body: JSON.stringify({
+        sessionId: "17fcd8",
+        runId: "pre-fix",
+        hypothesisId: "H4",
+        location: "src/views/GoalForm.tsx:useEffect(metricOptions)",
+        message: "Goal metric options evaluated",
+        data: {
+          metricOptionsCount: metricOptions.length,
+          currentMetric: currentMetric ?? null,
+          isEnglish,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     if (!currentMetric && metricOptions.length > 0) {
       formMethods.setValue("metric", metricOptions[0], {
         shouldValidate: true,
       });
     }
-  }, [formMethods, metricOptions]);
+  }, [formMethods, isEnglish, metricOptions]);
   return (
     <div className="mt-4 rounded-md bg-white p-4 dark:bg-gray-800">
       <form
         onSubmit={formMethods.handleSubmit((data) => {
+          // #region agent log
+          fetch(
+            "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Debug-Session-Id": "17fcd8",
+              },
+              body: JSON.stringify({
+                sessionId: "17fcd8",
+                runId: "pre-fix",
+                hypothesisId: "H5",
+                location: "src/views/GoalForm.tsx:onSubmit",
+                message: "Goal submission payload",
+                data: {
+                  titleRaw: data.title,
+                  titleTrimmed: data.title.trim(),
+                  target: data.target,
+                  targetIsFinite: Number.isFinite(data.target),
+                  metric: data.metric,
+                  direction: data.direction,
+                  club: data.club || null,
+                },
+                timestamp: Date.now(),
+              }),
+            },
+          ).catch(() => {});
+          // #endregion
           setGoals((goals) => [
             ...goals,
             {
