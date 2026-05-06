@@ -16,7 +16,13 @@ import { BaseContextMenu } from "../base/BaseContextMenu";
 import { BaseDialog } from "../base/BaseDialog";
 import { BaseDisclosure } from "../base/BaseDisclosure";
 
-export const AllDataCombinedTable = () => {
+type AllDataCombinedTableProps = {
+  hiddenColumns?: string[];
+};
+
+export const AllDataCombinedTable = ({
+  hiddenColumns = [],
+}: AllDataCombinedTableProps) => {
   const { sessions, deleteRowFromSession } = useContext(SessionContext);
   const { resolvedTheme } = useDarkMode();
 
@@ -99,7 +105,9 @@ export const AllDataCombinedTable = () => {
           filter: true,
         }));
       const filteredColumns = columns.filter(
-        (column) => column.field !== "Schl.gsch.",
+        (column) =>
+          column.field !== "Schl.gsch." &&
+          !hiddenColumns.includes(String(column.field)),
       ) as ColDef<GolfSwingData>[];
 
       // Add Actions column (no 'field' property to avoid type error)
@@ -133,7 +141,7 @@ export const AllDataCombinedTable = () => {
       } as any);
       setColumnDefs(filteredColumns);
     }
-  }, [sessions, isDeleting, handleDeleteClick]);
+  }, [sessions, isDeleting, handleDeleteClick, hiddenColumns]);
 
   // Custom context menu logic
   const handleCellContextMenu = useCallback(

@@ -19,7 +19,11 @@ const capitalizeFirstLetter = (s: string) => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-export const AveragesTable = () => {
+type AveragesTableProps = {
+  hiddenColumns?: string[];
+};
+
+export const AveragesTable = ({ hiddenColumns = [] }: AveragesTableProps) => {
   const { sessions } = useContext(SessionContext);
   const { resolvedTheme } = useDarkMode();
 
@@ -27,10 +31,16 @@ export const AveragesTable = () => {
 
   const columnDefs: ColDef<AveragedSwing>[] = useMemo(() => {
     if (averages?.length > 0) {
-      return getColumnDefinitions(averages);
+      return getColumnDefinitions(averages).filter(
+        (column) =>
+          !!column.field && !hiddenColumns.includes(String(column.field)),
+      );
     }
-    return defaultColumns;
-  }, [averages]);
+    return defaultColumns.filter(
+      (column) =>
+        !!column.field && !hiddenColumns.includes(String(column.field)),
+    );
+  }, [averages, hiddenColumns]);
 
   if (!sessions) {
     return (
@@ -51,8 +61,12 @@ export const AveragesTable = () => {
         <BaseLabel className="py-2">
           Averages for all sessions selected in the Session Picker.
         </BaseLabel>
-        <div style={{ height: 500 }}>
-          <AgGridReact rowData={averages} columnDefs={columnDefs} />
+        <div>
+          <AgGridReact
+            rowData={averages}
+            columnDefs={columnDefs}
+            domLayout="autoHeight"
+          />
         </div>
       </div>
     </BaseDisclosure>

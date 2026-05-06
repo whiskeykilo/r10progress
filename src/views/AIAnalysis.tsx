@@ -160,8 +160,8 @@ export const AIAnalysis = () => {
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <div className="flex flex-col gap-8">
+          <div>
             {shots.length === 0 ? (
               <div className="rounded-md bg-yellow-50 p-4">
                 <div className="flex">
@@ -232,7 +232,7 @@ export const AIAnalysis = () => {
             )}
           </div>
 
-          <div className="lg:col-span-1">
+          <div>
             <PreviousReports
               reports={previousReports}
               onSelectReport={handleSelectReport}
