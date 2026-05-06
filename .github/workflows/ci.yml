@@ -32,12 +32,12 @@ jobs:
       - name: Typecheck (frontend)
         run: pnpm tsc --noEmit
 
-      - name: Test
-        run: pnpm test
-
       - name: Install server deps
         run: pnpm install --frozen-lockfile
         working-directory: server
+
+      - name: Test
+        run: pnpm test
 
       - name: Typecheck (server)
         run: pnpm tsc --noEmit
