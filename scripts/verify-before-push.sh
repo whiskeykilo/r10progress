@@ -29,7 +29,10 @@ echo "==> Running frontend tests"
 pnpm test
 
 echo "==> Running server typecheck"
-pnpm --dir server tsc --noEmit
+(
+  cd server
+  pnpm tsc --noEmit
+)
 
 if [[ "${SKIP_DOCKER:-0}" == "1" ]]; then
   echo "==> Skipping Docker build validation (SKIP_DOCKER=1)"
