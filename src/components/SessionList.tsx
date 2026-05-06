@@ -21,6 +21,9 @@ export const SessionList = () => {
   const [open, setOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [renamingSession, setRenamingSession] = useState<string | null>(null);
+  const [renameCooldownSession, setRenameCooldownSession] = useState<
+    string | null
+  >(null);
 
   const showDeletionModal = (id: string) => {
     setSessionToDelete(id);
@@ -85,14 +88,26 @@ export const SessionList = () => {
                       setRenamingSession(key);
                       try {
                         await regenerateSessionName(key);
+                        setRenameCooldownSession(key);
+                        window.setTimeout(() => {
+                          setRenameCooldownSession((current) =>
+                            current === key ? null : current,
+                          );
+                        }, 3000);
                       } finally {
                         setRenamingSession(null);
                       }
                     }}
                     className="app-focus-ring rounded-md bg-gray-200 px-2.5 py-1.5 text-sm text-gray-900 shadow-sm hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                    disabled={renamingSession === key}
+                    disabled={
+                      renamingSession === key || renameCooldownSession === key
+                    }
                   >
-                    {renamingSession === key ? "Renaming..." : "Rename"}
+                    {renamingSession === key
+                      ? "Renaming..."
+                      : renameCooldownSession === key
+                        ? "Wait..."
+                        : "Rename"}
                   </button>
                   <button
                     onClick={() => showDeletionModal(key)}

@@ -1,13 +1,16 @@
 import * as echarts from "echarts";
+import { useUnit } from "../../../hooks/useUnit";
 import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid } from "../../base/chartOptions";
 import { useCarryAndDeviation } from "./ShotDispersionGraph.utils";
 
 export const AllShotsGraph = () => {
   const shots = useCarryAndDeviation();
+  const unit = useUnit();
 
   let maximumDeviation = Math.max(
     ...shots.shots.map((shot) => Math.abs(Number(shot.x))),
+    0,
   );
   // Round up to the nearest 10
   maximumDeviation = Math.ceil(maximumDeviation / 10) * 10;
@@ -18,21 +21,21 @@ export const AllShotsGraph = () => {
       trigger: "item",
       formatter: (params: any) => {
         return [
-          `Deviation: ${params.value[0].toFixed(2)}m`,
-          `Carry: ${params.value[1].toFixed(2)}m`,
+          `Deviation: ${params.value[0].toFixed(2)} ${unit}`,
+          `Carry: ${params.value[1].toFixed(2)} ${unit}`,
           `Club: ${params.data.club}`,
         ].join("<br/>");
       },
     },
     xAxis: {
       type: "value",
-      name: "Deviation",
+      name: `Deviation (${unit})`,
       min: -maximumDeviation,
       max: maximumDeviation,
     },
     yAxis: {
       type: "value",
-      name: "Carry",
+      name: `Carry (${unit})`,
     },
     legend: {
       orient: "horizontal",

@@ -47,6 +47,7 @@ export const useAveragedSwings = () => {
 
 export type AveragedSwingRecord = {
   date: string;
+  displayName?: string;
   averages: AveragedSwing[];
 };
 export const useAveragePerSession = () => {
@@ -56,8 +57,9 @@ export const useAveragePerSession = () => {
     if (sessions) {
       return Object.values(sessions).reduce((previousValue, currentValue) => {
         const date = currentValue.date;
+        const displayName = currentValue.displayName;
         const averages = calculateAverages({ "1": currentValue });
-        return [...previousValue, { date, averages }];
+        return [...previousValue, { date, displayName, averages }];
       }, [] as AveragedSwingRecord[]);
     }
     return [];

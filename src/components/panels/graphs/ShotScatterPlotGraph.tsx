@@ -1,4 +1,5 @@
 import { GolfSwingData } from "../../../types/GolfSwingData.ts";
+import { useUnit } from "../../../hooks/useUnit.ts";
 
 import { BaseGraph } from "../../base/BaseGraph.tsx";
 import {
@@ -18,6 +19,7 @@ export const ShotScatterPlotGraph = ({
   yField: string;
   chartData: PointWithDate[];
 }) => {
+  const unit = useUnit();
   const chartOptions: echarts.EChartsOption = {
     grid: chartOptionsGrid,
     tooltip: chartOptionsDateTooltip(xField, yField),
@@ -26,14 +28,20 @@ export const ShotScatterPlotGraph = ({
       type: "value",
       name: xField,
       axisLabel: {
-        formatter: golfSwingDataAxisFormatter(xField as keyof GolfSwingData),
+        formatter: golfSwingDataAxisFormatter(
+          xField as keyof GolfSwingData,
+          unit,
+        ),
       },
     },
     yAxis: {
       type: "value",
       name: yField,
       axisLabel: {
-        formatter: golfSwingDataAxisFormatter(yField as keyof GolfSwingData),
+        formatter: golfSwingDataAxisFormatter(
+          yField as keyof GolfSwingData,
+          unit,
+        ),
       },
     },
     series: [

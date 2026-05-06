@@ -14,6 +14,7 @@ type AnalyzeNavState = {
   shots?: Array<Record<string, unknown>>;
   filename?: string;
   cached?: boolean;
+  timeframe?: string;
 };
 
 const ScoreIndicator = ({ score }: { score: number }) => {
@@ -150,7 +151,7 @@ export const AIReport = () => {
         "/api/analyze",
         {
           shots: navState.shots,
-          timeframe: "last session",
+          timeframe: navState.timeframe ?? report?.timeframe ?? "Last 3 months",
           filename: navState.filename ?? "",
           force: true,
         },

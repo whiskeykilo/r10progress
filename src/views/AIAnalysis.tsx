@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiGet, apiPost } from "../api";
+import { apiDelete, apiGet, apiPost } from "../api";
 import { LoadingIndicator } from "../components/ai/LoadingIndicator";
 import { PreviousReports } from "../components/ai/PreviousReports";
 import { BasePageLayout } from "../components/base/BasePageLayout";
@@ -18,6 +18,14 @@ interface LoadingState {
   generatingReport: boolean;
 }
 
+type AnalysisScope = "all-selected" | "last-3-months" | "last-10-sessions";
+
+const ANALYSIS_SCOPE_LABELS: Record<AnalysisScope, string> = {
+  "all-selected": "All selected sessions",
+  "last-3-months": "Last 3 months",
+  "last-10-sessions": "Last 10 sessions",
+};
+
 export const AIAnalysis = () => {
   const navigate = useNavigate();
   const shots = useSelectedShots();
@@ -28,6 +36,8 @@ export const AIAnalysis = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [previousReports, setPreviousReports] = useState<AnalysisReport[]>([]);
+  const [analysisScope, setAnalysisScope] =
+    useState<AnalysisScope>("last-3-months");
 
   const fetchReports = async () => {
     try {
@@ -46,8 +56,60 @@ export const AIAnalysis = () => {
     navigate(`${routes.aiAnalysis}/${report.id}`);
   };
 
+  const handleDeleteReport = async (report: AnalysisReport) => {
+    const reportLabel =
+      report.id === "example"
+        ? "the example report"
+        : `the report from ${new Date(report.createdAt).toLocaleDateString()}`;
+    const confirmed = window.confirm(`Delete ${reportLabel}?`);
+    if (!confirmed) return;
+
+    if (report.id === "example") {
+      setPreviousReports((current) =>
+        current.filter((r) => r.id !== report.id),
+      );
+      return;
+    }
+
+    try {
+      await apiDelete(`/api/reports/${report.id}`);
+      setPreviousReports((current) =>
+        current.filter((r) => r.id !== report.id),
+      );
+    } catch (err) {
+      console.error("Error deleting report:", err);
+      setError("Failed to delete report. Please try again.");
+    }
+  };
+
   const handleAnalyze = async () => {
-    if (shots.length === 0) {
+    const selectedSessionEntries = Object.entries(sessions).filter(
+      ([, session]) => session.selected,
+    );
+    const sortedEntries = [...selectedSessionEntries].sort((a, b) => {
+      const dateA = new Date(a[1].date).getTime();
+      const dateB = new Date(b[1].date).getTime();
+      return dateB - dateA;
+    });
+
+    let filteredEntries = sortedEntries;
+    if (analysisScope === "last-10-sessions") {
+      filteredEntries = sortedEntries.slice(0, 10);
+    } else if (analysisScope === "last-3-months") {
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      filteredEntries = sortedEntries.filter(
+        ([, session]) => new Date(session.date) >= threeMonthsAgo,
+      );
+    }
+
+    const filteredShots = filteredEntries.flatMap(
+      ([, session]) => session.results,
+    );
+    const selectedFiles = filteredEntries.map(([filename]) => filename);
+    const timeframe = ANALYSIS_SCOPE_LABELS[analysisScope];
+
+    if (filteredShots.length === 0) {
       setError("No shots available for analysis");
       return;
     }
@@ -57,18 +119,20 @@ export const AIAnalysis = () => {
 
     try {
       setLoadingState({ analyzing: false, generatingReport: true });
-
-      const allSessions = Object.keys(sessions);
-      const selectedFiles = allSessions.filter((s) => sessions[s].selected);
       const filename = selectedFiles.join(", ");
 
       const report = await apiPost<
         AIAnalysisResult & { id: string; cached?: boolean }
-      >("/api/analyze", { shots, timeframe: "last session", filename });
+      >("/api/analyze", { shots: filteredShots, timeframe, filename });
 
       await fetchReports();
       navigate(`${routes.aiAnalysis}/${report.id}`, {
-        state: { shots, filename, cached: !!report.cached },
+        state: {
+          shots: filteredShots,
+          filename,
+          cached: !!report.cached,
+          timeframe,
+        },
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -138,6 +202,26 @@ export const AIAnalysis = () => {
                   Get detailed insights about your swing patterns and
                   consistency.
                 </p>
+                <div className="mt-4">
+                  <label
+                    htmlFor="analysis-scope"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Analysis scope
+                  </label>
+                  <select
+                    id="analysis-scope"
+                    value={analysisScope}
+                    onChange={(e) =>
+                      setAnalysisScope(e.target.value as AnalysisScope)
+                    }
+                    className="app-focus-ring mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                  >
+                    <option value="last-3-months">Last 3 months</option>
+                    <option value="last-10-sessions">Last 10 sessions</option>
+                    <option value="all-selected">All selected sessions</option>
+                  </select>
+                </div>
                 <button
                   className="app-focus-ring mt-4 inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
                   onClick={handleAnalyze}
@@ -152,6 +236,7 @@ export const AIAnalysis = () => {
             <PreviousReports
               reports={previousReports}
               onSelectReport={handleSelectReport}
+              onDeleteReport={handleDeleteReport}
               isSupporter={true}
             />
           </div>

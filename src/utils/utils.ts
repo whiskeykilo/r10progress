@@ -150,7 +150,7 @@ export const getPairsForYfield: (
   return sessions
     .map((session) =>
       session.averages.map((x) => ({
-        x: parseDate(session.date),
+        x: session.displayName?.trim() || parseDate(session.date),
         y: x[yField],
         club: x.name,
       })),

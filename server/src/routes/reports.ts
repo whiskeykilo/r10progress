@@ -41,4 +41,19 @@ router.get("/:id", async (req, res) => {
   });
 });
 
+router.delete("/:id", async (req, res) => {
+  const db = await getDb();
+  const result = await db.execute({
+    sql: "DELETE FROM reports WHERE id = ?",
+    args: [req.params.id],
+  });
+
+  if (result.rowsAffected === 0) {
+    res.status(404).json({ error: "Report not found" });
+    return;
+  }
+
+  res.status(204).send();
+});
+
 export default router;

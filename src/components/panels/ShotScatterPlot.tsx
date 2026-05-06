@@ -1,12 +1,11 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { SessionContext } from "../../provider/SessionContext.tsx";
+import { useEffect, useMemo, useState } from "react";
+import { useSelectedSessionsWithSettings } from "../../hooks/useSelectedSessions";
 import {
   GolfSwingData,
   nonNumericGolfSwingDataKeys,
 } from "../../types/GolfSwingData";
 import { getDayFromRow } from "../../utils/date.utils";
 import { getAllDataFromSession } from "../../utils/getAllDataFromSession";
-import { getClubName } from "../../utils/golfSwingData.helpers.ts";
 import { parseDate } from "../../utils/utils";
 import { BaseLabel } from "../base/BaseLabel.tsx";
 import { BaseListbox } from "../base/BaseListbox.tsx";
@@ -14,15 +13,13 @@ import { PointWithDate } from "../base/chartOptions.ts";
 import { ShotScatterPlotGraph } from "./graphs/ShotScatterPlotGraph.tsx";
 
 export const ShotScatterPlot = () => {
-  const { sessions } = useContext(SessionContext);
-  const [club, setClub] = useState<string | null>(null);
-  const combinedClubData = useCombinedClubData();
+  const sessions = useSelectedSessionsWithSettings();
 
   const [xField, setXField] = useState<keyof GolfSwingData>("Backspin");
   const [yField, setYField] = useState<keyof GolfSwingData>("Carry Distance");
 
   const fields: (keyof GolfSwingData)[] = useMemo(() => {
-    const firstSession = Object.values(sessions)?.[0];
+    const firstSession = Object.values(sessions || {})?.[0];
     const firstResult = firstSession?.results?.[0];
     const fields = firstResult ? Object.keys(firstResult) : [];
     const nonNumericFields = fields.filter(
@@ -44,18 +41,15 @@ export const ShotScatterPlot = () => {
 
   const chartData: PointWithDate[] = useMemo(() => {
     if (sessions) {
-      let clubData = getAllDataFromSession(sessions);
-      if (club && club !== "All" && combinedClubData[club]) {
-        clubData = combinedClubData[club];
-      }
-      return clubData.map((row) => ({
+      const allData = getAllDataFromSession(sessions);
+      return allData.map((row) => ({
         x: row[xField as keyof GolfSwingData],
         y: row[yField as keyof GolfSwingData],
         date: parseDate(getDayFromRow(row)),
       }));
     }
     return [];
-  }, [sessions, xField, yField, combinedClubData, club]);
+  }, [sessions, xField, yField]);
 
   if (!chartData) return null;
 
@@ -88,21 +82,6 @@ export const ShotScatterPlot = () => {
             />
           </div>
         </div>
-        <div className="h-auto w-0 border-l-2 border-gray-300 dark:border-gray-600"></div>
-        <div>
-          <BaseLabel>Choose the club to display</BaseLabel>
-          <div className="flex flex-row gap-4">
-            <BaseListbox
-              options={[
-                ...Object.keys(combinedClubData).filter((v) => !!v),
-                "All",
-              ]}
-              setOption={setClub}
-              value={club ?? ""}
-              valueText={club ?? "All"}
-            />
-          </div>
-        </div>
       </div>
       <ShotScatterPlotGraph
         yField={yField}
@@ -111,27 +90,4 @@ export const ShotScatterPlot = () => {
       />
     </div>
   );
-};
-const useCombinedClubData = () => {
-  const { sessions } = useContext(SessionContext);
-  return useMemo(() => {
-    if (sessions) {
-      const resultsByClub: { [key: string]: GolfSwingData[] } = {};
-
-      Object.values(sessions).forEach((session) => {
-        session.results.forEach((shot) => {
-          const clubName = getClubName(shot);
-          if (clubName) {
-            if (!resultsByClub[clubName]) {
-              resultsByClub[clubName] = [];
-            }
-            resultsByClub[clubName].push(shot);
-          }
-        });
-      });
-
-      return resultsByClub;
-    }
-    return {};
-  }, [sessions]);
 };
