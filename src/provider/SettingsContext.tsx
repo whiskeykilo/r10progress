@@ -14,6 +14,13 @@ export type SettingsType = {
   useIQR: boolean;
   useAboveAverageShots: boolean;
   unit: "meters" | "yards";
+  applyRangeBallCompensation: boolean;
+  rangeBallCompensation: {
+    wedges: number;
+    shortIrons: number;
+    midLongIrons: number;
+    hybridsWoodsDriver: number;
+  };
 };
 
 interface SettingsContextProps {
@@ -26,6 +33,13 @@ const DEFAULT_SETTINGS: SettingsType = {
   useIQR: false,
   useAboveAverageShots: false,
   unit: "yards",
+  applyRangeBallCompensation: false,
+  rangeBallCompensation: {
+    wedges: 1.05,
+    shortIrons: 1.06,
+    midLongIrons: 1.07,
+    hybridsWoodsDriver: 1.08,
+  },
 };
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -45,7 +59,14 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     if (!user) return;
     apiGet<SettingsType>("/api/settings")
       .then((data) => {
-        setSettings(data);
+        setSettings({
+          ...DEFAULT_SETTINGS,
+          ...data,
+          rangeBallCompensation: {
+            ...DEFAULT_SETTINGS.rangeBallCompensation,
+            ...data.rangeBallCompensation,
+          },
+        });
         initialized.current = true;
       })
       .catch(console.error)

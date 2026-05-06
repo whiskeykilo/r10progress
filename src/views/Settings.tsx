@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { SessionList } from "../components/SessionList";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { OutlierDetectionSettings } from "../components/panels/OutlierDetectionSettings";
+import { RangeBallCompensationSettings } from "../components/panels/RangeBallCompensationSettings";
 import { UnitSettings } from "../components/panels/UnitSettings";
 import { useDarkMode, type Theme } from "../hooks/useDarkMode";
 
@@ -58,6 +59,10 @@ export const Settings = () => {
 
         <SettingCard title="Outlier Detection">
           <OutlierDetectionSettings />
+        </SettingCard>
+
+        <SettingCard title="Distance Compensation">
+          <RangeBallCompensationSettings />
         </SettingCard>
 
         <SettingCard title="Sessions">

@@ -3,6 +3,7 @@ import { BaseLabel } from "../base/BaseLabel";
 import { BaseListbox } from "../base/BaseListbox";
 import { useAveragePerSession } from "../../utils/calculateAverages";
 import { parseDate } from "../../utils/utils";
+import { RangeBallBadge } from "../RangeBallBadge";
 import {
   GolfSwingData,
   golfSwingDataKeysInDegrees,
@@ -188,18 +189,21 @@ export const MetricTrendCard = ({
           <p className="text-gray-500 dark:text-gray-400">Recent avg (3)</p>
           <p className="font-medium text-gray-800 dark:text-gray-100">
             {formatMetricValue(trend.recentAvg, metricUnit)}
+            {isDistanceMetric(selectedMetric) ? <RangeBallBadge /> : null}
           </p>
         </div>
         <div>
           <p className="text-gray-500 dark:text-gray-400">Previous avg (3)</p>
           <p className="font-medium text-gray-800 dark:text-gray-100">
             {formatMetricValue(trend.previousAvg, metricUnit)}
+            {isDistanceMetric(selectedMetric) ? <RangeBallBadge /> : null}
           </p>
         </div>
         <div>
           <p className="text-gray-500 dark:text-gray-400">Delta</p>
           <p className="font-medium text-gray-800 dark:text-gray-100">
             {formatMetricValue(trend.delta, metricUnit)}
+            {isDistanceMetric(selectedMetric) ? <RangeBallBadge /> : null}
           </p>
         </div>
         <div>
@@ -261,3 +265,15 @@ const formatMetricValue = (value: number | null, unit: string) => {
   const baseValue = value.toFixed(2);
   return unit ? `${baseValue} ${unit}` : baseValue;
 };
+
+const isDistanceMetric = (metric: string) =>
+  [
+    "Carry Distance",
+    "Carry-Distanz",
+    "Dist.​vuelo",
+    "Carry-afstand",
+    "Total Distance",
+    "Gesamtstrecke",
+    "Distan​cia total",
+    "Totale afstand",
+  ].includes(metric);

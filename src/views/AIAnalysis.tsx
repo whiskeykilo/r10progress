@@ -4,6 +4,7 @@ import { apiDelete, apiGet, apiPost } from "../api";
 import { LoadingIndicator } from "../components/ai/LoadingIndicator";
 import { PreviousReports } from "../components/ai/PreviousReports";
 import { BasePageLayout } from "../components/base/BasePageLayout";
+import { useSettings } from "../provider/SettingsContext";
 import { useSelectedShots } from "../hooks/useSelectedShots";
 import { SessionContext } from "../provider/SessionContext";
 import { routes } from "../routes";
@@ -12,6 +13,7 @@ import {
   aiReportExample,
   AnalysisReport,
 } from "../utils/aiReportExample";
+import { applyRangeBallCompensationToShots } from "../utils/rangeBallCompensation";
 
 interface LoadingState {
   analyzing: boolean;
@@ -30,6 +32,7 @@ export const AIAnalysis = () => {
   const navigate = useNavigate();
   const shots = useSelectedShots();
   const { sessions } = useContext(SessionContext);
+  const { settings } = useSettings();
   const [loadingState, setLoadingState] = useState<LoadingState>({
     analyzing: false,
     generatingReport: false,
@@ -106,10 +109,14 @@ export const AIAnalysis = () => {
     const filteredShots = filteredEntries.flatMap(
       ([, session]) => session.results,
     );
+    const analysisShots = applyRangeBallCompensationToShots(
+      filteredShots,
+      settings,
+    );
     const selectedFiles = filteredEntries.map(([filename]) => filename);
     const timeframe = ANALYSIS_SCOPE_LABELS[analysisScope];
 
-    if (filteredShots.length === 0) {
+    if (analysisShots.length === 0) {
       setError("No shots available for analysis");
       return;
     }
@@ -123,12 +130,12 @@ export const AIAnalysis = () => {
 
       const report = await apiPost<
         AIAnalysisResult & { id: string; cached?: boolean }
-      >("/api/analyze", { shots: filteredShots, timeframe, filename });
+      >("/api/analyze", { shots: analysisShots, timeframe, filename });
 
       await fetchReports();
       navigate(`${routes.aiAnalysis}/${report.id}`, {
         state: {
-          shots: filteredShots,
+          shots: analysisShots,
           filename,
           cached: !!report.cached,
           timeframe,

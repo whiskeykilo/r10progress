@@ -1,5 +1,6 @@
 import { atom, useAtom } from "jotai";
 import { useEffect, useRef } from "react";
+import { apiGet, apiPut } from "../api";
 import { Goal, PartialGoal } from "../types/Goals";
 import {
   golfSwingDataKeysInDegrees,
@@ -10,7 +11,6 @@ import { useIsEnglishDataset } from "./useIsEnglishDataset.ts";
 import { useUnit } from "./useUnit.ts";
 
 export const goalAtom = atom<PartialGoal[]>([]);
-const GOALS_STORAGE_KEY = "r10progress.goals.v1";
 
 const getImplicitClub = (goal: PartialGoal) => {
   if (goal.club) return goal.club;
@@ -36,44 +36,43 @@ export const useGoals: () => Goal[] = () => {
     if (hasInitializedGoals.current || typeof window === "undefined") return;
     hasInitializedGoals.current = true;
 
-    const savedGoals = window.localStorage.getItem(GOALS_STORAGE_KEY);
-    if (savedGoals) {
-      try {
-        const parsed = JSON.parse(savedGoals) as PartialGoal[];
-        if (Array.isArray(parsed)) {
-          setGoals(parsed);
-          return;
-        }
-      } catch {
-        // fall back to defaults below
-      }
-    }
-
     const defaults: PartialGoal[] = isEnglish
       ? [
-          {
-            id: "1",
-            title: "Driving distance",
-            target: 200,
-            metric: "Carry Distance",
-            direction: "increase" as const,
-          },
-        ]
+        {
+          id: "1",
+          title: "Driving distance",
+          target: 200,
+          metric: "Carry Distance",
+          direction: "increase" as const,
+        },
+      ]
       : [
-          {
-            id: "1",
-            title: "Driving distance",
-            target: 200,
-            metric: "Gesamtstrecke",
-            direction: "increase" as const,
-          },
-        ];
-    setGoals(defaults);
+        {
+          id: "1",
+          title: "Driving distance",
+          target: 200,
+          metric: "Gesamtstrecke",
+          direction: "increase" as const,
+        },
+      ];
+
+    apiGet<PartialGoal[]>("/api/goals")
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setGoals(data);
+          return;
+        }
+        setGoals(defaults);
+      })
+      .catch(() => {
+        setGoals(defaults);
+      });
   }, [isEnglish, setGoals]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
+    if (!hasInitializedGoals.current) return;
+    apiPut("/api/goals", goals).catch(console.error);
   }, [goals]);
   const averages = useAveragedSwings();
   const unitSetting = useUnit();
@@ -91,15 +90,15 @@ export const useGoals: () => Goal[] = () => {
       .map(
         (average) =>
           average[partialGoal.metric as keyof typeof average] as
-            | number
-            | undefined,
+          | number
+          | undefined,
       )
       .filter((value): value is number => typeof value === "number");
 
     const current =
       metricValues.length > 0
         ? metricValues.reduce((sum, value) => sum + value, 0) /
-          metricValues.length
+        metricValues.length
         : null;
 
     const direction = partialGoal.direction ?? "increase";

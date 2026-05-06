@@ -1,6 +1,7 @@
 import { useContext, useMemo } from "react";
 import { SessionContext } from "../provider/SessionContext";
 import { SettingsContext } from "../provider/SettingsContext";
+import type { SettingsType } from "../provider/SettingsContext";
 import { GolfSwingData } from "../types/GolfSwingData";
 import type { Session, Sessions } from "../types/Sessions";
 import { translateSwingsToEnglish } from "./csvLocalization";
@@ -10,6 +11,7 @@ import {
   getTotalDeviationDistance,
   getTotalDistance,
 } from "./golfSwingData.helpers";
+import { applyRangeBallCompensationToShots } from "./rangeBallCompensation";
 
 const quantile = (arr: number[], q: number) => {
   const sorted = arr.sort((a, b) => a - b);
@@ -37,12 +39,13 @@ export const useAveragedSwings = () => {
     if (sessions) {
       return calculateAverages(
         sessions,
+        settings,
         settings.useIQR,
         settings.useAboveAverageShots,
       );
     }
     return [];
-  }, [sessions, settings.useIQR, settings.useAboveAverageShots]);
+  }, [sessions, settings]);
 };
 
 export type AveragedSwingRecord = {
@@ -52,34 +55,51 @@ export type AveragedSwingRecord = {
 };
 export const useAveragePerSession = () => {
   const { sessions } = useContext(SessionContext);
+  const { settings } = useContext(SettingsContext);
 
   return useMemo(() => {
     if (sessions) {
       return Object.values(sessions).reduce((previousValue, currentValue) => {
         const date = currentValue.date;
         const displayName = currentValue.displayName;
-        const averages = calculateAverages({ "1": currentValue });
+        const averages = calculateAverages({ "1": currentValue }, settings);
         return [...previousValue, { date, displayName, averages }];
       }, [] as AveragedSwingRecord[]);
     }
     return [];
-  }, [sessions]);
+  }, [sessions, settings]);
 };
 
 // Calculate averages for each club across all sessions
 export const calculateAverages: (
   input: Sessions,
+  settings?: SettingsType,
   calculateWithIqr?: boolean,
   useAboveAverageShots?: boolean,
 ) => AveragedSwing[] = (
   input,
+  settings,
   calculateWithIqr = false,
   useAboveAverageShots = false,
 ) => {
   if (input) {
     const sessions = Object.keys(input).map((key) => ({
       ...input[key],
-      results: translateSwingsToEnglish(input[key].results),
+      results: applyRangeBallCompensationToShots(
+        translateSwingsToEnglish(input[key].results),
+        settings ?? {
+          useIQR: false,
+          useAboveAverageShots: false,
+          unit: "yards",
+          applyRangeBallCompensation: false,
+          rangeBallCompensation: {
+            wedges: 1.05,
+            shortIrons: 1.06,
+            midLongIrons: 1.07,
+            hybridsWoodsDriver: 1.08,
+          },
+        },
+      ),
     }));
     const filteredSessions = sessions
       .filter((session) => session.selected && session.results?.length > 0)
@@ -306,13 +326,19 @@ export const getAboveAverageShots = (swings: GolfSwingData[]) => {
  */
 export const useBestShots = () => {
   const { sessions } = useContext(SessionContext);
+  const { settings } = useContext(SettingsContext);
 
   return useMemo(() => {
     if (sessions) {
       // Get all shots from selected sessions
       const allShots = Object.values(sessions)
         .filter((session) => session.selected)
-        .map((session) => session.results)
+        .map((session) =>
+          applyRangeBallCompensationToShots(
+            translateSwingsToEnglish(session.results),
+            settings,
+          ),
+        )
         .flat();
 
       // Group shots by club
@@ -353,7 +379,7 @@ export const useBestShots = () => {
       };
       return {
         bestShots,
-        averages: calculateAverages({ "1": dummySession }),
+        averages: calculateAverages({ "1": dummySession }, settings),
         dispersion: bestShotData.map((shot) => ({
           club: getClubName(shot.sortedShots[0]),
           ellipse: calculateDispersionEllipse(shot.sortedShots),
@@ -370,7 +396,7 @@ export const useBestShots = () => {
         },
       ],
     };
-  }, [sessions]);
+  }, [sessions, settings]);
 };
 
 const calculateDispersionRadius = (shots: GolfSwingData[]): number => {

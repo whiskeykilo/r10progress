@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { RangeBallBadge } from "./RangeBallBadge";
 import { useUnit } from "../hooks/useUnit";
 import { AveragedSwing } from "../utils/calculateAverages";
 import {
@@ -16,10 +17,12 @@ export const ClubStats = ({ average }: { average: AveragedSwing }) => {
       {
         name: "Carry",
         stat: getCarryDistance(average).toPrecision(3) + unit,
+        isDistance: true,
       },
       {
         name: "Total",
         stat: (getTotalDistance(average) || 0).toPrecision(3) + unit,
+        isDistance: true,
       },
       {
         name: "Smash Factor",
@@ -58,6 +61,7 @@ export const ClubStats = ({ average }: { average: AveragedSwing }) => {
             </dt>
             <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {item.stat}
+              {item.isDistance ? <RangeBallBadge /> : null}
             </dd>
           </div>
         ))}

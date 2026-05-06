@@ -3,6 +3,7 @@ import { SessionContext } from "../provider/SessionContext";
 import { SettingsContext } from "../provider/SettingsContext";
 import { Sessions } from "../types/Sessions";
 import { dropOutliers, getAboveAverageShots } from "../utils/calculateAverages";
+import { applyRangeBallCompensationToShots } from "../utils/rangeBallCompensation";
 
 export const useSelectedSessions = () => {
   const { sessions } = useContext(SessionContext);
@@ -20,12 +21,12 @@ export const useSelectedSessionsWithSettings = () => {
   const { settings } = useContext(SettingsContext);
 
   return Object.values(sessions).reduce((acc, session) => {
-    let results = session.results;
+    let results = applyRangeBallCompensationToShots(session.results, settings);
     if (settings.useIQR) {
-      results = dropOutliers(session.results);
+      results = dropOutliers(results);
     }
     if (settings.useAboveAverageShots) {
-      results = getAboveAverageShots(session.results);
+      results = getAboveAverageShots(results);
     }
 
     acc[session.date] = { ...session, results };

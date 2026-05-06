@@ -37,6 +37,11 @@ async function migrate(db: Client) {
       filename   TEXT,
       analysis   TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS goals (
+      id   INTEGER PRIMARY KEY CHECK (id = 1),
+      data TEXT NOT NULL
+    );
   `);
 
   // Idempotent column add for content-hash dedup. SQLite has no
