@@ -1,3 +1,3 @@
 import { BasePageLayout } from "../components/base/BasePageLayout";
 
-export const Reports = () => <BasePageLayout />;
+export const Reports = () => <BasePageLayout title="Reports" />;

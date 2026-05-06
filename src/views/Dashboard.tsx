@@ -8,8 +8,7 @@ import { dashboardRoutes } from "../routes";
 
 export const Dashboard = () => {
   return (
-    <BasePageLayout>
-      <h1 className="sr-only">Dashboard</h1>
+    <BasePageLayout title="Dashboard">
       <NoSessionSelectedHint />
       <div className="flex flex-col gap-6">
         <DispersionGraphs />

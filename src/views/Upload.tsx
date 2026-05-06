@@ -91,7 +91,7 @@ export const Upload = () => {
   };
 
   return (
-    <BasePageLayout>
+    <BasePageLayout title="Upload">
       {step === "select" && (
         <form
           ref={formRef}

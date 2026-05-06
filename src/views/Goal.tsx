@@ -33,7 +33,7 @@ export const Goal = ({ goal, onDelete, onUpdate }: GoalProps) => {
   };
 
   return (
-    <div className="mt-4 max-w-2xl rounded-md bg-white p-4 dark:bg-gray-800 dark:text-white">
+    <div className="mt-2 max-w-2xl rounded-md bg-white p-4 dark:bg-gray-800 dark:text-white">
       {isEditing ? (
         <input
           type="text"

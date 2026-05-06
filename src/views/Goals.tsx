@@ -6,7 +6,7 @@ import { GoalList } from "./GoalList";
 
 export const Goals = () => {
   return (
-    <BasePageLayout>
+    <BasePageLayout title="Goals">
       <GoalList />
       <GoalDialog />
     </BasePageLayout>

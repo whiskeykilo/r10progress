@@ -30,7 +30,7 @@ export const Settings = () => {
   const { theme, setTheme } = useDarkMode();
 
   return (
-    <BasePageLayout>
+    <BasePageLayout title="Settings">
       <div className="flex flex-col gap-4">
         <SettingCard title="Appearance">
           <div className="flex gap-2">

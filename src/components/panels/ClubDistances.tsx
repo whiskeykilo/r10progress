@@ -6,9 +6,6 @@ export const ClubDistances = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="mb-4 text-3xl font-semibold leading-6 text-gray-900 dark:text-white">
-        Club Distances
-      </h3>
       <p className="text-lg text-gray-500 dark:text-gray-400">
         This panel shows the average stats of your 10 best shots.
       </p>

@@ -99,6 +99,17 @@ export const SessionPicker = () => {
     return `${selected.length} sessions`;
   }, [selected, sessions]);
 
+  // Size the picker based on the longest available session name.
+  const pickerWidthCh = useMemo(() => {
+    const longestLabelLength = sessionKeys.reduce((maxLength, key) => {
+      const labelLength = (sessions[key]?.displayName ?? key).length;
+      return Math.max(maxLength, labelLength);
+    }, "All sessions".length);
+
+    // Add room for horizontal padding and the chevron icon.
+    return Math.min(Math.max(longestLabelLength + 6, 18), 56);
+  }, [sessionKeys, sessions]);
+
   if (!sessions) {
     return <div className="flex items-center">Loading sessions...</div>;
   }
@@ -106,7 +117,10 @@ export const SessionPicker = () => {
   return (
     <div className="flex items-center">
       <Listbox multiple value={selected} onChange={handleSelectionChange}>
-        <div className="relative z-20 w-48 max-w-full sm:w-64 lg:w-72">
+        <div
+          className="relative z-20 max-w-full"
+          style={{ width: `min(calc(100vw - 2rem), ${pickerWidthCh}ch)` }}
+        >
           <Listbox.Label className="sr-only">Session Selection</Listbox.Label>
           <Listbox.Button
             title="Select a session to filter data in the table and averages."

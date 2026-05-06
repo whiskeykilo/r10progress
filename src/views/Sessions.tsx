@@ -37,7 +37,7 @@ export const Sessions = () => {
   };
 
   return (
-    <BasePageLayout>
+    <BasePageLayout title="Sessions">
       {availableColumns.length > 0 && (
         <details className="rounded-md border border-sky-200 bg-white p-3 dark:border-sky-900 dark:bg-gray-900">
           <summary className="cursor-pointer text-sm font-medium text-sky-900 dark:text-sky-100">
