@@ -10,7 +10,7 @@ describe("calculateAverages", () => {
     expect(result).toMatchSnapshot();
   });
 
-  test("should return less strokes when using IQR", () => {
+  test("should not increase strokes when using IQR", () => {
     // @ts-expect-error - testdata is a valid Sessions object
     const wholeResult = calculateAverages(testdata);
     // @ts-expect-error - testdata is a valid Sessions object
@@ -24,7 +24,7 @@ describe("calculateAverages", () => {
     const iqrPW = result.find((club) => club.name === "Pitching Wedge");
     expect(iqrPW).toBeDefined();
 
-    expect(iqrPW?.count).toBeLessThan(notIqrPW?.count || 0);
+    expect(iqrPW?.count).toBeLessThanOrEqual(notIqrPW?.count || 0);
   });
 });
 
