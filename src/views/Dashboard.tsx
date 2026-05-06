@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { BasePageLayout } from "../components/base/BasePageLayout";
-import { ClubDistances } from "../components/panels/ClubDistances.tsx";
+import { DispersionGraphs } from "../components/DispersionGraphs";
+import { AveragesPerSession } from "../components/panels/AveragesPerSession";
+import { ShotScatterPlot } from "../components/panels/ShotScatterPlot";
 import { useSelectedSessions } from "../hooks/useSelectedSessions";
 import { dashboardRoutes } from "../routes";
 
@@ -13,14 +15,16 @@ export const Dashboard = () => {
       <NoSessionSelectedHint />
       <div className="flex gap-4">
         <Link to={dashboardRoutes.visualization} className="btn">
-          Go to visualizations
+          Go to club distances
         </Link>
         <Link to={dashboardRoutes.sessions} className="btn">
           Go to shot tables
         </Link>
       </div>
-      <div className="rounded-md bg-white p-4 dark:bg-gray-800">
-        <ClubDistances />
+      <div className="mt-4 flex flex-col gap-6">
+        <DispersionGraphs />
+        <AveragesPerSession />
+        <ShotScatterPlot />
       </div>
     </BasePageLayout>
   );

@@ -97,17 +97,17 @@ export const SessionPicker = () => {
   }, [selected]);
 
   if (!sessions) {
-    return <div className="flex items-baseline gap-4">Loading sessions...</div>;
+    return <div className="flex items-center">Loading sessions...</div>;
   }
 
   return (
-    <div className="flex items-baseline gap-4">
+    <div className="flex items-center">
       <Listbox multiple value={selected} onChange={handleSelectionChange}>
-        <div className="relative z-20 mt-1 max-w-full flex-grow lg:flex-grow-0">
+        <div className="relative z-20 w-48 max-w-full sm:w-64 lg:w-72">
           <Listbox.Label className="sr-only">Session Selection</Listbox.Label>
           <Listbox.Button
             title="Select a session to filter data in the table and averages."
-            className={`app-focus-ring relative cursor-pointer rounded-lg bg-white py-3 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm lg:w-full lg:min-w-64 ${isLoading ? "opacity-50" : ""}`}
+            className={`app-focus-ring relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm ${isLoading ? "opacity-50" : ""}`}
           >
             <span className="block truncate">
               {isLoading ? "Loading…" : selectionDisplayText}

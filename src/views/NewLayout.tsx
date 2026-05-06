@@ -37,7 +37,7 @@ const navigation: NavType[] = [
     icon: ArrowUpTrayIcon,
   },
   {
-    name: "Visualization",
+    name: "Club Distances",
     href: dashboardRoutes.visualization,
     icon: ChartBarSquareIcon,
   },
@@ -57,6 +57,24 @@ const navigation: NavType[] = [
     icon: BeakerIcon,
   },
 ];
+
+const GitHubMarkIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    className={className}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 2C6.475 2 2 6.475 2 12C2 16.425 4.8625 20.1625 8.8375 21.4875C9.3375 21.575 9.525 21.275 9.525 21.0125C9.525 20.775 9.5125 19.9875 9.5125 19.15C7 19.6125 6.35 18.5375 6.15 17.975C6.0375 17.6875 5.55 16.8 5.125 16.5625C4.775 16.375 4.275 15.9125 5.1125 15.9C5.9 15.8875 6.4625 16.625 6.65 16.925C7.55 18.4375 8.9875 18.0125 9.5625 17.75C9.65 17.1 9.9125 16.6625 10.2 16.4125C7.975 16.1625 5.65 15.3 5.65 11.475C5.65 10.3875 6.0375 9.4875 6.675 8.7875C6.575 8.5375 6.225 7.5125 6.775 6.1375C6.775 6.1375 7.6125 5.875 9.525 7.1625C10.325 6.9375 11.175 6.825 12.025 6.825C12.875 6.825 13.725 6.9375 14.525 7.1625C16.4375 5.8625 17.275 6.1375 17.275 6.1375C17.825 7.5125 17.475 8.5375 17.375 8.7875C18.0125 9.4875 18.4 10.375 18.4 11.475C18.4 15.3125 16.0625 16.1625 13.8375 16.4125C14.2 16.725 14.5125 17.325 14.5125 18.2625C14.5125 19.6 14.5 20.675 14.5 21.0125C14.5 21.275 14.6875 21.5875 15.1875 21.4875C17.1727 20.8173 18.8977 19.5415 20.1198 17.8395C21.3419 16.1376 21.9995 14.0953 22 12C22 6.475 17.525 2 12 2Z"
+    />
+  </svg>
+);
 
 export const NewLayout = ({ children }: PropsWithChildren) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -137,9 +155,6 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                         </span>
                       </NavLink>
                     </div>
-                    <div className="block lg:hidden">
-                      <SessionPicker />
-                    </div>
                     <nav className="flex flex-1 flex-col">
                       <ul role="list" className="flex flex-1 flex-col gap-y-7">
                         <li>
@@ -178,6 +193,15 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                           </ul>
                         </li>
                         <li className="mt-auto">
+                          <a
+                            href="https://github.com/thraizz/r10progress"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-sky-200/75 hover:bg-sky-700 hover:text-white"
+                          >
+                            <GitHubMarkIcon className="h-6 w-6 shrink-0 text-sky-200/75 group-hover:text-white" />
+                            thraizz/r10progress
+                          </a>
                           <NavLink
                             to="/settings"
                             onClick={() => setSidebarOpen(false)}
@@ -265,6 +289,15 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                   </ul>
                 </li>
                 <li className="mt-auto">
+                  <a
+                    href="https://github.com/thraizz/r10progress"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-sky-200/75 hover:bg-sky-700 hover:text-white"
+                  >
+                    <GitHubMarkIcon className="h-6 w-6 shrink-0 text-sky-200/75 group-hover:text-white" />
+                    thraizz/r10progress
+                  </a>
                   <NavLink
                     to="/settings"
                     className={({ isActive }) =>
@@ -289,7 +322,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
         </div>
 
         <div className="lg:pl-72">
-          <div className="sticky top-0 z-40 flex shrink-0 items-end justify-between gap-x-4 border-b border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="sticky top-0 z-40 flex shrink-0 items-center justify-between gap-x-4 border-b border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:gap-x-6 sm:px-6 lg:px-8">
             <button
               type="button"
               className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden"
@@ -299,10 +332,10 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
 
-            <div className="hidden lg:block">
+            <div className="ml-auto flex items-center gap-3 sm:gap-4">
               <SessionPicker />
+              <UserMenu />
             </div>
-            <UserMenu />
           </div>
 
           <main className="py-4 lg:py-10">
