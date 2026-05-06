@@ -1,5 +1,5 @@
 type BasePageLayoutProps = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title?: string;
 };
 

@@ -1,6 +1,9 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { SessionContext } from "../../provider/SessionContext";
-import { GolfSwingData, nonNumericGolfSwingDataKeys } from "../../types/GolfSwingData";
+import {
+  GolfSwingData,
+  nonNumericGolfSwingDataKeys,
+} from "../../types/GolfSwingData";
 import { useAveragePerSession } from "../../utils/calculateAverages";
 import { getAllDataFromSession } from "../../utils/getAllDataFromSession";
 import { getPairsForYfield } from "../../utils/utils";

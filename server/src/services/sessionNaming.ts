@@ -36,9 +36,13 @@ function buildSessionSummary(results: ShotRecord[]): string {
     const distanceField = shot.CarryDistance ?? shot["carry distance"];
     if (typeof distanceField === "number" && Number.isFinite(distanceField)) {
       minDistance =
-        minDistance === null ? distanceField : Math.min(minDistance, distanceField);
+        minDistance === null
+          ? distanceField
+          : Math.min(minDistance, distanceField);
       maxDistance =
-        maxDistance === null ? distanceField : Math.max(maxDistance, distanceField);
+        maxDistance === null
+          ? distanceField
+          : Math.max(maxDistance, distanceField);
     }
   }
 

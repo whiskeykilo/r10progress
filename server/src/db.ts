@@ -47,7 +47,9 @@ async function migrate(db: Client) {
     await db.execute("ALTER TABLE reports ADD COLUMN input_hash TEXT");
   }
   const sessionCols = await db.execute("PRAGMA table_info(sessions)");
-  const hasDisplayName = sessionCols.rows.some((r) => r.name === "display_name");
+  const hasDisplayName = sessionCols.rows.some(
+    (r) => r.name === "display_name",
+  );
   if (!hasDisplayName) {
     await db.execute("ALTER TABLE sessions ADD COLUMN display_name TEXT");
   }

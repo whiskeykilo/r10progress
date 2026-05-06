@@ -19,21 +19,21 @@ export const useGoals: () => Goal[] = () => {
     setGoals(
       isEnglish
         ? [
-          {
-            id: "1",
-            title: "Driving distance",
-            target: 200,
-            metric: "Carry Distance",
-          },
-        ]
+            {
+              id: "1",
+              title: "Driving distance",
+              target: 200,
+              metric: "Carry Distance",
+            },
+          ]
         : [
-          {
-            id: "1",
-            title: "Driving distance",
-            target: 200,
-            metric: "Gesamtstrecke",
-          },
-        ],
+            {
+              id: "1",
+              title: "Driving distance",
+              target: 200,
+              metric: "Gesamtstrecke",
+            },
+          ],
     );
   }, [goals.length, isEnglish, setGoals]);
   const averages = useAveragedSwings();
@@ -45,7 +45,7 @@ export const useGoals: () => Goal[] = () => {
   ) => {
     const current =
       averages.find((average) => average.name === "Driver")?.[
-      "Carry Distance"
+        "Carry Distance"
       ] ||
       averages.find((average) => average.name === "Driver")?.["Gesamtstrecke"];
 

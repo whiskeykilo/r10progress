@@ -32,7 +32,10 @@ router.post("/:filename", async (req, res) => {
     return;
   }
   const db = await getDb();
-  const displayName = await generateSessionDisplayName(body.data.results, filename);
+  const displayName = await generateSessionDisplayName(
+    body.data.results,
+    filename,
+  );
   await db.execute({
     sql: "INSERT OR REPLACE INTO sessions (filename, display_name, results) VALUES (?, ?, ?)",
     args: [filename, displayName, JSON.stringify(body.data.results)],
@@ -53,7 +56,10 @@ router.post("/:filename/rename", async (req, res) => {
     return;
   }
 
-  const results = JSON.parse(row.results as string) as Record<string, unknown>[];
+  const results = JSON.parse(row.results as string) as Record<
+    string,
+    unknown
+  >[];
   const displayName = await generateSessionDisplayName(results, filename);
   await db.execute({
     sql: "UPDATE sessions SET display_name = ? WHERE filename = ?",

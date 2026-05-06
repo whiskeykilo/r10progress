@@ -29,10 +29,11 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
   const isEnglish = useIsEnglishDataset();
   const unit = useUnit();
   const { sessions } = useContext(SessionContext);
-  const metricOptionsBase = isEnglish
-    ? [...englishDegreeMetrics, ...englishMetersMetrics]
-    : [...germanDegreeMetrics, ...germanMetersMetrics];
   const metricOptions = useMemo(() => {
+    const metricOptionsBase = isEnglish
+      ? [...englishDegreeMetrics, ...englishMetersMetrics]
+      : [...germanDegreeMetrics, ...germanMetersMetrics];
+
     if (!sessions) return metricOptionsBase;
 
     const allData = getAllDataFromSession(sessions);
@@ -57,7 +58,7 @@ export const GoalForm = ({ closeAction }: { closeAction: () => void }) => {
       availableNumericFields.has(metric),
     );
     return filtered.length > 0 ? filtered : metricOptionsBase;
-  }, [sessions, metricOptionsBase]);
+  }, [sessions, isEnglish]);
   const [, setGoals] = useAtom(goalAtom);
   const clubs = useClubsPerSession();
   const selectedMetric = formMethods.watch("metric");

@@ -58,7 +58,8 @@ export const chartOptionsVisualRecencyMap = (chartData: any[]) => {
  * This function returns a formatter that shows the unit designation for the axis labels.
  */
 export const golfSwingDataAxisFormatter =
-  (xField: keyof GolfSwingData, distanceUnit = "m") => (value: number) =>
+  (xField: keyof GolfSwingData, distanceUnit = "m") =>
+  (value: number) =>
     golfSwingDataKeysInMeters.includes(xField as keyof GolfSwingData)
       ? `${value} ${distanceUnit}`
       : golfSwingDataKeysInDegrees.includes(xField as keyof GolfSwingData)
