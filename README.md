@@ -6,7 +6,7 @@
 
 Track and visualize your golf shot progress from the Garmin Approach R10 Radar.
 
-This is a self-hosted fork: a React SPA backed by a small Node/Express + SQLite server, packaged as a single Docker image.
+This is a self-hosted fork of [thraizz/r10progress](https://github.com/thraizz/r10progress): a React SPA backed by a small Node/Express + SQLite server, packaged as a single Docker image.
 
 ## Features
 
