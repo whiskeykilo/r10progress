@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useUnit } from "../../hooks/useUnit";
 import { useAveragePerSession } from "../../utils/calculateAverages";
 import { parseDate } from "../../utils/utils";
+import { RangeBallBadge } from "../RangeBallBadge";
 
 type ClubDelta = {
   club: string;
@@ -19,7 +20,9 @@ export const PreRoundSummary = () => {
       parseDate(a.date).localeCompare(parseDate(b.date)),
     );
     const recent = sorted.slice(-3);
-    if (recent.length < 2) return { hot: [], cold: [] as ClubDelta[] };
+    if (recent.length < 2) {
+      return { hot: [], cold: [] as ClubDelta[], insufficientData: true };
+    }
 
     const latest = recent[recent.length - 1];
     const previous = recent.slice(0, -1);
@@ -53,7 +56,10 @@ export const PreRoundSummary = () => {
       .filter((value): value is ClubDelta => value !== null)
       .sort((a, b) => b.delta - a.delta);
 
+    const insufficientData = changes.length === 0;
+
     return {
+      insufficientData,
       hot: changes.filter((entry) => entry.delta >= 0).slice(0, 3),
       cold: [...changes]
         .reverse()
@@ -64,9 +70,12 @@ export const PreRoundSummary = () => {
 
   return (
     <section className="rounded-xl bg-white p-4 dark:bg-gray-800">
-      <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Pre-Round: What’s Working
-      </h4>
+      <div className="mb-1 flex flex-wrap items-center gap-2">
+        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          Pre-Round: What’s Working
+        </h4>
+        <RangeBallBadge className="ml-0 shrink-0" />
+      </div>
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
         Snapshot from your last 3 sessions. Compare latest carry against recent
         baseline to pick safe clubs for today.
@@ -77,7 +86,9 @@ export const PreRoundSummary = () => {
             Hot clubs
           </p>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            {summary.hot.length ? (
+            {summary.insufficientData ? (
+              <li>Not enough data yet.</li>
+            ) : summary.hot.length ? (
               summary.hot.map((entry) => (
                 <li key={entry.club}>
                   {entry.club}: {entry.recent.toFixed(1)} {unit} (
@@ -86,7 +97,7 @@ export const PreRoundSummary = () => {
                 </li>
               ))
             ) : (
-              <li>Not enough data yet.</li>
+              <li>No positive trend detected.</li>
             )}
           </ul>
         </div>
@@ -95,7 +106,9 @@ export const PreRoundSummary = () => {
             Cold clubs
           </p>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            {summary.cold.length ? (
+            {summary.insufficientData ? (
+              <li>Not enough data yet.</li>
+            ) : summary.cold.length ? (
               summary.cold.map((entry) => (
                 <li key={entry.club}>
                   {entry.club}: {entry.recent.toFixed(1)} {unit} (

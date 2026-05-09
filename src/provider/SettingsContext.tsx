@@ -8,6 +8,10 @@ import {
 } from "react";
 
 import { apiGet, apiPut } from "../api";
+import {
+  defaultPlayerProfile,
+  type PlayerProfileSettings,
+} from "../types/playerProfile";
 import { UserContext } from "./UserContext";
 
 export type SettingsType = {
@@ -23,6 +27,7 @@ export type SettingsType = {
     midLongIrons: number;
     hybridsWoodsDriver: number;
   };
+  playerProfile: PlayerProfileSettings;
 };
 
 interface SettingsContextProps {
@@ -44,6 +49,7 @@ const DEFAULT_SETTINGS: SettingsType = {
     midLongIrons: 1.07,
     hybridsWoodsDriver: 1.08,
   },
+  playerProfile: defaultPlayerProfile(),
 };
 
 export const SettingsContext = createContext<SettingsContextProps>({
@@ -69,6 +75,14 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
           rangeBallCompensation: {
             ...DEFAULT_SETTINGS.rangeBallCompensation,
             ...data.rangeBallCompensation,
+          },
+          playerProfile: {
+            ...DEFAULT_SETTINGS.playerProfile,
+            ...(data.playerProfile ?? defaultPlayerProfile()),
+            clubLoftsByName: {
+              ...DEFAULT_SETTINGS.playerProfile.clubLoftsByName,
+              ...(data.playerProfile?.clubLoftsByName ?? {}),
+            },
           },
         });
         initialized.current = true;

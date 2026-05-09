@@ -17,7 +17,7 @@ import { z } from "zod";
 // Bump this string whenever the prompt or schema changes meaningfully.
 // It's prefixed into the input hash so cache entries are invalidated by edits
 // to the system prompt or this schema.
-export const PROMPT_VERSION = "2026-05-09.v3";
+export const PROMPT_VERSION = "2026-05-09.v4-sg";
 
 const ScoreBlockSchema = z.object({
   score: z.number(),
@@ -82,3 +82,38 @@ export const AIAnalysisResultSchema = z.object({
 });
 
 export type AIAnalysisResult = z.infer<typeof AIAnalysisResultSchema>;
+
+const SgDrillPlanSchema = z.object({
+  name: z.string(),
+  focus: z.string(),
+  steps: z.array(z.string()),
+});
+
+export const SgRecommendationSchema = z.object({
+  rank: z.number(),
+  category: z.enum(["approach", "offTheTee", "aroundGreen", "putting"]),
+  title: z.string(),
+  rationale: z.string(),
+  estimatedSgPerRound: z.number(),
+  confidenceLabel: z.enum(["high", "medium", "low"]),
+  evidenceLines: z.array(z.string()),
+  supportingMetrics: z.array(
+    z.object({ label: z.string(), value: z.string() }),
+  ),
+  drill: SgDrillPlanSchema,
+});
+
+export const SgFirstPlanSchema = z.object({
+  benchmarkVersionNote: z.string(),
+  environmentNote: z.string(),
+  handicapNote: z.string(),
+  recommendations: z.array(SgRecommendationSchema),
+});
+
+/** Stored report shape = LLM narrative + deterministic SG plan. */
+export const PersistedAnalysisSchema = AIAnalysisResultSchema.extend({
+  sgFirstPlan: SgFirstPlanSchema,
+});
+
+export type PersistedAnalysis = z.infer<typeof PersistedAnalysisSchema>;
+export type SgFirstPlan = z.infer<typeof SgFirstPlanSchema>;

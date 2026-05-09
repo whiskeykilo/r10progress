@@ -27,6 +27,13 @@ export const getTotalDeviationDistance = (shot: GolfSwingData) =>
   shot["Distancia de desviación total"] ||
   shot["Totale afwijkingsafstand"];
 
+/** Perpendicular distance offline at carry (same unit as distances). */
+export const getCarryDeviationDistance = (shot: GolfSwingData) =>
+  shot["Carry Deviation Distance"] ||
+  shot["Carry-Abweichungsdistanz"] ||
+  shot["Distancia de desviación de vuelo"] ||
+  shot["Carry-afwijkingsafstand"];
+
 export const getDate = (shot: GolfSwingData) =>
   shot["Date"] || shot["Datum"] || shot["Fecha"] || shot["Datum"];
 

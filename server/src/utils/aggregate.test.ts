@@ -12,7 +12,7 @@ const sevenIron = (
   path: number,
   smash: number,
 ): Record<string, unknown> => ({
-  Date: `2026-05-04 10:0${i}:00`,
+  Date: `2026-05-04 ${String(Math.floor(i / 30) + 9).padStart(2, "0")}:${String(i % 60).padStart(2, "0")}:00`,
   "Club Type": "7 Iron",
   "Club Name": null,
   "Carry Distance": carry,
@@ -114,41 +114,63 @@ describe("dropOutliers", () => {
 });
 
 describe("aggregateShots", () => {
-  const shots = [
-    // 7 Iron — push bias (path > 2), face slightly open
-    sevenIron(0, 132, 142, 4, 3, 3, 1.36),
-    sevenIron(1, 130, 140, 5, 3.5, 3.2, 1.36),
-    sevenIron(2, 134, 144, 3, 2.5, 2.8, 1.37),
-    sevenIron(3, 131, 141, 6, 3, 3, 1.35),
-    sevenIron(4, 133, 143, 4.5, 3.2, 3.1, 1.36),
-    // Driver — neutral path, wide dispersion. Each extreme is a distinct shot
-    // so the representative-shot picker has 4 unique picks before dedup.
+  /** ≥25 outdoor-tagged irons so lateral/path flags can activate (KNOWLEDGE.md). */
+  const manySevenIron = Array.from({ length: 30 }, (_, idx) =>
+    sevenIron(
+      idx % 5,
+      132 + (idx % 2),
+      142 + (idx % 2),
+      4 + (idx % 2),
+      3,
+      3,
+      1.36,
+    ),
+  ).map((shot) => ({ ...shot, __r10SessionFile: "out.csv" }));
+
+  const driversUntagged = [
     driver(0, 240, 15, 0, 0),
-    driver(1, 255, -10, 0.5, 0), // longest
-    driver(2, 238, 30, -0.5, 0), // most-offline-right
-    driver(3, 245, -25, 1, 0), // most-offline-left
-    driver(4, 230, 5, 0, -0.5), // shortest
+    driver(1, 255, -10, 0.5, 0),
+    driver(2, 238, 30, -0.5, 0),
+    driver(3, 245, -25, 1, 0),
+    driver(4, 230, 5, 0, -0.5),
   ];
+  const drivers = driversUntagged.map((shot) => ({
+    ...shot,
+    __r10SessionFile: "out.csv",
+  }));
+
+  const shots = [...manySevenIron, ...drivers];
+  const outdoorOpts = {
+    environmentBySessionFile: { "out.csv": "outdoor" as const },
+  };
 
   it("buckets by club, computes per-club stats, and surfaces flags", () => {
-    const agg = aggregateShots(shots, { timeframe: "test", filename: "t.csv" });
+    const agg = aggregateShots(
+      shots,
+      { timeframe: "test", filename: "t.csv" },
+      outdoorOpts,
+    );
 
-    expect(agg.meta.totalShots).toBe(10);
-    expect(agg.global.shotsAnalyzed).toBe(10);
+    expect(agg.meta.totalShots).toBe(35);
+    expect(agg.meta.dominantEnvironment).toBe("outdoor");
+    expect(agg.global.shotsAnalyzed).toBe(35);
     expect(agg.global.clubsUsed).toBe(2);
+    expect(agg.meta.environmentMix.outdoor).toBe(35);
 
     const seven = agg.clubs.find((c) => c.clubName === "7 Iron")!;
     expect(seven).toBeDefined();
-    expect(seven.shotCount).toBe(5);
+    expect(seven.shotCount).toBe(30);
+    expect(seven.metricConfidence.ballSpeed).toBe("high");
     expect(seven.flags.pushBias).toBe(true);
     expect(seven.flags.pullBias).toBe(false);
     expect(seven.flags.faceOpenBias).toBe(true);
-    expect(seven.carry?.mean).toBeCloseTo(132, 0);
+    expect(seven.carry?.mean).toBeCloseTo(132.5, 1);
     expect(seven.totalDeviation?.mean).toBeGreaterThan(0); // right-of-target push
 
     const drv = agg.clubs.find((c) => c.clubName === "Driver")!;
     expect(drv).toBeDefined();
     expect(drv.shotCount).toBe(5);
+    expect(drv.metricConfidence.carryDistance).toBe("high");
     expect(drv.flags.pushBias).toBe(false);
     expect(drv.flags.pullBias).toBe(false);
     // Driver dispersion ellipse should be non-trivial given the spread
@@ -157,7 +179,11 @@ describe("aggregateShots", () => {
   });
 
   it("respects signed direction conventions", () => {
-    const agg = aggregateShots(shots, { timeframe: "test", filename: "t.csv" });
+    const agg = aggregateShots(
+      shots,
+      { timeframe: "test", filename: "t.csv" },
+      outdoorOpts,
+    );
     const seven = agg.clubs.find((c) => c.clubName === "7 Iron")!;
     // All seven irons are right-of-target — leftPct should be 0, rightPct 100, centeredPct < 100
     expect(seven.dispersion.leftPct).toBe(0);
@@ -165,13 +191,21 @@ describe("aggregateShots", () => {
   });
 
   it("emits topConcerns ordered by severity", () => {
-    const agg = aggregateShots(shots, { timeframe: "test", filename: "t.csv" });
+    const agg = aggregateShots(
+      shots,
+      { timeframe: "test", filename: "t.csv" },
+      outdoorOpts,
+    );
     expect(agg.global.topConcerns.length).toBeGreaterThan(0);
     expect(agg.global.topConcerns.length).toBeLessThanOrEqual(3);
   });
 
   it("picks representative shots labeled by extremity", () => {
-    const agg = aggregateShots(shots, { timeframe: "test", filename: "t.csv" });
+    const agg = aggregateShots(
+      shots,
+      { timeframe: "test", filename: "t.csv" },
+      outdoorOpts,
+    );
     const drv = agg.clubs.find((c) => c.clubName === "Driver")!;
     const labels = drv.representativeShots.map((s) => s.label);
     expect(labels).toContain("longest");

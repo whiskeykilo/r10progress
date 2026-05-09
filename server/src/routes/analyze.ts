@@ -6,16 +6,31 @@ import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { getDb } from "../db";
 import { SYSTEM_PROMPT } from "../prompts/system";
-import { AIAnalysisResultSchema, PROMPT_VERSION } from "../schema/aiReport";
+import {
+  AIAnalysisResultSchema,
+  PersistedAnalysisSchema,
+  PROMPT_VERSION,
+} from "../schema/aiReport";
 import { aggregateShots } from "../utils/aggregate";
+import type { AggregateShotsOptions } from "../utils/aggregate";
+import { buildSgFirstPlan } from "../utils/sgRecommendations";
 
 const router = Router();
+
+const EnvSchema = z.enum(["indoor", "outdoor", "unknown"]);
 
 const BodySchema = z.object({
   shots: z.array(z.record(z.unknown())),
   timeframe: z.string(),
   filename: z.string(),
   force: z.boolean().optional(),
+  environmentBySessionFile: z.record(EnvSchema).optional(),
+  playerProfile: z
+    .object({
+      handicapIndex: z.number().min(0).max(54).nullable().optional(),
+      clubLoftsByName: z.record(z.number()).optional(),
+    })
+    .optional(),
   sessionNotes: z
     .array(
       z.object({
@@ -54,6 +69,8 @@ router.post("/", async (req, res) => {
     timeframe,
     filename,
     force,
+    environmentBySessionFile,
+    playerProfile,
     sessionNotes: rawSessionNotes,
   } = body.data;
 
@@ -66,14 +83,28 @@ router.post("/", async (req, res) => {
     .sort((a, b) => a.filename.localeCompare(b.filename));
 
   const sessionNotesCanonical = JSON.stringify(sessionNotes);
+  const aggOptions: AggregateShotsOptions | undefined =
+    environmentBySessionFile && Object.keys(environmentBySessionFile).length
+      ? { environmentBySessionFile }
+      : undefined;
+  const profileCanonical = JSON.stringify(playerProfile ?? {});
+  const environmentsCanonical = JSON.stringify(environmentBySessionFile ?? {});
 
   // Aggregate raw shots → compact, decision-ready payload. This is what the
   // model actually sees and what we hash for content-based caching.
-  const aggregate = aggregateShots(shots, { timeframe, filename });
+  const aggregate = aggregateShots(shots, { timeframe, filename }, aggOptions);
   const aggregateJson = JSON.stringify(aggregate);
+  const indoorHeavy =
+    aggregate.meta.environmentMix.indoor >
+    aggregate.meta.environmentMix.outdoor;
+  const sgFirstPlan = buildSgFirstPlan({
+    aggregate,
+    handicapIndex: playerProfile?.handicapIndex ?? null,
+    indoorHeavy,
+  });
   const inputHash = createHash("sha256")
     .update(
-      `${PROMPT_VERSION}\n${MODEL}\n${aggregateJson}\n${sessionNotesCanonical}`,
+      `${PROMPT_VERSION}\n${MODEL}\n${aggregateJson}\n${sessionNotesCanonical}\n${profileCanonical}\n${environmentsCanonical}`,
     )
     .digest("hex");
 
@@ -141,6 +172,10 @@ ${aggregateJson}`;
     const raw = completion.choices[0]?.message?.content;
     if (!raw) throw new Error("Empty response from OpenAI");
     const analysis = AIAnalysisResultSchema.parse(JSON.parse(raw));
+    const persisted = PersistedAnalysisSchema.parse({
+      ...analysis,
+      sgFirstPlan,
+    });
 
     // Surface usage so we can confirm prompt-cache hits and tune token caps.
     const usage = completion.usage;
@@ -164,7 +199,7 @@ ${aggregateJson}`;
         shots.length,
         timeframe,
         filename,
-        JSON.stringify(analysis),
+        JSON.stringify(persisted),
         inputHash,
       ],
     });
@@ -175,7 +210,7 @@ ${aggregateJson}`;
       shotCount: shots.length,
       timeframe,
       filename,
-      analysis,
+      analysis: persisted,
       cached: false,
     });
   } catch (err) {

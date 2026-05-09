@@ -11,6 +11,31 @@ export interface AnalysisReport {
   filename: string;
   analysis: AIAnalysisResult;
 }
+export interface SgDrillPlan {
+  name: string;
+  focus: string;
+  steps: string[];
+}
+
+export interface SgRecommendation {
+  rank: number;
+  category: "approach" | "offTheTee" | "aroundGreen" | "putting";
+  title: string;
+  rationale: string;
+  estimatedSgPerRound: number;
+  confidenceLabel: "high" | "medium" | "low";
+  evidenceLines: string[];
+  supportingMetrics: Array<{ label: string; value: string }>;
+  drill: SgDrillPlan;
+}
+
+export interface SgFirstPlan {
+  benchmarkVersionNote: string;
+  environmentNote: string;
+  handicapNote: string;
+  recommendations: SgRecommendation[];
+}
+
 export interface AIAnalysisResult {
   technicalAnalysis: {
     impactConditions: {
@@ -90,6 +115,8 @@ export interface AIAnalysisResult {
       consistencyTrend: "improving" | "declining" | "stable";
     };
   };
+  /** Deterministic SG-first plan (server-computed). */
+  sgFirstPlan?: SgFirstPlan;
 }
 
 export const aiReportExample: AnalysisReport = {
@@ -182,6 +209,36 @@ export const aiReportExample: AnalysisReport = {
         accuracyTrend: "stable",
         consistencyTrend: "improving",
       },
+    },
+    sgFirstPlan: {
+      benchmarkVersionNote: "Example only",
+      environmentNote:
+        "Outdoor-majority sample — modeled carry comparatively more trustworthy.",
+      handicapNote: "Example handicap bucket ≈ low double digits.",
+      recommendations: [
+        {
+          rank: 1,
+          category: "approach",
+          title: "Example: tighten mid-iron carry variance",
+          rationale:
+            "Illustrative SG-style ranking — replace with live server output.",
+          estimatedSgPerRound: 2.4,
+          confidenceLabel: "high",
+          evidenceLines: [
+            "7-iron carry std elevated vs typical peer band.",
+            "Smash-factor stability is trending measurable on R10.",
+          ],
+          supportingMetrics: [{ label: "7i carry σ", value: "8 yds example" }],
+          drill: {
+            name: "Stock yardage ladders",
+            focus: "Proximity first",
+            steps: [
+              "Hit 5 balls each to three numbered targets.",
+              "Log offline.",
+            ],
+          },
+        },
+      ],
     },
   },
 };

@@ -3,12 +3,14 @@ import { z } from "zod";
 import { getDb } from "../db";
 import { generateSessionDisplayName } from "../services/sessionNaming";
 
+const SessionEnvSchema = z.enum(["indoor", "outdoor", "unknown"]);
+
 const router = Router();
 
 router.get("/", async (_req, res) => {
   const db = await getDb();
   const result = await db.execute(
-    "SELECT filename, display_name, tags, notes, results, created_at FROM sessions ORDER BY created_at DESC",
+    "SELECT filename, display_name, tags, notes, results, created_at, environment FROM sessions ORDER BY created_at DESC",
   );
 
   const sessions: Record<string, unknown> = {};
@@ -28,6 +30,7 @@ router.get("/", async (_req, res) => {
       notes: (row.notes as string | null) ?? "",
       results: JSON.parse(row.results as string),
       created_at: row.created_at,
+      environment: (row.environment as string | null) ?? "unknown",
     };
   }
   res.json(sessions);
@@ -36,7 +39,10 @@ router.get("/", async (_req, res) => {
 router.post("/:filename", async (req, res) => {
   const { filename } = req.params;
   const body = z
-    .object({ results: z.array(z.record(z.unknown())) })
+    .object({
+      results: z.array(z.record(z.unknown())),
+      environment: SessionEnvSchema.optional(),
+    })
     .safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "Invalid body" });
@@ -47,17 +53,19 @@ router.post("/:filename", async (req, res) => {
     body.data.results,
     filename,
   );
+  const environment = body.data.environment ?? "unknown";
   await db.execute({
-    sql: "INSERT OR REPLACE INTO sessions (filename, display_name, tags, notes, results) VALUES (?, ?, ?, ?, ?)",
+    sql: "INSERT OR REPLACE INTO sessions (filename, display_name, tags, notes, results, environment) VALUES (?, ?, ?, ?, ?, ?)",
     args: [
       filename,
       displayName,
       JSON.stringify([]),
       "",
       JSON.stringify(body.data.results),
+      environment,
     ],
   });
-  res.json({ ok: true, display_name: displayName });
+  res.json({ ok: true, display_name: displayName, environment });
 });
 
 router.post("/:filename/rename", async (req, res) => {
@@ -123,6 +131,7 @@ router.patch("/:filename/meta", async (req, res) => {
     .object({
       tags: z.array(z.string().trim()).optional(),
       notes: z.string().optional(),
+      environment: SessionEnvSchema.optional(),
     })
     .safeParse(req.body);
   if (!body.success) {
@@ -130,13 +139,39 @@ router.patch("/:filename/meta", async (req, res) => {
     return;
   }
 
-  const tags = body.data.tags?.map((tag) => tag.trim()).filter(Boolean) ?? [];
-  const notes = body.data.notes?.trim() ?? "";
+  const tags = body.data.tags?.map((tag) => tag.trim()).filter(Boolean);
+  const notes = body.data.notes?.trim();
+  const env = body.data.environment;
 
   const db = await getDb();
+  const existing = await db.execute({
+    sql: "SELECT tags, notes, environment FROM sessions WHERE filename = ?",
+    args: [filename],
+  });
+  const prev = existing.rows[0];
+  if (!prev) {
+    res.status(404).json({ error: "Session not found" });
+    return;
+  }
+
+  const nextTags =
+    tags ??
+    (() => {
+      const v = prev.tags as string | null;
+      if (!v) return [];
+      try {
+        const p = JSON.parse(v);
+        return Array.isArray(p) ? p : [];
+      } catch {
+        return [];
+      }
+    })();
+  const nextNotes = notes ?? (prev.notes as string | null) ?? "";
+  const nextEnv = env ?? (prev.environment as string | null) ?? "unknown";
+
   const result = await db.execute({
-    sql: "UPDATE sessions SET tags = ?, notes = ? WHERE filename = ?",
-    args: [JSON.stringify(tags), notes, filename],
+    sql: "UPDATE sessions SET tags = ?, notes = ?, environment = ? WHERE filename = ?",
+    args: [JSON.stringify(nextTags), nextNotes, nextEnv, filename],
   });
 
   if (result.rowsAffected === 0) {
@@ -144,7 +179,12 @@ router.patch("/:filename/meta", async (req, res) => {
     return;
   }
 
-  res.json({ ok: true, tags, notes });
+  res.json({
+    ok: true,
+    tags: nextTags,
+    notes: nextNotes,
+    environment: nextEnv,
+  });
 });
 
 export default router;

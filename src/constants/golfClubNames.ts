@@ -1,0 +1,72 @@
+/**
+ * Common club labels for loft mapping — pick the spelling that matches your CSV
+ * (`Club Type` / club name) when possible. Abbreviations cover alternate exports.
+ */
+export const COMMON_GOLF_CLUB_LABELS: readonly string[] = [
+  "Driver",
+  "Mini Driver",
+
+  "2 Wood",
+  "3 Wood",
+  "4 Wood",
+  "5 Wood",
+  "6 Wood",
+  "7 Wood",
+  "9 Wood",
+  "11 Wood",
+
+  "1 Hybrid",
+  "2 Hybrid",
+  "2U",
+  "3 Hybrid",
+  "3U",
+  "4 Hybrid",
+  "4U",
+  "5 Hybrid",
+  "5U",
+  "6 Hybrid",
+  "6U",
+  "7 Hybrid",
+  "8 Hybrid",
+  "9 Hybrid",
+
+  "Driving Iron",
+  "1 Iron",
+  "2 Iron",
+  "3 Iron",
+  "4 Iron",
+  "5 Iron",
+  "6 Iron",
+  "7 Iron",
+  "8 Iron",
+  "9 Iron",
+
+  "3i",
+  "4i",
+  "5i",
+  "6i",
+  "7i",
+  "8i",
+  "9i",
+
+  "Pitching Wedge",
+  "Gap Wedge",
+  "Approach Wedge",
+  "Attack Wedge",
+  "Sand Wedge",
+  "Lob Wedge",
+  "PW",
+  "GW",
+  "AW",
+  "SW",
+  "LW",
+
+  "52° Wedge",
+  "54° Wedge",
+  "56° Wedge",
+  "58° Wedge",
+  "60° Wedge",
+
+  "Chipper",
+  "Putter",
+];

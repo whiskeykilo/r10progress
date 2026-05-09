@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSelectedSessionsWithSettings } from "../../hooks/useSelectedSessions";
+import { useSettings } from "../../provider/SettingsContext";
 import {
   GolfSwingData,
+  golfSwingDataKeysInMeters,
   nonNumericGolfSwingDataKeys,
 } from "../../types/GolfSwingData";
 import { getDayFromRow } from "../../utils/date.utils";
@@ -9,9 +11,11 @@ import { getAllDataFromSession } from "../../utils/getAllDataFromSession";
 import { parseDate } from "../../utils/utils";
 import { BaseListbox } from "../base/BaseListbox.tsx";
 import { PointWithDate } from "../base/chartOptions.ts";
+import { RangeBallBadge } from "../RangeBallBadge.tsx";
 import { ShotScatterPlotGraph } from "./graphs/ShotScatterPlotGraph.tsx";
 
 export const ShotScatterPlot = () => {
+  const { settings } = useSettings();
   const sessions = useSelectedSessionsWithSettings();
 
   const [xField, setXField] = useState<keyof GolfSwingData>("Carry Distance");
@@ -83,12 +87,26 @@ export const ShotScatterPlot = () => {
 
   if (!chartData) return null;
 
+  const scatterShowsDistance =
+    settings.applyRangeBallCompensation &&
+    (golfSwingDataKeysInMeters.includes(
+      xField as (typeof golfSwingDataKeysInMeters)[number],
+    ) ||
+      golfSwingDataKeysInMeters.includes(
+        yField as (typeof golfSwingDataKeysInMeters)[number],
+      ));
+
   return (
     <div className="flex h-auto flex-col gap-3 rounded-xl bg-white p-4 dark:bg-gray-800">
       <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          Shot Scatter Plot
-        </h4>
+        <div className="flex flex-wrap items-center gap-2">
+          <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+            Shot Scatter Plot
+          </h4>
+          {scatterShowsDistance ? (
+            <RangeBallBadge className="ml-0 shrink-0" />
+          ) : null}
+        </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <div className="w-full sm:w-56">
             <BaseListbox

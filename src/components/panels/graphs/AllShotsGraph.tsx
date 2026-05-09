@@ -2,6 +2,7 @@ import * as echarts from "echarts";
 import { useUnit } from "../../../hooks/useUnit";
 import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid } from "../../base/chartOptions";
+import { abbreviateClubName } from "../../../utils/clubAbbreviations";
 import { useCarryAndDeviation } from "./ShotDispersionGraph.utils";
 
 export const AllShotsGraph = () => {
@@ -46,6 +47,7 @@ export const AllShotsGraph = () => {
     legend: {
       orient: "horizontal",
       top: "bottom",
+      formatter: abbreviateClubName,
     },
     series: Object.entries(shots.shotsByClub).map(([club, shots]) => ({
       type: "scatter",

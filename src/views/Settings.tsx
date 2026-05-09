@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { SessionList } from "../components/SessionList";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { CoachSharePanel } from "../components/panels/CoachSharePanel";
+import { PlayerProfileSettings } from "../components/panels/PlayerProfileSettings";
 import { OutlierDetectionSettings } from "../components/panels/OutlierDetectionSettings";
 import { RangeBallCompensationSettings } from "../components/panels/RangeBallCompensationSettings";
 import { UnitSettings } from "../components/panels/UnitSettings";
@@ -67,6 +68,10 @@ export const Settings = () => {
             <UnitSettings />
           </SettingCard>
         </div>
+
+        <SettingCard title="Player profile & GHIN">
+          <PlayerProfileSettings />
+        </SettingCard>
 
         <SettingCard title="Outlier Detection">
           <OutlierDetectionSettings />

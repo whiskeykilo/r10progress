@@ -4,9 +4,8 @@ import {
   GolfSwingData,
   nonNumericGolfSwingDataKeys,
 } from "../../types/GolfSwingData";
-import { useAveragePerSession } from "../../utils/calculateAverages";
+import { useAveragedSwings } from "../../utils/calculateAverages";
 import { getAllDataFromSession } from "../../utils/getAllDataFromSession";
-import { getPairsForYfield } from "../../utils/utils";
 import { BaseListbox } from "../base/BaseListbox";
 import { AverageMetricsGraph } from "./graphs/AverageMetricsGraph";
 
@@ -18,7 +17,7 @@ export type ClubDataForTable = {
 }[];
 
 export const AveragesPerSession = () => {
-  const averages = useAveragePerSession();
+  const averagedByClub = useAveragedSwings();
   const [yField, setYField] = useState<keyof GolfSwingData>("Carry Distance");
 
   const { sessions } = useContext(SessionContext);
@@ -59,9 +58,13 @@ export const AveragesPerSession = () => {
   }, [fields]);
 
   const data: ClubDataForTable = useMemo(() => {
-    if (!sessions) return [];
-    return getPairsForYfield(averages, yField);
-  }, [sessions, averages, yField]);
+    if (!averagedByClub.length) return [];
+    return averagedByClub.map((row) => ({
+      x: String(row.name),
+      y: row[yField],
+      club: String(row.name),
+    }));
+  }, [averagedByClub, yField]);
 
   return (
     <div className="flex h-auto w-full flex-col gap-3 rounded-xl bg-white p-4 dark:bg-gray-800">
@@ -80,7 +83,11 @@ export const AveragesPerSession = () => {
         </div>
       </div>
       <div className="block h-[460px] w-full">
-        <AverageMetricsGraph metric={yField} data={data} />
+        <AverageMetricsGraph
+          metric={yField}
+          data={data}
+          chartMode="aggregated"
+        />
       </div>
     </div>
   );

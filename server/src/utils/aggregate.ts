@@ -14,10 +14,17 @@ export type Stat = {
   p90: number;
 } | null;
 
+export type ConfidenceTier = "high" | "medium" | "trend_only";
+
+/** Internal tag on raw shots during analysis-only pipelines (stripped before persistence). */
+export const SESSION_FILE_META_KEY = "__r10SessionFile";
+
 export type ClubAggregate = {
   clubName: string;
   clubType: string | null;
   shotCount: number;
+  /** KNOWLEDGE.md R10 confidence map × sample sizes × indoor/outdoor mix. */
+  metricConfidence: Record<string, ConfidenceTier>;
   carry: Stat;
   total: Stat;
   ballSpeed: Stat;
@@ -75,6 +82,8 @@ export type GlobalAggregate = {
   topConcerns: string[];
 };
 
+export type SessionEnvironmentAgg = "indoor" | "outdoor" | "unknown";
+
 export type ShotAggregate = {
   meta: {
     timeframe: string;
@@ -82,9 +91,21 @@ export type ShotAggregate = {
     totalShots: number;
     outliersDropped: number;
     sessionDateRange: { from: string; to: string } | null;
+    environmentMix: {
+      indoor: number;
+      outdoor: number;
+      unknown: number;
+    };
+    dominantEnvironment: SessionEnvironmentAgg;
+    /** Recommended minimum shots before asserting lateral/path/face issues. */
+    lateralDiagnosticMinShots: number;
   };
   clubs: ClubAggregate[];
   global: GlobalAggregate;
+};
+
+export type AggregateShotsOptions = {
+  environmentBySessionFile?: Record<string, SessionEnvironmentAgg>;
 };
 
 const CLUB_TYPE_KEYS = [
@@ -181,6 +202,9 @@ const TOTAL_DEV_KEYS = [
   "Totale afwijkingsafstand",
 ];
 const DATE_KEYS = ["Date", "Datum", "Fecha"];
+
+/** Aggregate many shots before diagnosing lateral/path/face (KNOWLEDGE.md). */
+export const LATERAL_DIAGNOSTIC_MIN_SHOTS = 25;
 
 const num = (shot: RawShot, keys: string[]): number | null => {
   for (const k of keys) {
@@ -356,7 +380,94 @@ const pickRepresentative = (
   return out;
 };
 
-const aggregateClub = (clubName: string, shots: RawShot[]): ClubAggregate => {
+const computeEnvironmentMix = (
+  shots: RawShot[],
+  envByFile: Record<string, SessionEnvironmentAgg> | undefined,
+): {
+  mix: { indoor: number; outdoor: number; unknown: number };
+  dominant: SessionEnvironmentAgg;
+  indoorHeavy: boolean;
+} => {
+  let indoor = 0;
+  let outdoor = 0;
+  let unknown = 0;
+  for (const s of shots) {
+    const file = s[SESSION_FILE_META_KEY];
+    const key = typeof file === "string" ? file : "";
+    const env =
+      key && envByFile && envByFile[key] ? envByFile[key]! : "unknown";
+    if (env === "indoor") indoor++;
+    else if (env === "outdoor") outdoor++;
+    else unknown++;
+  }
+  const mix = { indoor, outdoor, unknown };
+  const max = Math.max(indoor, outdoor, unknown);
+  const dominant: SessionEnvironmentAgg =
+    max === 0
+      ? "unknown"
+      : indoor === max
+        ? "indoor"
+        : outdoor === max
+          ? "outdoor"
+          : "unknown";
+  const indoorHeavy =
+    mix.indoor + mix.outdoor > 0 ? mix.indoor > mix.outdoor : false;
+  return { mix, dominant, indoorHeavy };
+};
+
+const lateralConfidenceTier = (
+  shotCount: number,
+  indoorHeavy: boolean,
+): ConfidenceTier => {
+  if (shotCount < LATERAL_DIAGNOSTIC_MIN_SHOTS) return "trend_only";
+  if (indoorHeavy) return "trend_only";
+  return "medium";
+};
+
+const spinConfidenceTier = (
+  shotCount: number,
+  indoorHeavy: boolean,
+): ConfidenceTier => {
+  if (indoorHeavy) return "trend_only";
+  if (shotCount < 15) return "trend_only";
+  return "medium";
+};
+
+const carryConfidenceTier = (indoorHeavy: boolean): ConfidenceTier =>
+  indoorHeavy ? "medium" : "high";
+
+const buildMetricConfidence = (
+  shotCount: number,
+  indoorHeavy: boolean,
+): Record<string, ConfidenceTier> => {
+  const lat = lateralConfidenceTier(shotCount, indoorHeavy);
+  const spin = spinConfidenceTier(shotCount, indoorHeavy);
+  const carry = carryConfidenceTier(indoorHeavy);
+  return {
+    ballSpeed: "high",
+    clubSpeed: "high",
+    smashFactor: "high",
+    carryDistance: carry,
+    totalDistance: carry,
+    launchAngle: indoorHeavy ? "medium" : "high",
+    launchDirection: lat,
+    spinRate: spin,
+    backspin: spin,
+    apexHeight: spin,
+    clubPath: lat,
+    clubFace: lat,
+    faceToPath: lat,
+    attackAngle: lat,
+    carryDeviation: lat,
+    totalDeviation: lat,
+  };
+};
+
+const aggregateClub = (
+  clubName: string,
+  shots: RawShot[],
+  indoorHeavy: boolean,
+): ClubAggregate => {
   const totalDevs = shots
     .map((s) => num(s, TOTAL_DEV_KEYS))
     .filter((v): v is number => v != null);
@@ -373,11 +484,16 @@ const aggregateClub = (clubName: string, shots: RawShot[]): ClubAggregate => {
   const clubPathStat = stat(shots.map((s) => num(s, PATH_KEYS)));
   const attackStat = stat(shots.map((s) => num(s, ATTACK_KEYS)));
   const smashStat = stat(shots.map((s) => num(s, SMASH_KEYS)));
+  /** Path/face/OTT flags defer until enough outdoor-weighted lateral signal. */
+  const lateralStructuralOk =
+    shots.length >= LATERAL_DIAGNOSTIC_MIN_SHOTS && !indoorHeavy;
+  const metricConfidence = buildMetricConfidence(shots.length, indoorHeavy);
 
   return {
     clubName,
     clubType: str(shots[0] ?? {}, CLUB_TYPE_KEYS),
     shotCount: shots.length,
+    metricConfidence,
     carry: stat(shots.map((s) => num(s, CARRY_KEYS))),
     total: stat(shots.map((s) => num(s, TOTAL_KEYS))),
     ballSpeed: stat(shots.map((s) => num(s, BALL_SPEED_KEYS))),
@@ -402,12 +518,14 @@ const aggregateClub = (clubName: string, shots: RawShot[]): ClubAggregate => {
       centeredPct: round((centered / denom) * 100, 1),
     },
     flags: {
-      pushBias: (clubPathStat?.mean ?? 0) > 2,
-      pullBias: (clubPathStat?.mean ?? 0) < -2,
-      faceOpenBias: (clubFaceStat?.mean ?? 0) > 2,
-      faceClosedBias: (clubFaceStat?.mean ?? 0) < -2,
+      pushBias: lateralStructuralOk && (clubPathStat?.mean ?? 0) > 2,
+      pullBias: lateralStructuralOk && (clubPathStat?.mean ?? 0) < -2,
+      faceOpenBias: lateralStructuralOk && (clubFaceStat?.mean ?? 0) > 2,
+      faceClosedBias: lateralStructuralOk && (clubFaceStat?.mean ?? 0) < -2,
       overTheTop:
-        (clubPathStat?.mean ?? 0) < -2 && (attackStat?.mean ?? 0) < -2,
+        lateralStructuralOk &&
+        (clubPathStat?.mean ?? 0) < -2 &&
+        (attackStat?.mean ?? 0) < -2,
       inconsistentStrike: (smashStat?.std ?? 0) > 0.05,
     },
     representativeShots: pickRepresentative(shots),
@@ -499,9 +617,15 @@ const sessionDateRange = (
 export const aggregateShots = (
   shots: RawShot[],
   meta: { timeframe: string; filename: string },
+  options?: AggregateShotsOptions,
 ): ShotAggregate => {
   const totalShots = shots.length;
   const { kept, dropped } = dropOutliers(shots);
+
+  const { mix, dominant, indoorHeavy } = computeEnvironmentMix(
+    kept,
+    options?.environmentBySessionFile,
+  );
 
   const byClub = new Map<string, RawShot[]>();
   for (const s of kept) {
@@ -513,7 +637,7 @@ export const aggregateShots = (
 
   const clubs: ClubAggregate[] = [];
   for (const [clubName, clubShots] of byClub) {
-    clubs.push(aggregateClub(clubName, clubShots));
+    clubs.push(aggregateClub(clubName, clubShots, indoorHeavy));
   }
   clubs.sort((a, b) => b.shotCount - a.shotCount);
 
@@ -524,6 +648,9 @@ export const aggregateShots = (
       totalShots,
       outliersDropped: dropped,
       sessionDateRange: sessionDateRange(kept),
+      environmentMix: mix,
+      dominantEnvironment: dominant,
+      lateralDiagnosticMinShots: LATERAL_DIAGNOSTIC_MIN_SHOTS,
     },
     clubs,
     global: {

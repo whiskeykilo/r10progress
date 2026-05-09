@@ -19,6 +19,9 @@ import {
 } from "../utils/aiReportExamplePreference";
 import { applyRangeBallCompensationToShots } from "../utils/rangeBallCompensation";
 
+/** Must match `SESSION_FILE_META_KEY` on the server aggregator. */
+const R10_SESSION_FILE = "__r10SessionFile";
+
 interface LoadingState {
   analyzing: boolean;
   generatingReport: boolean;
@@ -113,13 +116,19 @@ export const AIAnalysis = () => {
       );
     }
 
-    const filteredShots = filteredEntries.flatMap(
-      ([, session]) => session.results,
-    );
-    const analysisShots = applyRangeBallCompensationToShots(
-      filteredShots,
-      settings,
-    );
+    const environmentBySessionFile: Record<
+      string,
+      "indoor" | "outdoor" | "unknown"
+    > = {};
+    const analysisShots = filteredEntries.flatMap(([fname, session]) => {
+      environmentBySessionFile[fname] = session.environment ?? "unknown";
+      return applyRangeBallCompensationToShots(session.results, settings).map(
+        (row) => ({
+          ...row,
+          [R10_SESSION_FILE]: fname,
+        }),
+      );
+    });
     const selectedFiles = filteredEntries.map(([filename]) => filename);
     const sessionNotes = filteredEntries
       .map(([fname, session]) => ({
@@ -148,6 +157,11 @@ export const AIAnalysis = () => {
         timeframe,
         filename,
         sessionNotes,
+        environmentBySessionFile,
+        playerProfile: {
+          handicapIndex: settings.playerProfile?.handicapIndex ?? null,
+          clubLoftsByName: settings.playerProfile?.clubLoftsByName ?? {},
+        },
       });
 
       await fetchReports();
@@ -158,6 +172,11 @@ export const AIAnalysis = () => {
           cached: !!report.cached,
           timeframe,
           sessionNotes,
+          environmentBySessionFile,
+          playerProfile: {
+            handicapIndex: settings.playerProfile?.handicapIndex ?? null,
+            clubLoftsByName: settings.playerProfile?.clubLoftsByName ?? {},
+          },
         },
       });
     } catch (err: unknown) {

@@ -19,6 +19,11 @@ type AnalyzeNavState = {
   cached?: boolean;
   timeframe?: string;
   sessionNotes?: Array<{ filename: string; notes: string }>;
+  environmentBySessionFile?: Record<string, "indoor" | "outdoor" | "unknown">;
+  playerProfile?: {
+    handicapIndex: number | null;
+    clubLoftsByName: Record<string, number>;
+  };
 };
 
 const ScoreIndicator = ({ score }: { score: number }) => {
@@ -178,22 +183,24 @@ export const AIReport = () => {
     if (!canRegenerate || regenerating) return;
     setRegenerating(true);
     try {
-      const fresh = await apiPost<AnalysisReport & { cached?: boolean }>(
-        "/api/analyze",
-        {
-          shots: navState.shots,
-          timeframe: navState.timeframe ?? report?.timeframe ?? "Last 3 months",
-          filename: navState.filename ?? "",
-          sessionNotes: navState.sessionNotes ?? [],
-          force: true,
-        },
-      );
+      const fresh = await apiPost<
+        AIAnalysisResult & { id: string; cached?: boolean }
+      >("/api/analyze", {
+        shots: navState.shots ?? [],
+        timeframe: navState.timeframe ?? report?.timeframe ?? "Last 3 months",
+        filename: navState.filename ?? "",
+        sessionNotes: navState.sessionNotes ?? [],
+        environmentBySessionFile: navState.environmentBySessionFile,
+        playerProfile: navState.playerProfile,
+        force: true,
+      });
       navigate(`${routes.aiAnalysis}/${fresh.id}`, {
         state: { ...navState, cached: !!fresh.cached },
         replace: true,
       });
     } catch (err) {
       console.error("Regenerate failed:", err);
+    } finally {
       setRegenerating(false);
     }
   };
@@ -367,6 +374,116 @@ export const AIReport = () => {
             </div>
           </div>
         </div>
+
+        {analysis.sgFirstPlan ? (
+          <div className="app-card border-l-4 border-brand-600">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Strokes Gained priority plan
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Deterministic ranking from your aggregates vs peer baselines in{" "}
+              <code className="rounded bg-gray-100 px-1 text-xs dark:bg-gray-800">
+                KNOWLEDGE.md
+              </code>
+              . Estimates are approximate strokes/round if the gap were fully
+              recovered.
+            </p>
+            <div className="mt-3 grid gap-3 text-xs text-gray-600 dark:text-gray-400 sm:grid-cols-2">
+              <p>{analysis.sgFirstPlan.environmentNote}</p>
+              <p>{analysis.sgFirstPlan.handicapNote}</p>
+            </div>
+            <p className="mt-2 text-xs italic text-gray-500 dark:text-gray-500">
+              {analysis.sgFirstPlan.benchmarkVersionNote}
+            </p>
+            <ol className="mt-6 space-y-6">
+              {analysis.sgFirstPlan.recommendations.map((rec) => (
+                <li
+                  key={rec.rank}
+                  className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/60"
+                >
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-lg font-bold text-brand-600">
+                      #{rec.rank}
+                    </span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-gray-600 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:ring-gray-600">
+                      {rec.category}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        rec.confidenceLabel === "high"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
+                          : rec.confidenceLabel === "medium"
+                            ? "bg-yellow-100 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-100"
+                            : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                      }`}
+                    >
+                      Confidence: {rec.confidenceLabel}
+                    </span>
+                    <span className="ml-auto text-sm font-semibold text-gray-900 dark:text-white">
+                      ~{rec.estimatedSgPerRound.toFixed(2)} SG / round
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">
+                    {rec.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                    {rec.rationale}
+                  </p>
+                  {rec.evidenceLines.length > 0 && (
+                    <ul className="mt-2 list-inside list-disc text-sm text-gray-600 dark:text-gray-400">
+                      {rec.evidenceLines.map((line, i) => (
+                        <li key={i}>{line}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {rec.supportingMetrics.length > 0 && (
+                    <dl className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
+                      {rec.supportingMetrics.map((m) => (
+                        <div key={m.label}>
+                          <dt className="text-gray-500 dark:text-gray-400">
+                            {m.label}
+                          </dt>
+                          <dd className="font-medium text-gray-900 dark:text-gray-100">
+                            {m.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  <div className="mt-4 rounded-md border border-gray-200 p-3 dark:border-gray-600">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                      Drill: {rec.drill.name}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {rec.drill.focus}
+                    </p>
+                    <ol className="mt-2 list-inside list-decimal text-sm text-gray-700 dark:text-gray-300">
+                      {rec.drill.steps.map((step, idx) => (
+                        <li key={idx}>{step}</li>
+                      ))}
+                    </ol>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCreateGoal(
+                          `${rec.drill.name}: ${rec.drill.steps[0] ?? rec.drill.focus}`,
+                        )
+                      }
+                      className="app-focus-ring mt-3 inline-flex rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700"
+                    >
+                      Create goal from drill
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <div className="rounded-md bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
+            No SG-first plan bundled with this report (legacy cache). Generate a
+            new analysis to populate Strokes-Gained-ranked recommendations.
+          </div>
+        )}
 
         <div>
           <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">

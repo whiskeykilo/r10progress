@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { GolfSwingData } from "../types/GolfSwingData";
 import type { SettingsType } from "../provider/SettingsContext";
+import { defaultPlayerProfile } from "../types/playerProfile";
 import { calculateAverages, filterShotsByQuality } from "./calculateAverages";
 
 const makeShot = (
@@ -29,6 +30,7 @@ const baseSettings: SettingsType = {
     midLongIrons: 1.07,
     hybridsWoodsDriver: 1.08,
   },
+  playerProfile: defaultPlayerProfile(),
 };
 
 describe("filterShotsByQuality", () => {

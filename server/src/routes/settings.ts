@@ -3,6 +3,16 @@ import { getDb } from "../db";
 
 const router = Router();
 
+const DEFAULT_PLAYER_PROFILE = {
+  ghinNumber: "",
+  golferDisplayName: "",
+  ghinLinkConfirmed: false,
+  handicapIndex: null as number | null,
+  handicapSource: null as "manual" | "ghin" | null,
+  handicapLastSyncedAt: null as string | null,
+  clubLoftsByName: {} as Record<string, number>,
+};
+
 const DEFAULT_SETTINGS = {
   useIQR: false,
   useAboveAverageShots: false,
@@ -16,6 +26,7 @@ const DEFAULT_SETTINGS = {
     midLongIrons: 1.07,
     hybridsWoodsDriver: 1.08,
   },
+  playerProfile: DEFAULT_PLAYER_PROFILE,
 };
 
 router.get("/", async (_req, res) => {
@@ -27,12 +38,27 @@ router.get("/", async (_req, res) => {
     return;
   }
   const stored = JSON.parse(row.data as string);
+  const storedProfile =
+    typeof stored.playerProfile === "object" && stored.playerProfile !== null
+      ? (stored.playerProfile as Record<string, unknown>)
+      : {};
   res.json({
     ...DEFAULT_SETTINGS,
     ...stored,
     rangeBallCompensation: {
       ...DEFAULT_SETTINGS.rangeBallCompensation,
-      ...stored.rangeBallCompensation,
+      ...(stored.rangeBallCompensation ?? {}),
+    },
+    playerProfile: {
+      ...DEFAULT_PLAYER_PROFILE,
+      ...storedProfile,
+      clubLoftsByName: {
+        ...DEFAULT_PLAYER_PROFILE.clubLoftsByName,
+        ...(typeof storedProfile.clubLoftsByName === "object" &&
+          storedProfile.clubLoftsByName !== null
+          ? (storedProfile.clubLoftsByName as Record<string, number>)
+          : {}),
+      },
     },
   });
 });

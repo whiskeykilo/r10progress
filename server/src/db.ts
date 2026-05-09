@@ -23,6 +23,7 @@ async function migrate(db: Client) {
       display_name TEXT,
       tags TEXT,
       notes TEXT,
+      environment TEXT DEFAULT 'unknown',
       created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
     );
 
@@ -67,6 +68,15 @@ async function migrate(db: Client) {
   const hasNotes = sessionCols.rows.some((r) => r.name === "notes");
   if (!hasNotes) {
     await db.execute("ALTER TABLE sessions ADD COLUMN notes TEXT");
+  }
+  const sessionColsAfter = await db.execute("PRAGMA table_info(sessions)");
+  const hasEnvironment = sessionColsAfter.rows.some(
+    (r) => r.name === "environment",
+  );
+  if (!hasEnvironment) {
+    await db.execute(
+      "ALTER TABLE sessions ADD COLUMN environment TEXT DEFAULT 'unknown'",
+    );
   }
   await db.execute(
     "CREATE INDEX IF NOT EXISTS idx_reports_input_hash ON reports(input_hash)",

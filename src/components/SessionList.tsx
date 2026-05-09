@@ -8,6 +8,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SessionContext } from "../provider/SessionContext";
 import { dashboardRoutes } from "../routes";
+import type { SessionEnvironment } from "../types/Sessions";
 
 // This list allows the users to see all the sessions that are available to them.
 // They can see the recorded date, the amount of shots and have an option to delete the session.
@@ -25,9 +26,9 @@ export const SessionList = () => {
   const [renameCooldownSession, setRenameCooldownSession] = useState<
     string | null
   >(null);
-  const [draftMeta, setDraftMeta] = useState<Record<string, { notes: string }>>(
-    {},
-  );
+  const [draftMeta, setDraftMeta] = useState<
+    Record<string, { notes: string; environment: SessionEnvironment }>
+  >({});
   const [savingMetaSession, setSavingMetaSession] = useState<string | null>(
     null,
   );
@@ -39,6 +40,7 @@ export const SessionList = () => {
         if (!next[id]) {
           next[id] = {
             notes: session.notes ?? "",
+            environment: session.environment ?? "unknown",
           };
         }
       });
@@ -103,12 +105,37 @@ export const SessionList = () => {
                     </p>
                   </div>
                   <div className="mt-3 flex max-w-3xl flex-col gap-2">
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                      Environment
+                      <select
+                        value={draftMeta[key]?.environment ?? "unknown"}
+                        onChange={(event) =>
+                          setDraftMeta((prev) => ({
+                            ...prev,
+                            [key]: {
+                              notes: prev[key]?.notes ?? session.notes ?? "",
+                              environment: event.target
+                                .value as SessionEnvironment,
+                            },
+                          }))
+                        }
+                        className="app-focus-ring ml-2 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                      >
+                        <option value="outdoor">Outdoor</option>
+                        <option value="indoor">Indoor</option>
+                        <option value="unknown">Unknown</option>
+                      </select>
+                    </label>
                     <textarea
                       value={draftMeta[key]?.notes ?? ""}
                       onChange={(event) =>
                         setDraftMeta((prev) => ({
                           ...prev,
                           [key]: {
+                            environment:
+                              prev[key]?.environment ??
+                              session.environment ??
+                              "unknown",
                             notes: event.target.value,
                           },
                         }))
@@ -127,6 +154,10 @@ export const SessionList = () => {
                         await updateSessionMetadata(key, {
                           tags: session.tags ?? [],
                           notes: draftMeta[key]?.notes ?? "",
+                          environment:
+                            draftMeta[key]?.environment ??
+                            session.environment ??
+                            "unknown",
                         });
                       } finally {
                         setSavingMetaSession(null);

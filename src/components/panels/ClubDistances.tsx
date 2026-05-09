@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useBestShots } from "../../utils/calculateAverages";
 import { BaseLabel } from "../base/BaseLabel";
 import { BaseListbox } from "../base/BaseListbox";
+import { RangeBallBadge } from "../RangeBallBadge";
 import { ClubStats } from "../ClubStats";
 import { ClubTrendChart } from "./graphs/ClubTrendChart";
 import { GappingChart } from "./graphs/GappingChart";
@@ -83,7 +84,7 @@ export const ClubDistances = () => {
             </p>
           </div>
           <div
-            className="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-gray-100 p-1 dark:bg-gray-700"
             role="group"
             aria-label="Select distance metric for gapping chart"
           >
@@ -111,6 +112,7 @@ export const ClubDistances = () => {
             >
               Total Distance
             </button>
+            <RangeBallBadge className="ml-0 shrink-0" />
           </div>
         </div>
         <GappingChart distanceMetric={gappingDistanceMetric} />

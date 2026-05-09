@@ -17,7 +17,7 @@
   }
 }
 
-input {
+input:not([type="radio"]):not([type="checkbox"]) {
   @apply rounded-md border-2 border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-sky-600;
   &:focus {
     @apply ring-2 ring-sky-600;

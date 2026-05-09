@@ -8,6 +8,7 @@ import { BaseLoadingSpinner } from "../components/base/BaseLoadingSpinner";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { SessionContext } from "../provider/SessionContext";
 import { dashboardRoutes } from "../routes";
+import type { SessionEnvironment } from "../types/Sessions";
 import { assertUploadVisibleInSnapshot } from "../utils/uploadSessionVisibility";
 
 type UploadStep = "select" | "uploading" | "success" | "error";
@@ -36,6 +37,7 @@ export const Upload = () => {
   const [isParsing, setIsParsing] = useState(false);
   /** Dev-only hint when /api is not reachable from the Vite origin */
   const [devApiHint, setDevApiHint] = useState<string | null>(null);
+  const [environment, setEnvironment] = useState<SessionEnvironment>("unknown");
 
   useEffect(() => {
     if (typeof import.meta === "undefined" || !import.meta.env?.DEV) return;
@@ -118,6 +120,7 @@ export const Upload = () => {
     try {
       await apiPost(`/api/sessions/${encodeURIComponent(filename)}`, {
         results: csvFile,
+        environment,
       });
 
       const updatedSessions = await fetchSnapshot();
@@ -187,6 +190,42 @@ export const Upload = () => {
             Uploading the same file name again <b>replaces</b> that session in
             the database.
           </p>
+          <fieldset className="rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+            <legend className="px-1 text-sm font-medium text-gray-900 dark:text-white">
+              Session environment
+            </legend>
+            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              R10 modeled metrics (carry, spin, path) are interpreted more
+              cautiously indoors. Pick what matches where you hit these shots.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              {(
+                [
+                  ["outdoor", "Outdoor / range (open)"],
+                  ["indoor", "Indoor / simulator"],
+                  ["unknown", "Not sure"],
+                ] as const
+              ).map(([value, label]) => (
+                <label
+                  key={value}
+                  className="flex cursor-pointer items-center gap-2"
+                >
+                  <input
+                    type="radio"
+                    name="session-environment"
+                    value={value}
+                    checked={environment === value}
+                    onChange={() => setEnvironment(value)}
+                    className="app-focus-ring h-4 w-4 shrink-0 border-gray-300 text-brand-600 dark:border-gray-500 dark:bg-gray-800 dark:text-brand-500 dark:focus-visible:ring-offset-gray-800"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-200">
+                    {label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
           {devApiHint && (
             <p
               role="alert"

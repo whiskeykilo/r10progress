@@ -2,6 +2,7 @@ import * as echarts from "echarts";
 import { useUnit } from "../../../hooks/useUnit";
 import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid, PointWithClub } from "../../base/chartOptions";
+import { abbreviateClubName } from "../../../utils/clubAbbreviations";
 import { useCarryAndDeviation } from "./ShotDispersionGraph.utils";
 
 // different colors for each club
@@ -150,6 +151,13 @@ export const DispersionCirclesGraph = () => {
     legend: {
       orient: "horizontal",
       top: "bottom",
+      formatter: (name: string) => {
+        const suffix = " Dispersion";
+        if (name.endsWith(suffix)) {
+          return `${abbreviateClubName(name.slice(0, -suffix.length))} · ellipse`;
+        }
+        return abbreviateClubName(name);
+      },
     },
     series,
   };

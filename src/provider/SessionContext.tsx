@@ -10,7 +10,7 @@ import {
 
 import { apiDelete, apiGet, apiPatch, apiPost } from "../api";
 import { GolfSwingData } from "../types/GolfSwingData";
-import { Session, Sessions } from "../types/Sessions";
+import { Session, SessionEnvironment, Sessions } from "../types/Sessions";
 import { translateSessionsToEnglish } from "../utils/csvLocalization";
 import { getDateFromResults } from "../utils/date.utils";
 import { filterResultsWithMissingCells } from "../utils/filterResultsWithMissingCells";
@@ -33,7 +33,7 @@ export interface SessionContextInterface {
   regenerateSessionName: (id: string) => Promise<void>;
   updateSessionMetadata: (
     id: string,
-    meta: { tags: string[]; notes: string },
+    meta: { tags: string[]; notes: string; environment?: SessionEnvironment },
   ) => Promise<void>;
 }
 
@@ -73,6 +73,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
             display_name?: string;
             tags?: string[];
             notes?: string;
+            environment?: string;
           }
         >
       >("/api/sessions");
@@ -88,6 +89,7 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
           displayName: data.display_name,
           tags: data.tags ?? [],
           notes: data.notes ?? "",
+          environment: (data.environment as SessionEnvironment) ?? "unknown",
         };
       }
       setSessionsCallback(sessionResult);
@@ -163,17 +165,29 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const updateSessionMetadata = useCallback(
-    async (id: string, meta: { tags: string[]; notes: string }) => {
-      const response = await apiPatch<{ tags?: string[]; notes?: string }>(
-        `/api/sessions/${encodeURIComponent(id)}/meta`,
-        meta,
-      );
+    async (
+      id: string,
+      meta: {
+        tags: string[];
+        notes: string;
+        environment?: SessionEnvironment;
+      },
+    ) => {
+      const response = await apiPatch<{
+        tags?: string[];
+        notes?: string;
+        environment?: string;
+      }>(`/api/sessions/${encodeURIComponent(id)}/meta`, meta);
       setSessions((prev) => ({
         ...prev,
         [id]: {
           ...prev[id],
           tags: response.tags ?? meta.tags,
           notes: response.notes ?? meta.notes,
+          environment:
+            (response.environment as SessionEnvironment) ??
+            meta.environment ??
+            prev[id]?.environment,
         },
       }));
     },

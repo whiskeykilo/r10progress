@@ -1,5 +1,7 @@
 import { GolfSwingData } from "./GolfSwingData";
 
+export type SessionEnvironment = "indoor" | "outdoor" | "unknown";
+
 export type Session = {
   results: GolfSwingData[];
   selected: boolean;
@@ -7,6 +9,7 @@ export type Session = {
   displayName?: string;
   tags?: string[];
   notes?: string;
+  environment?: SessionEnvironment;
 };
 export type Sessions = {
   [key: string]: Session;
