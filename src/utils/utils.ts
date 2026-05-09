@@ -98,6 +98,13 @@ export const sortGolfSwingKeysForHeader = (a: string, b: string) => {
   return a.localeCompare(b);
 };
 
+function isCellEmptyForCount(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (value === "") return true;
+  if (typeof value === "string" && value.trim() === "") return true;
+  return false;
+}
+
 export const reduceSessionToDefinedValues: (session: Session) => Session = (
   session,
 ) => {
@@ -109,8 +116,9 @@ export const reduceSessionToDefinedValues: (session: Session) => Session = (
         Object.keys(curr).forEach((metric: keyof GolfSwingData) => {
           // Initialize the count for the field
           if (!shot[metric]) shot[metric] = 0;
-          // If we have a value for the field, increment the count
-          if (curr[metric]) {
+          // Count present values (0 and false are valid numeric/boolean readings)
+          const v = curr[metric];
+          if (!isCellEmptyForCount(v)) {
             shot[metric] = (shot[metric] ?? 0) + 1;
           }
         });

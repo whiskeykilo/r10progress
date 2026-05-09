@@ -25,9 +25,9 @@ export const SessionList = () => {
   const [renameCooldownSession, setRenameCooldownSession] = useState<
     string | null
   >(null);
-  const [draftMeta, setDraftMeta] = useState<
-    Record<string, { tags: string; notes: string }>
-  >({});
+  const [draftMeta, setDraftMeta] = useState<Record<string, { notes: string }>>(
+    {},
+  );
   const [savingMetaSession, setSavingMetaSession] = useState<string | null>(
     null,
   );
@@ -38,7 +38,6 @@ export const SessionList = () => {
       Object.entries(sessions).forEach(([id, session]) => {
         if (!next[id]) {
           next[id] = {
-            tags: (session.tags ?? []).join(", "),
             notes: session.notes ?? "",
           };
         }
@@ -104,28 +103,12 @@ export const SessionList = () => {
                     </p>
                   </div>
                   <div className="mt-3 flex max-w-3xl flex-col gap-2">
-                    <input
-                      type="text"
-                      value={draftMeta[key]?.tags ?? ""}
-                      onChange={(event) =>
-                        setDraftMeta((prev) => ({
-                          ...prev,
-                          [key]: {
-                            tags: event.target.value,
-                            notes: prev[key]?.notes ?? "",
-                          },
-                        }))
-                      }
-                      placeholder="Tags (comma separated): pre-lesson, windy, driver"
-                      className="app-focus-ring rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                    />
                     <textarea
                       value={draftMeta[key]?.notes ?? ""}
                       onChange={(event) =>
                         setDraftMeta((prev) => ({
                           ...prev,
                           [key]: {
-                            tags: prev[key]?.tags ?? "",
                             notes: event.target.value,
                           },
                         }))
@@ -142,10 +125,7 @@ export const SessionList = () => {
                       setSavingMetaSession(key);
                       try {
                         await updateSessionMetadata(key, {
-                          tags: (draftMeta[key]?.tags ?? "")
-                            .split(",")
-                            .map((tag) => tag.trim())
-                            .filter(Boolean),
+                          tags: session.tags ?? [],
                           notes: draftMeta[key]?.notes ?? "",
                         });
                       } finally {

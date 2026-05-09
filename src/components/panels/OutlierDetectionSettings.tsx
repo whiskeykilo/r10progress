@@ -118,23 +118,25 @@ export const OutlierDetectionSettings = () => {
             Off
           </button>
         </div>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          IQR fallback: statistical outlier removal based on total distance. Use
+          if Shot Quality Filter does not have enough data.
+        </p>
       </div>
-      <Toggle
-        checked={settings.shotQualitySdMode === "asymmetric"}
-        onChange={(val) =>
-          setSettings((prev) => ({
-            ...prev,
-            shotQualitySdMode: val ? "asymmetric" : "symmetric",
-          }))
-        }
-        label="Shot quality SD mode: Asymmetric"
-        description="Asymmetric: 2σ low / 3σ high. Turn off for symmetric 2σ both sides."
-        tooltip="Smash-factor floor stays active for true irons. Asymmetric mode is more permissive on your best strikes."
-      />
-      <p className="text-xs text-gray-500 dark:text-gray-400">
-        IQR fallback: statistical outlier removal based on total distance. Use
-        if Shot Quality Filter does not have enough data.
-      </p>
+      {settings.useShotQualityFilter ? (
+        <Toggle
+          checked={settings.shotQualitySdMode === "asymmetric"}
+          onChange={(val) =>
+            setSettings((prev) => ({
+              ...prev,
+              shotQualitySdMode: val ? "asymmetric" : "symmetric",
+            }))
+          }
+          label="Shot quality filter range (recommended)"
+          description="On: removes very short shots more aggressively and keeps more strong shots (2 SD low / 3 SD high). Off: uses the same 2 SD limit on both sides."
+          tooltip="Smash-factor floor stays active for true irons. Asymmetric mode is more permissive on your best strikes."
+        />
+      ) : null}
     </div>
   );
 };

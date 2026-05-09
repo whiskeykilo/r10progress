@@ -1,15 +1,26 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import Papa from "papaparse";
-import { ChangeEvent, createRef, useContext, useState } from "react";
+import { ChangeEvent, createRef, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { apiPost } from "../api";
+import { apiPost, apiSessionsReachable } from "../api";
 import { BaseLoadingSpinner } from "../components/base/BaseLoadingSpinner";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { SessionContext } from "../provider/SessionContext";
 import { dashboardRoutes } from "../routes";
+import { assertUploadVisibleInSnapshot } from "../utils/uploadSessionVisibility";
 
 type UploadStep = "select" | "uploading" | "success" | "error";
+
+const CSV_ALLOWED_MIMES = new Set([
+  "",
+  "text/csv",
+  "application/csv",
+  "application/vnd.ms-excel",
+  // Some browsers / OS combos report CSV as plain text or octet-stream
+  "text/plain",
+  "application/octet-stream",
+]);
 
 export const Upload = () => {
   const { fetchSnapshot, setSessions } = useContext(SessionContext);
@@ -22,154 +33,102 @@ export const Upload = () => {
   const [filename, setFilename] = useState("");
   const [uploadedFilename, setUploadedFilename] = useState("");
   const [error, setError] = useState("");
+  const [isParsing, setIsParsing] = useState(false);
+  /** Dev-only hint when /api is not reachable from the Vite origin */
+  const [devApiHint, setDevApiHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof import.meta === "undefined" || !import.meta.env?.DEV) return;
+    if (step !== "select") return;
+    let cancelled = false;
+    void apiSessionsReachable().then((ok) => {
+      if (cancelled || ok) {
+        if (!cancelled && ok) setDevApiHint(null);
+        return;
+      }
+      setDevApiHint(
+        "Cannot reach the API at /api/sessions. If you ran `pnpm dev`, check the server log: if port 8080 is in use (EADDRINUSE), stop the other Node process and restart. Use the Vite URL from that same `pnpm dev` run.",
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [step]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
     const file = event.target.files[0];
-    // #region agent log
-    fetch("http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "17fcd8",
-      },
-      body: JSON.stringify({
-        sessionId: "17fcd8",
-        runId: "pre-fix",
-        hypothesisId: "H1",
-        location: "src/views/Upload.tsx:handleFileChange",
-        message: "Upload file selected",
-        data: {
-          name: file?.name ?? null,
-          type: file?.type ?? null,
-          size: file?.size ?? null,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     try {
       if (file) {
-        if (file.type !== "text/csv" || !file.name.endsWith(".csv")) {
-          // #region agent log
-          fetch(
-            "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Debug-Session-Id": "17fcd8",
-              },
-              body: JSON.stringify({
-                sessionId: "17fcd8",
-                runId: "pre-fix",
-                hypothesisId: "H1",
-                location: "src/views/Upload.tsx:handleFileChange",
-                message: "Upload file rejected by type guard",
-                data: {
-                  name: file.name,
-                  type: file.type,
-                  endsWithCsv: file.name.endsWith(".csv"),
-                },
-                timestamp: Date.now(),
-              }),
-            },
-          ).catch(() => {});
-          // #endregion
+        const extOk = file.name.toLowerCase().endsWith(".csv");
+        const mimeOk = CSV_ALLOWED_MIMES.has(file.type);
+        if (!extOk || !mimeOk) {
           throw new Error("Please upload a valid CSV file.");
         }
+        setCsvFile(null);
         setFilename(file.name);
         setError("");
+        setIsParsing(true);
         const reader = new FileReader();
         reader.onload = (e) => {
           if (!e.target) return;
           const csvData = e.target.result;
-          if (!csvData) return;
+          if (!csvData) {
+            setIsParsing(false);
+            return;
+          }
           // @ts-expect-error - PapaParse typings are incorrect
           Papa.parse(csvData, {
             header: true,
             dynamicTyping: true,
             complete: (results) => {
-              // #region agent log
-              fetch(
-                "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-Debug-Session-Id": "17fcd8",
-                  },
-                  body: JSON.stringify({
-                    sessionId: "17fcd8",
-                    runId: "pre-fix",
-                    hypothesisId: "H2",
-                    location: "src/views/Upload.tsx:Papa.parse.complete",
-                    message: "CSV parsed before state update",
-                    data: {
-                      rows: results.data.length,
-                      firstRowKeys:
-                        typeof results.data[0] === "object" &&
-                        results.data[0] !== null
-                          ? Object.keys(results.data[0] as object).slice(0, 6)
-                          : [],
-                    },
-                    timestamp: Date.now(),
-                  }),
-                },
-              ).catch(() => {});
-              // #endregion
               setCsvFile(results.data);
+              setIsParsing(false);
+            },
+            error: () => {
+              setError("Could not parse this CSV file.");
+              setIsParsing(false);
             },
           });
+        };
+        reader.onerror = () => {
+          setError("Could not read this CSV file.");
+          setIsParsing(false);
         };
         reader.readAsText(file);
       }
     } catch {
       setError("Please upload a valid CSV file.");
+      setIsParsing(false);
     }
   };
 
   const handleUpload = async () => {
-    if (!csvFile) return;
+    if (isParsing) {
+      setError(
+        "Still processing CSV file. Please wait a moment and try again.",
+      );
+      return;
+    }
+    if (!csvFile) {
+      setError("Please choose a CSV file first.");
+      return;
+    }
     setStep("uploading");
     try {
-      const results = [...csvFile];
-      results.shift();
-      // #region agent log
-      fetch(
-        "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Debug-Session-Id": "17fcd8",
-          },
-          body: JSON.stringify({
-            sessionId: "17fcd8",
-            runId: "pre-fix",
-            hypothesisId: "H2",
-            location: "src/views/Upload.tsx:handleUpload",
-            message: "Upload payload prepared",
-            data: {
-              filename,
-              csvRowsBeforeShift: csvFile.length,
-              csvRowsAfterShift: results.length,
-            },
-            timestamp: Date.now(),
-          }),
-        },
-      ).catch(() => {});
-      // #endregion
       await apiPost(`/api/sessions/${encodeURIComponent(filename)}`, {
-        results,
+        results: csvFile,
       });
 
       const updatedSessions = await fetchSnapshot();
-      if (updatedSessions && filename in updatedSessions) {
-        const newSessions = { ...updatedSessions };
-        newSessions[filename] = { ...newSessions[filename], selected: true };
-        setSessions(newSessions);
-      }
+      assertUploadVisibleInSnapshot(filename, updatedSessions);
+
+      const newSessions = { ...updatedSessions };
+      newSessions[filename] = {
+        ...newSessions[filename],
+        selected: true,
+      };
+      setSessions(newSessions);
 
       if (typeof window !== "undefined" && window.plausible) {
         window.plausible?.("Upload CSV");
@@ -178,30 +137,6 @@ export const Upload = () => {
       setUploadedFilename(filename);
       setStep("success");
     } catch (err) {
-      // #region agent log
-      fetch(
-        "http://127.0.0.1:7481/ingest/1d3bc7a3-f12b-4abd-b89d-767471458aa7",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Debug-Session-Id": "17fcd8",
-          },
-          body: JSON.stringify({
-            sessionId: "17fcd8",
-            runId: "pre-fix",
-            hypothesisId: "H3",
-            location: "src/views/Upload.tsx:handleUpload.catch",
-            message: "Upload request failed",
-            data: {
-              filename,
-              errorMessage: err instanceof Error ? err.message : String(err),
-            },
-            timestamp: Date.now(),
-          }),
-        },
-      ).catch(() => {});
-      // #endregion
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred.",
       );
@@ -213,6 +148,8 @@ export const Upload = () => {
     setCsvFile(null);
     setFilename("");
     setError("");
+    setIsParsing(false);
+    setDevApiHint(null);
     formRef.current?.reset();
     setStep("select");
   };
@@ -246,6 +183,18 @@ export const Upload = () => {
             exports. Otherwise, your clubs will not be recognized across
             sessions.
           </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Uploading the same file name again <b>replaces</b> that session in
+            the database.
+          </p>
+          {devApiHint && (
+            <p
+              role="alert"
+              className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100"
+            >
+              {devApiHint}
+            </p>
+          )}
 
           <div className="flex flex-col">
             <label
@@ -266,12 +215,19 @@ export const Upload = () => {
               <button
                 className={clsx(
                   "btn",
-                  (csvFile === null || inputRef.current?.value === "") &&
+                  (isParsing ||
+                    csvFile === null ||
+                    inputRef.current?.value === "") &&
                     "is-disabled",
                 )}
                 type="submit"
+                disabled={
+                  isParsing ||
+                  csvFile === null ||
+                  inputRef.current?.value === ""
+                }
               >
-                Upload
+                {isParsing ? "Processing..." : "Upload"}
               </button>
             </div>
             {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
@@ -298,13 +254,17 @@ export const Upload = () => {
             Session &ldquo;{uploadedFilename}&rdquo; has been uploaded and
             selected.
           </p>
-          <div className="flex gap-4">
-            <button onClick={resetForm} className="btn btn-secondary">
-              Upload Another
-            </button>
+          <div className="flex flex-wrap gap-4">
             <Link to={dashboardRoutes.sessions} className="btn">
-              View Sessions
+              View sessions &amp; data
             </Link>
+            <button
+              onClick={resetForm}
+              type="button"
+              className="btn btn-secondary"
+            >
+              Upload another
+            </button>
           </div>
         </div>
       )}

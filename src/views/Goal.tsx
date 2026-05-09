@@ -53,11 +53,11 @@ export const Goal = ({ goal, onDelete, onUpdate }: GoalProps) => {
         <h3 className="text-lg font-semibold">{goal.title}</h3>
       )}
       <hr />
-      <div className="flex flex-col justify-between text-lg lg:flex-row">
-        <p>
+      <div className="grid grid-cols-1 gap-x-8 gap-y-2 text-lg sm:grid-cols-2">
+        <p className="min-w-0">
           Current: <b>{formattedCurrent}</b>
         </p>
-        <p>
+        <p className="min-w-0">
           Target:{" "}
           {isEditing ? (
             <input
@@ -71,10 +71,10 @@ export const Goal = ({ goal, onDelete, onUpdate }: GoalProps) => {
             <b>{goal.target + goal.unit}</b>
           )}
         </p>
-        <p>
+        <p className="min-w-0">
           Progress: <b>{goal.progressText}</b>
         </p>
-        <p>
+        <p className="min-w-0">
           Direction:{" "}
           <b>
             {goal.direction === "increase"

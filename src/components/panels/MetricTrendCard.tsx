@@ -177,8 +177,8 @@ export const MetricTrendCard = ({
 
   return (
     <div className="rounded-xl bg-white p-4 dark:bg-gray-800">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:gap-x-8 lg:gap-y-4">
+        <div className="min-w-0 lg:max-w-md">
           <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
             {title}
           </h4>
@@ -186,7 +186,7 @@ export const MetricTrendCard = ({
             Compare your last 3 sessions vs previous 3 for a specific club.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 lg:ml-auto lg:w-auto lg:flex-shrink-0">
           <div className="w-full sm:min-w-52">
             <BaseLabel>Club</BaseLabel>
             <BaseListbox

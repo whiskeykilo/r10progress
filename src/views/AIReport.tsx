@@ -17,6 +17,7 @@ type AnalyzeNavState = {
   filename?: string;
   cached?: boolean;
   timeframe?: string;
+  sessionNotes?: Array<{ filename: string; notes: string }>;
 };
 
 const ScoreIndicator = ({ score }: { score: number }) => {
@@ -182,6 +183,7 @@ export const AIReport = () => {
           shots: navState.shots,
           timeframe: navState.timeframe ?? report?.timeframe ?? "Last 3 months",
           filename: navState.filename ?? "",
+          sessionNotes: navState.sessionNotes ?? [],
           force: true,
         },
       );

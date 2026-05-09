@@ -17,7 +17,7 @@ import { z } from "zod";
 // Bump this string whenever the prompt or schema changes meaningfully.
 // It's prefixed into the input hash so cache entries are invalidated by edits
 // to the system prompt or this schema.
-export const PROMPT_VERSION = "2026-05-04.v1";
+export const PROMPT_VERSION = "2026-05-09.v2";
 
 const ScoreBlockSchema = z.object({
   score: z.number(),

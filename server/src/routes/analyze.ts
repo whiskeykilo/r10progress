@@ -16,6 +16,14 @@ const BodySchema = z.object({
   timeframe: z.string(),
   filename: z.string(),
   force: z.boolean().optional(),
+  sessionNotes: z
+    .array(
+      z.object({
+        filename: z.string(),
+        notes: z.string(),
+      }),
+    )
+    .optional(),
 });
 
 // Reasoning-capable analytical task with strict structured output. gpt-5-mini
@@ -41,14 +49,32 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  const { shots, timeframe, filename, force } = body.data;
+  const {
+    shots,
+    timeframe,
+    filename,
+    force,
+    sessionNotes: rawSessionNotes,
+  } = body.data;
+
+  const sessionNotes = (rawSessionNotes ?? [])
+    .map(({ filename: fn, notes }) => ({
+      filename: fn.trim(),
+      notes: notes.trim(),
+    }))
+    .filter((s) => s.filename.length > 0 && s.notes.length > 0)
+    .sort((a, b) => a.filename.localeCompare(b.filename));
+
+  const sessionNotesCanonical = JSON.stringify(sessionNotes);
 
   // Aggregate raw shots → compact, decision-ready payload. This is what the
   // model actually sees and what we hash for content-based caching.
   const aggregate = aggregateShots(shots, { timeframe, filename });
   const aggregateJson = JSON.stringify(aggregate);
   const inputHash = createHash("sha256")
-    .update(`${PROMPT_VERSION}\n${MODEL}\n${aggregateJson}`)
+    .update(
+      `${PROMPT_VERSION}\n${MODEL}\n${aggregateJson}\n${sessionNotesCanonical}`,
+    )
     .digest("hex");
 
   const db = await getDb();
@@ -77,8 +103,17 @@ router.post("/", async (req, res) => {
     }
   }
 
+  const notesBlock =
+    sessionNotes.length === 0
+      ? ""
+      : `
+
+Session notes (player-provided context per file):
+${sessionNotes.map((s) => `--- ${s.filename} ---\n${s.notes}`).join("\n\n")}`;
+
   const userMessage = `Timeframe: ${timeframe}
 Files: ${filename}
+${notesBlock}
 
 Aggregated shot data (computed from ${aggregate.meta.totalShots} raw shots, ${aggregate.meta.outliersDropped} dropped as IQR outliers):
 ${aggregateJson}`;

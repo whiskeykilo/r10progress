@@ -8,7 +8,7 @@ import { useAveragedSwings } from "../utils/calculateAverages";
 import { sortGolfSwingKeysForHeader } from "../utils/utils";
 
 export const Sessions = () => {
-  const { sessions } = useContext(SessionContext);
+  const { sessions, initialized, isLoading } = useContext(SessionContext);
   const averages = useAveragedSwings();
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
 
@@ -36,8 +36,25 @@ export const Sessions = () => {
     );
   };
 
+  const showDevEmptyHint =
+    typeof import.meta !== "undefined" &&
+    import.meta.env?.DEV &&
+    initialized &&
+    !isLoading &&
+    Object.keys(sessions).length === 0;
+
   return (
     <BasePageLayout title="Sessions">
+      {showDevEmptyHint && (
+        <p
+          role="status"
+          className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100"
+        >
+          Development: sessions list is empty. Ensure one API server is on port
+          8080 (Vite proxies /api there) and avoid multiple `pnpm dev` instances
+          fighting for the same port.
+        </p>
+      )}
       {availableColumns.length > 0 && (
         <details className="rounded-md border border-sky-200 bg-white p-3 dark:border-sky-900 dark:bg-gray-900">
           <summary className="cursor-pointer text-sm font-medium text-sky-900 dark:text-sky-100">

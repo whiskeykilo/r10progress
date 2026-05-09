@@ -93,7 +93,8 @@ const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       setSessionsCallback(sessionResult);
       setInitialized(true);
       setIsLoading(false);
-      return sessionResult;
+      // Match client state shape (filtered rows, same pipeline as setSessionsCallback)
+      return filterResultsWithMissingCells(sessionResult);
     } catch (error) {
       console.error(error);
     }

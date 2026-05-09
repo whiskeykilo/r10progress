@@ -114,6 +114,12 @@ export const AIAnalysis = () => {
       settings,
     );
     const selectedFiles = filteredEntries.map(([filename]) => filename);
+    const sessionNotes = filteredEntries
+      .map(([fname, session]) => ({
+        filename: fname,
+        notes: (session.notes ?? "").trim(),
+      }))
+      .filter((s) => s.notes.length > 0);
     const timeframe = ANALYSIS_SCOPE_LABELS[analysisScope];
 
     if (analysisShots.length === 0) {
@@ -130,7 +136,12 @@ export const AIAnalysis = () => {
 
       const report = await apiPost<
         AIAnalysisResult & { id: string; cached?: boolean }
-      >("/api/analyze", { shots: analysisShots, timeframe, filename });
+      >("/api/analyze", {
+        shots: analysisShots,
+        timeframe,
+        filename,
+        sessionNotes,
+      });
 
       await fetchReports();
       navigate(`${routes.aiAnalysis}/${report.id}`, {
@@ -139,6 +150,7 @@ export const AIAnalysis = () => {
           filename,
           cached: !!report.cached,
           timeframe,
+          sessionNotes,
         },
       });
     } catch (err: unknown) {
