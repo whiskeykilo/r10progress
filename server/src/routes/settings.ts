@@ -55,7 +55,7 @@ router.get("/", async (_req, res) => {
       clubLoftsByName: {
         ...DEFAULT_PLAYER_PROFILE.clubLoftsByName,
         ...(typeof storedProfile.clubLoftsByName === "object" &&
-          storedProfile.clubLoftsByName !== null
+        storedProfile.clubLoftsByName !== null
           ? (storedProfile.clubLoftsByName as Record<string, number>)
           : {}),
       },

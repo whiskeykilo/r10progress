@@ -21,9 +21,7 @@ type GapQuality = "none" | "too-small" | "just-right" | "too-large";
 
 function classifyGap(distanceDelta: number, unit: "yds" | "m"): GapQuality {
   const goodMin =
-    unit === "m"
-      ? GAP_GOOD_MIN_YARDS * YARDS_TO_METERS
-      : GAP_GOOD_MIN_YARDS;
+    unit === "m" ? GAP_GOOD_MIN_YARDS * YARDS_TO_METERS : GAP_GOOD_MIN_YARDS;
   const tooWideMin =
     unit === "m"
       ? GAP_GOOD_MAX_EXCLUSIVE_YARDS * YARDS_TO_METERS
@@ -35,9 +33,7 @@ function classifyGap(distanceDelta: number, unit: "yds" | "m"): GapQuality {
 
 function gapBandThresholds(unit: "yds" | "m") {
   const goodMin =
-    unit === "m"
-      ? GAP_GOOD_MIN_YARDS * YARDS_TO_METERS
-      : GAP_GOOD_MIN_YARDS;
+    unit === "m" ? GAP_GOOD_MIN_YARDS * YARDS_TO_METERS : GAP_GOOD_MIN_YARDS;
   const tooWideMin =
     unit === "m"
       ? GAP_GOOD_MAX_EXCLUSIVE_YARDS * YARDS_TO_METERS
@@ -195,9 +191,7 @@ export const GappingChart = ({
     distanceUnit === "m" ? Math.round(n * 10) / 10 : Math.round(n);
   const maxGoodYards = GAP_GOOD_MAX_EXCLUSIVE_YARDS - 1;
   const onTargetUpper =
-    distanceUnit === "m"
-      ? fmt(maxGoodYards * YARDS_TO_METERS)
-      : maxGoodYards;
+    distanceUnit === "m" ? fmt(maxGoodYards * YARDS_TO_METERS) : maxGoodYards;
 
   return (
     <div className="w-full">

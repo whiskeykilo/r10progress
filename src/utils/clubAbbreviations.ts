@@ -7,11 +7,20 @@ export function abbreviateClubName(club: string): string {
   if (!raw) return "";
   const lc = raw.toLowerCase();
 
-  if (/\blob(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) || /\blobwedge\b/.test(lc))
+  if (
+    /\blob(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) ||
+    /\blobwedge\b/.test(lc)
+  )
     return "LW";
-  if (/\bsand(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) || /\bsandwedge\b/.test(lc))
+  if (
+    /\bsand(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) ||
+    /\bsandwedge\b/.test(lc)
+  )
     return "SW";
-  if (/\bgap(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) || /\bgapwedge\b/.test(lc))
+  if (
+    /\bgap(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) ||
+    /\bgapwedge\b/.test(lc)
+  )
     return "GW";
   if (
     /\bpitching(?:[- ]?wedges?|-wedge|wedge)\b/.test(lc) ||
