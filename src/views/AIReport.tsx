@@ -11,6 +11,7 @@ import {
   aiReportExample,
   AnalysisReport,
 } from "../utils/aiReportExample";
+import { isAiExampleReportDismissed } from "../utils/aiReportExamplePreference";
 
 type AnalyzeNavState = {
   shots?: Array<Record<string, unknown>>;
@@ -204,6 +205,10 @@ export const AIReport = () => {
     }
 
     if (reportId === "example") {
+      if (isAiExampleReportDismissed()) {
+        navigate(routes.aiAnalysis, { replace: true });
+        return;
+      }
       setReport(aiReportExample);
       setLoading(false);
       return;

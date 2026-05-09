@@ -13,6 +13,10 @@ import {
   aiReportExample,
   AnalysisReport,
 } from "../utils/aiReportExample";
+import {
+  dismissAiExampleReport,
+  isAiExampleReportDismissed,
+} from "../utils/aiReportExamplePreference";
 import { applyRangeBallCompensationToShots } from "../utils/rangeBallCompensation";
 
 interface LoadingState {
@@ -45,7 +49,9 @@ export const AIAnalysis = () => {
   const fetchReports = async () => {
     try {
       const reports = await apiGet<AnalysisReport[]>("/api/reports");
-      setPreviousReports([aiReportExample, ...reports]);
+      setPreviousReports(
+        isAiExampleReportDismissed() ? reports : [aiReportExample, ...reports],
+      );
     } catch (err) {
       console.error("Error fetching reports:", err);
     }
@@ -68,6 +74,7 @@ export const AIAnalysis = () => {
     if (!confirmed) return;
 
     if (report.id === "example") {
+      dismissAiExampleReport();
       setPreviousReports((current) =>
         current.filter((r) => r.id !== report.id),
       );
