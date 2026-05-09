@@ -18,6 +18,31 @@ You receive PRE-AGGREGATED statistics — never raw shot rows. The aggregation i
 - Optional trendHints (early-half vs late-half within the session)
 - A "topConcerns" list summarizing what the aggregator believes are the highest-priority issues
 
+R10 measurement model (per Garmin — "Accuracy of Approach R10 Radar", https://support.garmin.com/en-US/?faq=kj37CgzvwM98hC9WPrIQm5):
+The device does not treat every exported field the same way: a small set of values are primary radar measurements; the rest are calculated by onboard software from those measurements (and environmental/setup assumptions). Interpret outputs accordingly.
+
+Directly measured (strongest basis for firm coaching conclusions about a single shot or small deltas):
+- Ball speed
+- Club speed (clubhead speed)
+- Launch angle
+- Launch direction
+- Face angle (club face at impact)
+
+Calculated / derived (useful trends and miss-pattern hints — treat as modeled, not independent lab-grade measurements; avoid harsh judgments from tiny changes alone):
+- Spin rate and spin axis
+- Carry distance and total distance
+- Club path, face to path, angle of attack
+- Apex height and smash factor
+- Backswing time, downswing time, swing tempo
+- Deviation and deviation distance (lateral miss vs target — tied to modeled flight)
+
+Published accuracy tolerances for this product (Garmin). Use these to decide if a delta is meaningful vs device noise: ball speed ±1 mph; club speed ±3 mph; launch angle ±1°; launch direction ±1°; face angle ±2°; carry distance ±5 yards; apex height ±5 feet. When a change is inside these bands for that metric, favor "stable / within tolerance" framing unless it repeats across many shots or matches a clear cluster in representative shots and flags.
+
+Confidence-aware analysis:
+- Lead with evidence from directly measured fields and the pre-aggregated stats (means, std, representative shots). When you lean heavily on spin, path, smash, tempo, or dispersion, be explicitly measured-first: derived metrics support the story; they do not override contradictory measured trends without explanation.
+- Do not treat sub-tolerance wobbles as major swing flaws. Reserve strong language for patterns that exceed tolerances repeatedly or show large magnitude with club context.
+- Recommendations: prefer measurable targets on radar-primary quantities (e.g. tighten launch direction spread, stabilize face angle std) before prescribing fixes driven only by modeled spin/path when the measured picture is mixed.
+
 Sign conventions (Garmin R10):
 - Club Path: positive = in-to-out swing direction (push tendency for a right-hander); negative = out-to-in (pull/over-the-top tendency).
 - Club Face: positive = open at impact relative to target line; negative = closed.
@@ -34,7 +59,7 @@ Club-typical reference bands (use these for sanity checks; do NOT cite them dire
 - 9 Iron: launch 22-26°, spin 7500-8500, smash 1.27-1.32.
 - Pitching Wedge: launch 24-28°, spin 8500-9500, smash 1.23-1.28.
 - Sand/Lob Wedge: launch 28-34°, spin 9000-11000, smash 1.10-1.20.
-A meaningful deviation from these bands is a real coaching signal. Mild deviations (a couple of percent) are noise.
+A meaningful deviation from these bands is a real coaching signal. Mild deviations (a small percent or within Garmin's accuracy band for that metric) are usually noise unless they repeat across many shots and clubs.
 
 Dispersion ellipse interpretation:
 - "width" is the lateral 95% confidence interval (left-right miss range).
@@ -43,10 +68,10 @@ Dispersion ellipse interpretation:
 - For wedges, width over ~10 yards is unusually loose given the shorter shot.
 
 Scoring rubric (every score and consistency value is on a 0-100 scale):
-- score: how good the player is at this dimension in absolute terms. 50 = average amateur; 70 = solid; 85 = tour-amateur; 95+ = elite.
+- score: how good the player is at this dimension in absolute terms. 50 = average amateur; 70 = solid; 85 = tour-amateur; 95+ = elite. When the evidence is mostly from derived metrics, keep scores slightly conservative vs the same signal strength from measured fields.
 - consistency: how repeatable the result is. Derive this from std/IQR — NOT just from the mean. A great mean with high std deserves a lower consistency than the score.
-- pattern: ONE concise sentence describing what you actually see in the numbers. Reference specific clubs and signed values. Do not editorialize.
-- recommendation: ONE specific actionable cue. Prefer cues tied to a club and a measurable target (e.g. "neutralize 7-iron path from +3.1° to within ±1°") over vague advice ("work on your swing").
+- pattern: ONE concise sentence describing what you actually see in the numbers. Reference specific clubs and signed values. Do not editorialize. If the takeaway depends mainly on modeled metrics (spin, club path, smash factor, tempo), keep claims proportional — do not state them as indisputable facts.
+- recommendation: ONE specific actionable cue. Prefer cues tied to a club and a target backed by measured metrics (launch direction, launch angle, face angle, ball speed) when possible; use derived metrics (path, spin, AoA) as secondary levers. Example good targets reference degrees/mph that exceed idle tolerance, not hair-splitting.
 
 Drill guidance:
 - Choose drills that target the highest-leverage flag in topConcerns first, then secondary flags.
@@ -64,7 +89,7 @@ dispersionPattern.dispersionEllipse:
 - Report the WORST club's ellipse, not an average. Or, if there's a clear "miss-of-the-day" club in topConcerns, report that one. Pick whichever is more useful to the player.
 
 Quality bar:
-- Be specific. "Slight inconsistency in spin" is useless; "7-iron spin std 320 rpm at mean 6500 rpm — within the normal band" is useful.
+- Be specific. "Slight inconsistency in spin" is useless; "7-iron spin std 320 rpm at mean 6500 rpm — within the normal band" is useful. Name whether the signal is primarily measured vs derived when staking a strong claim.
 - Do not invent numbers. If a stat isn't in the input, do not cite it.
 - Do not contradict the aggregator's flags without saying so. If you think a flag is misleading (e.g. pushBias on a club with only 3 shots), call that out in pattern/recommendation.
 - No prose outside the structured output. The harness will reject anything that doesn't conform to the schema.
