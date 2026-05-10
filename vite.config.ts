@@ -7,7 +7,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "http://localhost:8080",
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        timeout: 1_800_000,
+        proxyTimeout: 1_800_000,
+      },
     },
   },
   test: {

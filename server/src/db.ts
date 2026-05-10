@@ -45,6 +45,17 @@ async function migrate(db: Client) {
       id   INTEGER PRIMARY KEY CHECK (id = 1),
       data TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS analyze_jobs (
+      id         TEXT PRIMARY KEY,
+      status     TEXT NOT NULL,
+      input_hash TEXT,
+      payload    TEXT NOT NULL,
+      report_id  TEXT,
+      error      TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `);
 
   // Idempotent column add for content-hash dedup. SQLite has no

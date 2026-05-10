@@ -52,7 +52,9 @@ Package manager: **pnpm**.
 
 ### API
 
-`src/api.ts` is a thin `fetch` wrapper for the backend at `/api/*`. The Vite dev server proxies `/api` to the local Node server.
+`src/api.ts` is a thin `fetch` wrapper for the backend at `/api/*`. The Vite dev server proxies `/api` to the local Node server with long timeouts so `/api/analyze` can run for many minutes in dev.
+
+The AI Analysis page warns users not to navigate away during a run; analyze requests that miss the content hash cache are processed as **background jobs** (poll `GET /api/analyze/jobs/:id`).
 
 ## Project Layout
 
@@ -73,6 +75,9 @@ Package manager: **pnpm**.
 ## Server Environment Variables
 
 - `OPENAI_API_KEY` — Required for `/api/analyze` (AI shot analysis).
+- `OPENAI_ANALYZE_MODEL` — Chat model id (default: `gpt-5.5-pro`).
+- `OPENAI_REASONING_EFFORT` — e.g. `xhigh`, or `none` / `off` to omit `reasoning_effort` for non-reasoning models like `gpt-4o-mini`.
+- `OPENAI_TIMEOUT_MS` — OpenAI SDK client timeout in ms (default `1800000`, max `3600000`). Raise if frontier runs hit timeouts.
 - `PORT` — Server port (default: `8080`).
 - `STATIC_DIR` — Path to built SPA (default: `{cwd}/dist`).
 - `DATA_DIR` — Directory for `sqlite.db` (default: `{cwd}/data`).
@@ -85,7 +90,8 @@ All routes mounted under `/api/`:
 |--------|------|---------|
 | GET/POST/PATCH/DELETE | `/sessions/:filename` | Session CRUD |
 | GET | `/reports`, `/reports/:id` | AI report retrieval |
-| POST | `/analyze` | Analyze shots via OpenAI (gpt-4o-mini) |
+| POST | `/analyze` | Start analyze: **200** if served from cache, **202** `{ jobId }` if queued (frontier model runs in background) |
+| GET | `/analyze/jobs/:jobId` | Poll job status until completed / failed |
 | GET/PUT | `/settings` | User settings (IQR filter, units) |
 
 ## Notes

@@ -1,23 +1,22 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiDelete, apiGet, apiPost } from "../api";
+import { apiDelete, apiGet, apiPostAnalyze, pollAnalyzeJob } from "../api";
 import { LoadingIndicator } from "../components/ai/LoadingIndicator";
 import { PreviousReports } from "../components/ai/PreviousReports";
+import { BaseDialog } from "../components/base/BaseDialog";
 import { BasePageLayout } from "../components/base/BasePageLayout";
 import { useSettings } from "../provider/SettingsContext";
 import { useSelectedShots } from "../hooks/useSelectedShots";
 import { SessionContext } from "../provider/SessionContext";
 import { routes } from "../routes";
-import {
-  AIAnalysisResult,
-  aiReportExample,
-  AnalysisReport,
-} from "../utils/aiReportExample";
+import { aiReportExample, AnalysisReport } from "../utils/aiReportExample";
 import {
   dismissAiExampleReport,
   isAiExampleReportDismissed,
 } from "../utils/aiReportExamplePreference";
 import { applyRangeBallCompensationToShots } from "../utils/rangeBallCompensation";
+import { parseDate } from "../utils/utils";
+import dayjs from "dayjs";
 
 /** Must match `SESSION_FILE_META_KEY` on the server aggregator. */
 const R10_SESSION_FILE = "__r10SessionFile";
@@ -27,13 +26,43 @@ interface LoadingState {
   generatingReport: boolean;
 }
 
-type AnalysisScope = "all-selected" | "last-3-months" | "last-10-sessions";
+const ANALYSIS_SCOPE_VALUES = [
+  "sessions-1",
+  "sessions-3",
+  "sessions-5",
+  "sessions-7",
+  "months-1",
+  "months-2",
+  "months-3",
+  "all-selected",
+] as const;
+
+type AnalysisScope = (typeof ANALYSIS_SCOPE_VALUES)[number];
 
 const ANALYSIS_SCOPE_LABELS: Record<AnalysisScope, string> = {
+  "sessions-1": "Last 1 session",
+  "sessions-3": "Last 3 sessions",
+  "sessions-5": "Last 5 sessions",
+  "sessions-7": "Last 7 sessions",
+  "months-1": "Last 1 month",
+  "months-2": "Last 2 months",
+  "months-3": "Last 3 months",
   "all-selected": "All selected sessions",
-  "last-3-months": "Last 3 months",
-  "last-10-sessions": "Last 10 sessions",
 };
+
+function isAnalysisScope(value: string): value is AnalysisScope {
+  return (ANALYSIS_SCOPE_VALUES as readonly string[]).includes(value);
+}
+
+function sessionCalendarDay(session: { date: string }): dayjs.Dayjs | null {
+  const raw = (session.date ?? "").trim();
+  if (!raw) return null;
+  const iso = parseDate(raw);
+  if (!iso || iso === "Invalid Date") return null;
+  let d = dayjs(iso, "YYYY-MM-DD", true);
+  if (!d.isValid()) d = dayjs(iso);
+  return d.isValid() ? d.startOf("day") : null;
+}
 
 export const AIAnalysis = () => {
   const navigate = useNavigate();
@@ -46,8 +75,18 @@ export const AIAnalysis = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [previousReports, setPreviousReports] = useState<AnalysisReport[]>([]);
-  const [analysisScope, setAnalysisScope] =
-    useState<AnalysisScope>("last-3-months");
+  const [analysisScope, setAnalysisScope] = useState<AnalysisScope>("months-3");
+  const [confirmAnalyzeOpen, setConfirmAnalyzeOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loadingState.generatingReport && !loadingState.analyzing) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [loadingState.analyzing, loadingState.generatingReport]);
 
   const fetchReports = async () => {
     try {
@@ -95,25 +134,34 @@ export const AIAnalysis = () => {
     }
   };
 
-  const handleAnalyze = async () => {
+  const runAnalyzeAfterConfirm = async () => {
     const selectedSessionEntries = Object.entries(sessions).filter(
       ([, session]) => session.selected,
     );
     const sortedEntries = [...selectedSessionEntries].sort((a, b) => {
-      const dateA = new Date(a[1].date).getTime();
-      const dateB = new Date(b[1].date).getTime();
-      return dateB - dateA;
+      const da = sessionCalendarDay(a[1]);
+      const db = sessionCalendarDay(b[1]);
+      if (da && db) return db.valueOf() - da.valueOf();
+      if (da && !db) return -1;
+      if (!da && db) return 1;
+      return a[0].localeCompare(b[0]);
     });
 
     let filteredEntries = sortedEntries;
-    if (analysisScope === "last-10-sessions") {
-      filteredEntries = sortedEntries.slice(0, 10);
-    } else if (analysisScope === "last-3-months") {
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-      filteredEntries = sortedEntries.filter(
-        ([, session]) => new Date(session.date) >= threeMonthsAgo,
-      );
+    if (analysisScope.startsWith("sessions-")) {
+      const n = Number.parseInt(analysisScope.slice("sessions-".length), 10);
+      if (Number.isFinite(n) && n > 0) {
+        filteredEntries = sortedEntries.slice(0, n);
+      }
+    } else if (analysisScope.startsWith("months-")) {
+      const n = Number.parseInt(analysisScope.slice("months-".length), 10);
+      if (Number.isFinite(n) && n > 0) {
+        const cutoff = dayjs().subtract(n, "month").startOf("day");
+        filteredEntries = sortedEntries.filter(([, session]) => {
+          const d = sessionCalendarDay(session);
+          return d != null && !d.isBefore(cutoff, "day");
+        });
+      }
     }
 
     const environmentBySessionFile: Record<
@@ -143,16 +191,13 @@ export const AIAnalysis = () => {
       return;
     }
 
-    setLoadingState({ analyzing: true, generatingReport: false });
+    setLoadingState({ analyzing: false, generatingReport: true });
     setError(null);
 
     try {
-      setLoadingState({ analyzing: false, generatingReport: true });
       const filename = selectedFiles.join(", ");
 
-      const report = await apiPost<
-        AIAnalysisResult & { id: string; cached?: boolean }
-      >("/api/analyze", {
+      const payload = {
         shots: analysisShots,
         timeframe,
         filename,
@@ -162,7 +207,13 @@ export const AIAnalysis = () => {
           handicapIndex: settings.playerProfile?.handicapIndex ?? null,
           clubLoftsByName: settings.playerProfile?.clubLoftsByName ?? {},
         },
-      });
+      };
+
+      const submitted = await apiPostAnalyze(payload);
+      const report =
+        submitted.outcome === "complete"
+          ? submitted.report
+          : await pollAnalyzeJob(submitted.jobId);
 
       await fetchReports();
       navigate(`${routes.aiAnalysis}/${report.id}`, {
@@ -181,10 +232,15 @@ export const AIAnalysis = () => {
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
+      const stripped = msg
+        .replace(/^POST \/api\/analyze failed: \d+(:\s*)?/, "")
+        .trim();
       setError(
-        msg.includes("OPENAI_API_KEY")
+        msg.includes("OPENAI_API_KEY") || stripped.includes("OPENAI_API_KEY")
           ? "AI analysis is not configured. Set OPENAI_API_KEY on the server."
-          : "Failed to analyze shots. Please try again later.",
+          : stripped.length > 0 && stripped.length < 400
+            ? stripped
+            : "Failed to analyze shots. Please try again later.",
       );
       console.error("Analysis error:", err);
     } finally {
@@ -236,11 +292,8 @@ export const AIAnalysis = () => {
                   </div>
                 </div>
               </div>
-            ) : loadingState.analyzing || loadingState.generatingReport ? (
-              <div className="app-card">
-                <LoadingIndicator state={loadingState} />
-              </div>
-            ) : (
+            ) : loadingState.analyzing ||
+              loadingState.generatingReport ? null : (
               <div className="app-card">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Start Analysis
@@ -260,21 +313,46 @@ export const AIAnalysis = () => {
                     <select
                       id="analysis-scope"
                       value={analysisScope}
-                      onChange={(e) =>
-                        setAnalysisScope(e.target.value as AnalysisScope)
-                      }
-                      className="app-focus-ring mt-1 block w-full sm:w-80"
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (isAnalysisScope(v)) setAnalysisScope(v);
+                      }}
+                      className="app-focus-ring mt-1 block w-full max-w-md sm:w-96"
                     >
-                      <option value="last-3-months">Last 3 months</option>
-                      <option value="last-10-sessions">Last 10 sessions</option>
+                      <optgroup label="Recent sessions (newest first)">
+                        <option value="sessions-1">
+                          {ANALYSIS_SCOPE_LABELS["sessions-1"]}
+                        </option>
+                        <option value="sessions-3">
+                          {ANALYSIS_SCOPE_LABELS["sessions-3"]}
+                        </option>
+                        <option value="sessions-5">
+                          {ANALYSIS_SCOPE_LABELS["sessions-5"]}
+                        </option>
+                        <option value="sessions-7">
+                          {ANALYSIS_SCOPE_LABELS["sessions-7"]}
+                        </option>
+                      </optgroup>
+                      <optgroup label="Time window">
+                        <option value="months-1">
+                          {ANALYSIS_SCOPE_LABELS["months-1"]}
+                        </option>
+                        <option value="months-2">
+                          {ANALYSIS_SCOPE_LABELS["months-2"]}
+                        </option>
+                        <option value="months-3">
+                          {ANALYSIS_SCOPE_LABELS["months-3"]}
+                        </option>
+                      </optgroup>
                       <option value="all-selected">
-                        All selected sessions
+                        {ANALYSIS_SCOPE_LABELS["all-selected"]}
                       </option>
                     </select>
                   </div>
                   <button
+                    type="button"
                     className="app-focus-ring inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-                    onClick={handleAnalyze}
+                    onClick={() => setConfirmAnalyzeOpen(true)}
                   >
                     Analyze My Shots
                   </button>
@@ -282,6 +360,50 @@ export const AIAnalysis = () => {
               </div>
             )}
           </div>
+
+          <BaseDialog
+            open={confirmAnalyzeOpen}
+            onClose={() => setConfirmAnalyzeOpen(false)}
+            title="Start AI analysis?"
+          >
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Analysis uses a frontier model and can take several minutes. Do
+              not close the tab or navigate away while it runs.
+            </p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                className="app-focus-ring inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600"
+                onClick={() => setConfirmAnalyzeOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="app-focus-ring inline-flex justify-center rounded-md bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                onClick={() => {
+                  setConfirmAnalyzeOpen(false);
+                  void runAnalyzeAfterConfirm();
+                }}
+              >
+                Start analysis
+              </button>
+            </div>
+          </BaseDialog>
+
+          {(loadingState.analyzing || loadingState.generatingReport) &&
+            shots.length > 0 &&
+            !error && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/50 p-4 dark:bg-black/60">
+                <div className="app-card max-w-lg shadow-2xl">
+                  <LoadingIndicator state={loadingState} />
+                  <p className="mt-4 text-center text-sm font-medium text-amber-800 dark:text-amber-200">
+                    Do not close this tab or navigate away until analysis
+                    finishes. Leaving this page can interrupt the run.
+                  </p>
+                </div>
+              </div>
+            )}
 
           <div>
             <PreviousReports

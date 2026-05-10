@@ -56,7 +56,8 @@ export const LoadingIndicator = ({ state }: { state: LoadingState }) => (
       </div>
     </div>
     <p className="text-sm text-gray-500 dark:text-gray-400">
-      This process can take up to 30 seconds to complete.
+      Frontier models can take several minutes. Safe to wait here while the job
+      finishes on the server.
     </p>
   </div>
 );
