@@ -16,7 +16,7 @@ export const BaseDisclosure = ({ title, children }: BaseDisclosureProps) => {
             <ChevronUpIcon
               className={`${
                 open ? "rotate-180 transform" : ""
-              } h-5 w-5 self-center text-sky-500`}
+              } h-5 w-5 self-center text-sky-500 dark:text-sky-400`}
             />
           </Disclosure.Button>
           <Disclosure.Panel className="mb-6 pt-4 text-sm text-gray-500 dark:text-gray-400">

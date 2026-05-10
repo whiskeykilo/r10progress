@@ -92,7 +92,7 @@ export const ClubDistances = () => {
               type="button"
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
                 gappingDistanceMetric === "carry"
-                  ? "dark:text-brand-300 bg-white text-brand-700 shadow dark:bg-gray-800"
+                  ? "bg-white text-brand-700 shadow dark:bg-gray-800 dark:text-brand-300"
                   : "text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
               onClick={() => setGappingDistanceMetric("carry")}
@@ -104,7 +104,7 @@ export const ClubDistances = () => {
               type="button"
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
                 gappingDistanceMetric === "total"
-                  ? "dark:text-brand-300 bg-white text-brand-700 shadow dark:bg-gray-800"
+                  ? "bg-white text-brand-700 shadow dark:bg-gray-800 dark:text-brand-300"
                   : "text-gray-700 hover:bg-white dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
               onClick={() => setGappingDistanceMetric("total")}

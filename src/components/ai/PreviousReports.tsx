@@ -28,7 +28,7 @@ export const PreviousReports = ({
           <div key={report.id} className="group flex items-center gap-2 py-2">
             <button
               type="button"
-              className="flex min-w-0 flex-1 items-center justify-between rounded-md py-2 text-left hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-gray-700"
+              className="flex min-w-0 flex-1 items-center justify-between rounded-md py-2 text-left hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:hover:bg-gray-700 dark:focus-visible:ring-offset-gray-800"
               onClick={() => onSelectReport(report)}
               aria-label={
                 report.id === "example"

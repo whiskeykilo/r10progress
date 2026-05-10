@@ -26,12 +26,12 @@ export const BaseListbox = ({
         <Listbox.Button
           aria-label={ariaLabel}
           title={ariaLabel}
-          className="app-focus-ring relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm"
+          className="app-focus-ring relative w-full cursor-default rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
         >
           <span className="block truncate">{valueText}</span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronUpDownIcon
-              className="h-5 w-5 text-gray-400"
+              className="h-5 w-5 text-gray-500 dark:text-gray-300"
               aria-hidden="true"
             />
           </span>
@@ -42,7 +42,7 @@ export const BaseListbox = ({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <Listbox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800 dark:ring-white/10 sm:text-sm">
+          <Listbox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:ring-white/10 sm:text-sm">
             {options.map((value, valueId) => (
               <Listbox.Option
                 key={valueId}
@@ -65,7 +65,7 @@ export const BaseListbox = ({
                       {value}
                     </span>
                     {selected ? (
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600">
+                      <span className="dark:text-brand-400 absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600">
                         <CheckIcon className="h-5 w-5" aria-hidden="true" />
                       </span>
                     ) : null}

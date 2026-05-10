@@ -21,10 +21,10 @@ export const BaseTabs: React.FC<TabsProps> = ({ categories }) => {
               className={({ selected }) =>
                 clsx(
                   "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
-                  "ring-offset-brand-400 ring-white ring-opacity-60 ring-offset-2 focus:outline-none focus:ring-2",
+                  "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-brand-400 dark:focus:ring-offset-gray-900",
                   selected
-                    ? "dark:text-brand-400 bg-white text-brand-700 shadow dark:bg-gray-800"
-                    : "text-brand-900 dark:text-brand-300 hover:bg-white dark:hover:bg-gray-800",
+                    ? "bg-white text-brand-700 shadow dark:bg-gray-800 dark:text-brand-400"
+                    : "text-brand-900 hover:bg-white dark:text-brand-300 dark:hover:bg-gray-800",
                 )
               }
             >
@@ -36,7 +36,7 @@ export const BaseTabs: React.FC<TabsProps> = ({ categories }) => {
           {Object.values(categories).map((posts, idx) => (
             <Tab.Panel
               key={idx}
-              className="w-full rounded-lg bg-white p-3 ring-white ring-opacity-60 focus:outline-none dark:bg-gray-800"
+              className="w-full rounded-lg bg-white p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-gray-800 dark:focus:ring-brand-400 dark:focus:ring-offset-gray-900"
             >
               {posts.map((post) => (
                 <div key={post.id}>{post.content}</div>

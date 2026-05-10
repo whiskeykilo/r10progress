@@ -169,7 +169,6 @@ export const GappingChart = ({
           position: "top",
           formatter: ({ dataIndex }: { dataIndex: number }) =>
             chartData.gaps[dataIndex]?.label ?? "",
-          color: "#4b5563",
           fontWeight: "bold",
         },
         itemStyle: {

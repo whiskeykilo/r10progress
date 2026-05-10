@@ -138,7 +138,7 @@ export const PlayerProfileSettings = () => {
                 setHandicapStatus("saved");
               }}
               placeholder="e.g. 12.4"
-              className="app-focus-ring w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="app-focus-ring field-on-darker-panel w-32"
             />
           </label>
           {handicapStatus === "saved" && (
@@ -169,7 +169,7 @@ export const PlayerProfileSettings = () => {
               aria-label="Club label (match your CSV)"
               value={loftClubSelect}
               onChange={(e) => setLoftClubSelect(e.target.value)}
-              className="app-focus-ring w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="app-focus-ring field-on-darker-panel w-full"
             >
               <option value="">Select club label…</option>
               {csvClubLabels.map((club) => (
@@ -187,7 +187,7 @@ export const PlayerProfileSettings = () => {
             placeholder="°"
             value={loftDeg}
             onChange={(e) => setLoftDeg(e.target.value)}
-            className="app-focus-ring w-24 rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            className="app-focus-ring field-on-darker-panel w-24"
           />
           <button
             type="button"

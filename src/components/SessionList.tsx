@@ -60,7 +60,7 @@ export const SessionList = () => {
           No sessions found.{" "}
           <Link
             to={dashboardRoutes.upload}
-            className="app-focus-ring rounded-sm text-sky-600 underline hover:text-sky-800"
+            className="app-focus-ring rounded-sm text-sky-600 underline hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
           >
             Upload a file
           </Link>{" "}
@@ -119,7 +119,7 @@ export const SessionList = () => {
                             },
                           }))
                         }
-                        className="app-focus-ring ml-2 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        className="app-focus-ring ml-2 min-w-[7.5rem] py-1 pl-2 pr-6 text-sm"
                       >
                         <option value="outdoor">Outdoor</option>
                         <option value="indoor">Indoor</option>
@@ -142,7 +142,7 @@ export const SessionList = () => {
                       }
                       rows={2}
                       placeholder="Session notes..."
-                      className="app-focus-ring rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                      className="app-focus-ring rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   </div>
                 </div>
@@ -230,7 +230,7 @@ const DeletionModal = ({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-gray-500/75 transition-opacity dark:bg-black/55" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -247,7 +247,7 @@ const DeletionModal = ({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-800"
                     onClick={() => setOpen(false)}
                   >
                     <span className="sr-only">Close</span>
@@ -255,9 +255,9 @@ const DeletionModal = ({
                   </button>
                 </div>
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 sm:mx-0 sm:h-10 sm:w-10">
                     <ExclamationTriangleIcon
-                      className="h-6 w-6 text-red-600"
+                      className="h-6 w-6 text-red-600 dark:text-red-300"
                       aria-hidden="true"
                     />
                   </div>

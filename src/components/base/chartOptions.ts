@@ -82,6 +82,14 @@ export type PointWithClub = {
 const CHART_AXIS_LIGHT = "#374151";
 const CHART_AXIS_DARK = "#e5e7eb";
 
+/** Bar/series labels often hardcode gray-600; remap to axis color for contrast */
+const LABEL_COLORS_TO_RETHEME = new Set([
+  "#4b5563",
+  "#374151",
+  "#6b7280",
+  "#9ca3af",
+]);
+
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null
     ? (value as Record<string, unknown>)
@@ -153,6 +161,53 @@ function mergeTooltip(tooltip: unknown, isDark: boolean): unknown {
   };
 }
 
+function mergeSeriesLabels(series: unknown, axisColor: string): unknown {
+  if (series === undefined) return undefined;
+  if (Array.isArray(series))
+    return series.map((s) => mergeSeriesLabels(s, axisColor));
+  if (!series || typeof series !== "object") return series;
+  const S = series as Record<string, unknown>;
+  const label = S.label;
+  if (!label || typeof label !== "object" || label === null) return series;
+  const L = label as Record<string, unknown>;
+  const currentColor = L.color;
+  const shouldRetheme =
+    currentColor === undefined ||
+    (typeof currentColor === "string" &&
+      LABEL_COLORS_TO_RETHEME.has(currentColor.toLowerCase()));
+  if (!shouldRetheme) return series;
+  return {
+    ...S,
+    label: { ...L, color: axisColor },
+  };
+}
+
+function mergeVisualMapTheme(visualMap: unknown, isDark: boolean): unknown {
+  if (visualMap === undefined) return undefined;
+  if (Array.isArray(visualMap))
+    return visualMap.map((vm) => mergeVisualMapTheme(vm, isDark));
+  if (!visualMap || typeof visualMap !== "object") return visualMap;
+  const V = visualMap as Record<string, unknown>;
+  const inRange = V.inRange;
+  if (!inRange || typeof inRange !== "object") return visualMap;
+  const IR = inRange as Record<string, unknown>;
+  const colors = IR.color;
+  if (!Array.isArray(colors) || colors.length < 2) return visualMap;
+  const c0 = String(colors[0]).toLowerCase().replace(/\s/g, "");
+  const isRecencyGradient =
+    c0 === "lightgrey" || c0 === "lightgray" || c0 === "rgb(211,211,211)";
+  if (!isRecencyGradient) return visualMap;
+  const lightPair = colors as string[];
+  const darkPair = ["#52525b", "#38bdf8"];
+  return {
+    ...V,
+    inRange: {
+      ...IR,
+      color: isDark ? darkPair : lightPair,
+    },
+  };
+}
+
 /**
  * Merge readable axis / legend / tooltip colors for light vs dark app chrome.
  * Used by BaseGraph so individual charts do not need theme branches.
@@ -177,6 +232,15 @@ export function applyReadableChartTheme(
   const tooltipOpt = options.tooltip as unknown;
   if (tooltipOpt !== undefined && tooltipOpt !== false) {
     next.tooltip = mergeTooltip(tooltipOpt, isDark);
+  }
+
+  if (options.series !== undefined) {
+    next.series = mergeSeriesLabels(options.series, color);
+  }
+
+  const visualMapOpt = options.visualMap as unknown;
+  if (visualMapOpt !== undefined && visualMapOpt !== false) {
+    next.visualMap = mergeVisualMapTheme(visualMapOpt, isDark);
   }
 
   return next as echarts.EChartsOption;

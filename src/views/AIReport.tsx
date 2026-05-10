@@ -41,7 +41,9 @@ const ScoreIndicator = ({ score }: { score: number }) => {
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-sm font-medium">{score}</span>
+      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+        {score}
+      </span>
     </div>
   );
 };
@@ -127,10 +129,10 @@ const DrillCard = ({
       <span
         className={`rounded-full px-2 py-1 text-xs font-medium ${
           drill.difficulty === "beginner"
-            ? "bg-green-100 text-green-800"
+            ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
             : drill.difficulty === "intermediate"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-red-100 text-red-800"
+              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-100"
+              : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200"
         }`}
       >
         {drill.difficulty}
@@ -243,11 +245,13 @@ export const AIReport = () => {
   if (error || !report) {
     return (
       <BasePageLayout>
-        <div className="rounded-md bg-red-50 p-4">
+        <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-800/60 dark:bg-red-950/40">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Error
+              </h3>
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>{error || "Report not found"}</p>
               </div>
             </div>
@@ -267,13 +271,13 @@ export const AIReport = () => {
   ) {
     return (
       <BasePageLayout>
-        <div className="rounded-md bg-red-50 p-4">
+        <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-800/60 dark:bg-red-950/40">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
                 Incomplete Report
               </h3>
-              <div className="mt-2 text-sm text-red-700">
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>
                   This report is missing data. The AI analysis may have been cut
                   short. Please try generating a new report.
@@ -281,7 +285,7 @@ export const AIReport = () => {
               </div>
               <button
                 onClick={() => navigate(routes.aiAnalysis)}
-                className="mt-3 rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-200"
+                className="mt-3 rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-100 dark:hover:bg-red-900/70"
               >
                 Back to Reports
               </button>
@@ -302,7 +306,7 @@ export const AIReport = () => {
               {navState.cached && (
                 <span
                   title="Reused a previously generated report for this exact shot selection. Click Regenerate for a fresh take."
-                  className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700"
+                  className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-200"
                 >
                   Cached
                 </span>
@@ -321,7 +325,7 @@ export const AIReport = () => {
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="app-focus-ring disabled:bg-brand-300 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed"
+                className="app-focus-ring rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-300"
               >
                 {regenerating ? "Regenerating…" : "Regenerate"}
               </button>

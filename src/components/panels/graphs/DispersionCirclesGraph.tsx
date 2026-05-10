@@ -1,4 +1,5 @@
 import * as echarts from "echarts";
+import { useHtmlClassDark } from "../../../hooks/useHtmlClassDark";
 import { useUnit } from "../../../hooks/useUnit";
 import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid, PointWithClub } from "../../base/chartOptions";
@@ -9,6 +10,7 @@ import { useCarryAndDeviation } from "./ShotDispersionGraph.utils";
 export const DispersionCirclesGraph = () => {
   const { shots, shotsByClub } = useCarryAndDeviation();
   const unit = useUnit();
+  const isDark = useHtmlClassDark();
 
   let maximumDeviation = Math.max(
     ...shots.map((shot) => Math.abs(Number(shot.x))),
@@ -83,14 +85,16 @@ export const DispersionCirclesGraph = () => {
     })
     .flat();
 
+  const rangeMatGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    { offset: 0, color: "#91B491" },
+    { offset: 1, color: "#739E73" },
+  ]);
+
   const options: echarts.EChartsOption = {
     grid: {
       ...chartOptionsGrid,
       bottom: 45,
-      backgroundColor: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-        { offset: 0, color: "#91B491" }, // Lighter green at top
-        { offset: 1, color: "#739E73" }, // Darker green at bottom
-      ]),
+      backgroundColor: isDark ? "transparent" : rangeMatGradient,
     },
     tooltip: {
       trigger: "item",

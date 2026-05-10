@@ -17,7 +17,7 @@ export const IQRNote = () => {
       <p className="text-sm text-gray-500 dark:text-gray-400">{text}</p>
       <Link
         to="/settings"
-        className="app-focus-ring dark:text-brand-400 rounded-sm text-sm text-brand-600 hover:underline"
+        className="app-focus-ring rounded-sm text-sm text-brand-600 hover:underline dark:text-brand-400"
       >
         Change settings
       </Link>

@@ -47,10 +47,13 @@
     <script>
       (function () {
         var t = localStorage.getItem("theme");
-        if (
-          t === "dark" ||
-          (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)
-        ) {
+        var systemDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        // Match useDarkMode: dark when explicit, or when theme is system/missing and OS is dark
+        var dark =
+          t === "dark" || ((t === "system" || t === null) && systemDark);
+        if (dark) {
           document.documentElement.classList.add("dark");
         }
       })();

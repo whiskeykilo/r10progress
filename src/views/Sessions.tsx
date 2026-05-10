@@ -72,7 +72,7 @@ export const Sessions = () => {
                     type="checkbox"
                     checked={visible}
                     onChange={() => toggleColumn(column)}
-                    className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                    className="h-4 w-4 rounded border-gray-300 bg-white text-sky-600 focus:ring-sky-500 dark:border-gray-500 dark:bg-gray-800 dark:text-sky-400 dark:focus:ring-sky-400"
                   />
                   <span>{column}</span>
                 </label>

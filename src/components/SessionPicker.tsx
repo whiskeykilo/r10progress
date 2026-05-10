@@ -125,14 +125,14 @@ export const SessionPicker = () => {
           <Listbox.Button
             aria-label="Select sessions to include in analysis"
             title="Select a session to filter data in the table and averages."
-            className={`app-focus-ring relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md dark:bg-gray-800 dark:text-white sm:text-sm ${isLoading ? "opacity-50" : ""}`}
+            className={`app-focus-ring relative w-full cursor-pointer rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 sm:text-sm ${isLoading ? "opacity-50" : ""}`}
           >
             <span className="block truncate">
               {isLoading ? "Loading…" : selectionDisplayText}
             </span>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
+                className="h-5 w-5 text-gray-500 dark:text-gray-300"
                 aria-hidden="true"
               />
             </span>
@@ -143,7 +143,7 @@ export const SessionPicker = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800 dark:ring-white/10 sm:text-sm">
+            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:ring-white/10 sm:text-sm">
               <Listbox.Option
                 className={({ active }) =>
                   `relative cursor-default select-none py-2 pl-10 pr-4 ${
@@ -164,7 +164,7 @@ export const SessionPicker = () => {
                       All
                     </span>
                     {selected ? (
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sky-600">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sky-600 dark:text-sky-400">
                         <CheckIcon className="h-5 w-5" aria-hidden="true" />
                       </span>
                     ) : null}
@@ -193,7 +193,7 @@ export const SessionPicker = () => {
                         {sessions[sessionKey]?.displayName ?? sessionKey}
                       </span>
                       {selected ? (
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sky-600">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sky-600 dark:text-sky-400">
                           <CheckIcon className="h-5 w-5" aria-hidden="true" />
                         </span>
                       ) : null}
