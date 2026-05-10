@@ -40,11 +40,11 @@ export function buildDeterministicReportBundle(params: {
     const atTargetRaw =
       w > TARGET_DRIVER_ELLIPSE_YDS
         ? estimatePenaltyStrokesPerRound({
-          ellipseWidthYds: TARGET_DRIVER_ELLIPSE_YDS,
-          fairwayWidthYds: DEFAULT_FAIRWAY_WIDTH_YDS,
-          hazardAdjacentDriverHoles: DEFAULT_HAZARD_DRIVER_HOLES,
-          strokesPerHazardEvent: 1,
-        })
+            ellipseWidthYds: TARGET_DRIVER_ELLIPSE_YDS,
+            fairwayWidthYds: DEFAULT_FAIRWAY_WIDTH_YDS,
+            hazardAdjacentDriverHoles: DEFAULT_HAZARD_DRIVER_HOLES,
+            strokesPerHazardEvent: 1,
+          })
         : null;
 
     penaltyEstimate = {
@@ -60,15 +60,15 @@ export function buildDeterministicReportBundle(params: {
       targetWidthYds: atTargetRaw ? TARGET_DRIVER_ELLIPSE_YDS : null,
       atTarget: atTargetRaw
         ? {
-          ellipseWidthYds: TARGET_DRIVER_ELLIPSE_YDS,
-          fairwayWidthYds: DEFAULT_FAIRWAY_WIDTH_YDS,
-          hazardAdjacentDriverHoles: DEFAULT_HAZARD_DRIVER_HOLES,
-          sigmaYds: atTargetRaw.sigmaYds,
-          probabilityOutsideFairwayPerTeeShot:
-            atTargetRaw.probabilityOutsideFairwayPerTeeShot,
-          expectedPenaltyStrokesPerRound:
-            atTargetRaw.expectedPenaltyStrokesPerRound,
-        }
+            ellipseWidthYds: TARGET_DRIVER_ELLIPSE_YDS,
+            fairwayWidthYds: DEFAULT_FAIRWAY_WIDTH_YDS,
+            hazardAdjacentDriverHoles: DEFAULT_HAZARD_DRIVER_HOLES,
+            sigmaYds: atTargetRaw.sigmaYds,
+            probabilityOutsideFairwayPerTeeShot:
+              atTargetRaw.probabilityOutsideFairwayPerTeeShot,
+            expectedPenaltyStrokesPerRound:
+              atTargetRaw.expectedPenaltyStrokesPerRound,
+          }
         : null,
     };
   }
