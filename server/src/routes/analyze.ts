@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../db";
 import {
   AnalyzeBodySchema,
+  AnalyzeStructuredOutputError,
   buildAnalyzePipelineContext,
   isOpenAiTimeoutError,
   runOpenAIAnalyzeAndPersist,
@@ -10,6 +11,18 @@ import {
 } from "../services/analyzePipeline";
 
 const router = Router();
+
+function analyzeFailureMessage(err: unknown): string {
+  if (isOpenAiTimeoutError(err)) {
+    return "The AI request timed out. Try a smaller analysis scope, or raise OPENAI_TIMEOUT_MS on the server.";
+  }
+  if (err instanceof AnalyzeStructuredOutputError) {
+    return err.message;
+  }
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return "Analysis failed";
+}
 
 async function processAnalyzeJob(jobId: string): Promise<void> {
   const db = await getDb();
@@ -55,13 +68,7 @@ async function processAnalyzeJob(jobId: string): Promise<void> {
     });
   } catch (err) {
     console.error(`[analyze] job ${jobId} failed:`, err);
-    const msg = isOpenAiTimeoutError(err)
-      ? "The AI request timed out. Try a smaller analysis scope, or raise OPENAI_TIMEOUT_MS on the server."
-      : err instanceof Error
-        ? err.message
-        : typeof err === "string"
-          ? err
-          : "Analysis failed";
+    const msg = analyzeFailureMessage(err);
     const safe = msg.slice(0, 2000);
     try {
       await db.execute({

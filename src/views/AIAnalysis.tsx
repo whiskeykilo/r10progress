@@ -147,7 +147,15 @@ export const AIAnalysis = () => {
       return a[0].localeCompare(b[0]);
     });
 
+    const selectedCount = sortedEntries.length;
+    const parseableSessionCount = sortedEntries.filter(
+      ([, s]) => sessionCalendarDay(s) != null,
+    ).length;
+
     let filteredEntries = sortedEntries;
+    let monthsWindowN: number | null = null;
+    let monthsCutoff: dayjs.Dayjs | null = null;
+
     if (analysisScope.startsWith("sessions-")) {
       const n = Number.parseInt(analysisScope.slice("sessions-".length), 10);
       if (Number.isFinite(n) && n > 0) {
@@ -156,15 +164,24 @@ export const AIAnalysis = () => {
     } else if (analysisScope.startsWith("months-")) {
       const n = Number.parseInt(analysisScope.slice("months-".length), 10);
       if (Number.isFinite(n) && n > 0) {
-        const cutoff = dayjs().subtract(n, "month").startOf("day");
+        monthsWindowN = n;
+        monthsCutoff = dayjs().subtract(n, "month").startOf("day");
         filteredEntries = sortedEntries.filter(([, session]) => {
           const d = sessionCalendarDay(session);
           // Unknown CSV dates should not silently drop the session from rolling windows.
           if (d == null) return true;
-          return !d.isBefore(cutoff, "day");
+          return !d.isBefore(monthsCutoff!, "day");
         });
       }
     }
+
+    const parseableInWindowCount =
+      monthsCutoff == null
+        ? null
+        : sortedEntries.filter(([, session]) => {
+            const d = sessionCalendarDay(session);
+            return d != null && !d.isBefore(monthsCutoff, "day");
+          }).length;
 
     const environmentBySessionFile: Record<
       string,
@@ -189,22 +206,46 @@ export const AIAnalysis = () => {
     const timeframe = ANALYSIS_SCOPE_LABELS[analysisScope];
 
     if (analysisShots.length === 0) {
+      const baseDiag = `${selectedCount} session(s) selected, ${parseableSessionCount} with parseable shot dates in CSV.`;
+      const windowDiag =
+        monthsCutoff != null && parseableInWindowCount != null
+          ? ` ${parseableInWindowCount} session(s) with dates on/after the rolling window start.`
+          : "";
+
       if (
         analysisScope.startsWith("months-") &&
-        sortedEntries.length > 0 &&
-        filteredEntries.length === 0
+        monthsCutoff != null &&
+        monthsWindowN != null
       ) {
-        const n = Number.parseInt(analysisScope.slice("months-".length), 10);
-        const label =
-          Number.isFinite(n) && n > 0
-            ? `the last ${n} month${n === 1 ? "" : "s"}`
-            : "that time window";
-        setError(
-          `No sessions fall within ${label}. Try “All selected sessions”, pick more recent sessions, or choose a wider window.`,
-        );
-      } else {
-        setError("No shots available for analysis");
+        if (selectedCount > 0 && parseableSessionCount === 0) {
+          setError(
+            `No parseable shot dates found for the selected sessions. (${baseDiag}) Re-export from Garmin or choose “All selected sessions”.`,
+          );
+          return;
+        }
+        if (
+          parseableSessionCount > 0 &&
+          parseableInWindowCount === 0 &&
+          filteredEntries.length === 0
+        ) {
+          setError(
+            `No sessions fall within the last ${monthsWindowN} month${monthsWindowN === 1 ? "" : "s"}. (${baseDiag}${windowDiag}) Try “All selected sessions”, pick more recent sessions, or choose a wider window.`,
+          );
+          return;
+        }
+        if (filteredEntries.length > 0) {
+          setError(
+            `No shot rows available in this scope. (${baseDiag}${windowDiag}) Check that sessions contain data rows.`,
+          );
+          return;
+        }
       }
+
+      setError(
+        selectedCount === 0
+          ? "No sessions selected for analysis."
+          : `No shots available for analysis. (${baseDiag})`,
+      );
       return;
     }
 

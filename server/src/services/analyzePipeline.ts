@@ -104,6 +104,16 @@ function createOpenAIClient(apiKey: string): OpenAI {
 // Headroom for structured output + reasoning; raise if responses truncate.
 const MAX_OUTPUT_TOKENS = 9000;
 
+/** Thrown when Responses API returns no usable structured analysis payload. */
+export class AnalyzeStructuredOutputError extends Error {
+  constructor() {
+    super(
+      "The AI did not return a complete structured report. Try fewer sessions or shots, then run analysis again.",
+    );
+    this.name = "AnalyzeStructuredOutputError";
+  }
+}
+
 export async function tryGetCachedAnalyzeResponse(
   db: Client,
   inputHash: string,
@@ -276,14 +286,28 @@ export async function runOpenAIAnalyzeAndPersist(
     throw new Error(parsed.error.message ?? "OpenAI response error");
   }
 
-  let analysisRaw: unknown = parsed.output_parsed;
-  if (analysisRaw == null && parsed.output_text?.trim()) {
-    analysisRaw = JSON.parse(parsed.output_text) as unknown;
-  }
+  const analysisRaw = parsed.output_parsed;
   if (analysisRaw == null) {
-    throw new Error("Empty or unparseable structured output from OpenAI");
+    const textLen = parsed.output_text?.length ?? 0;
+    console.warn(
+      `[analyze] Responses API: missing output_parsed model=${analyzeModel} reasoning_effort=${reasoningKey} output_text_len=${textLen}`,
+    );
+    throw new AnalyzeStructuredOutputError();
   }
-  let analysis = AIAnalysisResultSchema.parse(analysisRaw);
+
+  let analysis: z.infer<typeof AIAnalysisResultSchema>;
+  try {
+    analysis = AIAnalysisResultSchema.parse(analysisRaw);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      console.warn(
+        "[analyze] AIAnalysisResultSchema.parse failed",
+        e.flatten(),
+      );
+      throw new AnalyzeStructuredOutputError();
+    }
+    throw e;
+  }
 
   const ballFlightContradictions = analyzeBallFlightConsistency(
     aggregate,

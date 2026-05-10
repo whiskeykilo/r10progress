@@ -167,9 +167,17 @@ export const getPairsForYfield: (
 };
 
 // Parse date to ISO8601 format using dayjs
-// might be english or german format
+// might be english or german format; Garmin often uses "M/D/YY HH:mm:ss"
 export const parseDate = (input: string) => {
-  if (input.includes("/")) {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+
+  const slashDatePart =
+    trimmed.includes("/") && /\s/.test(trimmed)
+      ? (trimmed.split(/\s+/)[0] ?? trimmed)
+      : trimmed;
+
+  if (slashDatePart.includes("/")) {
     const possibleDatFormats = [
       "MM/DD/YYYY",
       "MM/DD/YY",
@@ -184,7 +192,7 @@ export const parseDate = (input: string) => {
     let date = "";
 
     const isDateParsed = possibleDatFormats.some((format) => {
-      const parsedDate = dayjs(input, format, "en");
+      const parsedDate = dayjs(slashDatePart, format, true);
       if (parsedDate.isValid()) {
         date = parsedDate.format("YYYY-MM-DD");
         return true; // Stop iteration once a valid date is found
@@ -195,11 +203,11 @@ export const parseDate = (input: string) => {
     if (!isDateParsed) console.error("Could not parse date", input);
 
     return date;
-  } else if (input.includes(".")) {
-    const parsed = dayjs(input, "DD.MM.YY");
+  } else if (trimmed.includes(".")) {
+    const parsed = dayjs(trimmed, "DD.MM.YY");
     const formatted = parsed.format("YYYY-MM-DD");
     return formatted;
   } else {
-    return input;
+    return trimmed;
   }
 };
