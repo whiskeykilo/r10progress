@@ -309,7 +309,7 @@ export const AIReport = () => {
               {navState.cached && (
                 <span
                   title="Reused a previously generated report for this exact shot selection. Click Regenerate for a fresh take."
-                  className="dark:bg-brand-900/40 dark:text-brand-200 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700"
+                  className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-200"
                 >
                   Cached
                 </span>
@@ -328,7 +328,7 @@ export const AIReport = () => {
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="app-focus-ring disabled:bg-brand-300 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed"
+                className="app-focus-ring rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-300"
               >
                 {regenerating ? "Regenerating…" : "Regenerate"}
               </button>

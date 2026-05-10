@@ -140,9 +140,7 @@ router.get("/jobs/:jobId", async (req, res) => {
       status: "completed" as const,
       report: {
         id: row.rid as string,
-        createdAt: new Date(
-          (row.rcreated_at as number) * 1000,
-        ).toISOString(),
+        createdAt: new Date((row.rcreated_at as number) * 1000).toISOString(),
         shotCount: row.rshot_count as number,
         timeframe: row.rtimeframe as string,
         filename: row.rfilename as string,

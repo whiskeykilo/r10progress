@@ -82,17 +82,17 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
 export type AnalyzeJobPollResponse =
   | { status: "queued" | "running" }
   | {
-    status: "completed";
-    report: {
-      id: string;
-      createdAt: string;
-      shotCount: number;
-      timeframe: string;
-      filename: string;
-      analysis: unknown;
-      cached: boolean;
-    };
-  }
+      status: "completed";
+      report: {
+        id: string;
+        createdAt: string;
+        shotCount: number;
+        timeframe: string;
+        filename: string;
+        analysis: unknown;
+        cached: boolean;
+      };
+    }
   | { status: "failed"; error: string };
 
 /**
@@ -100,17 +100,17 @@ export type AnalyzeJobPollResponse =
  */
 export async function apiPostAnalyze(body: unknown): Promise<
   | {
-    outcome: "complete";
-    report: {
-      id: string;
-      createdAt: string;
-      shotCount: number;
-      timeframe: string;
-      filename: string;
-      analysis: unknown;
-      cached?: boolean;
-    };
-  }
+      outcome: "complete";
+      report: {
+        id: string;
+        createdAt: string;
+        shotCount: number;
+        timeframe: string;
+        filename: string;
+        analysis: unknown;
+        cached?: boolean;
+      };
+    }
   | { outcome: "job"; jobId: string }
 > {
   try {

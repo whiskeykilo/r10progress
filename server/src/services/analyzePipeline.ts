@@ -144,7 +144,9 @@ export type AnalyzePipelineContext = {
   userMessage: string;
 };
 
-export function buildAnalyzePipelineContext(body: AnalyzeBody): AnalyzePipelineContext {
+export function buildAnalyzePipelineContext(
+  body: AnalyzeBody,
+): AnalyzePipelineContext {
   const sessionNotes = (body.sessionNotes ?? [])
     .map(({ filename: fn, notes }) => ({
       filename: fn.trim(),
@@ -156,7 +158,7 @@ export function buildAnalyzePipelineContext(body: AnalyzeBody): AnalyzePipelineC
   const sessionNotesCanonical = JSON.stringify(sessionNotes);
   const aggOptions: AggregateShotsOptions | undefined =
     body.environmentBySessionFile &&
-      Object.keys(body.environmentBySessionFile).length
+    Object.keys(body.environmentBySessionFile).length
       ? { environmentBySessionFile: body.environmentBySessionFile }
       : undefined;
   const profileCanonical = JSON.stringify(body.playerProfile ?? {});
