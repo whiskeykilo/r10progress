@@ -159,7 +159,9 @@ export const AIAnalysis = () => {
         const cutoff = dayjs().subtract(n, "month").startOf("day");
         filteredEntries = sortedEntries.filter(([, session]) => {
           const d = sessionCalendarDay(session);
-          return d != null && !d.isBefore(cutoff, "day");
+          // Unknown CSV dates should not silently drop the session from rolling windows.
+          if (d == null) return true;
+          return !d.isBefore(cutoff, "day");
         });
       }
     }
@@ -187,7 +189,22 @@ export const AIAnalysis = () => {
     const timeframe = ANALYSIS_SCOPE_LABELS[analysisScope];
 
     if (analysisShots.length === 0) {
-      setError("No shots available for analysis");
+      if (
+        analysisScope.startsWith("months-") &&
+        sortedEntries.length > 0 &&
+        filteredEntries.length === 0
+      ) {
+        const n = Number.parseInt(analysisScope.slice("months-".length), 10);
+        const label =
+          Number.isFinite(n) && n > 0
+            ? `the last ${n} month${n === 1 ? "" : "s"}`
+            : "that time window";
+        setError(
+          `No sessions fall within ${label}. Try “All selected sessions”, pick more recent sessions, or choose a wider window.`,
+        );
+      } else {
+        setError("No shots available for analysis");
+      }
       return;
     }
 

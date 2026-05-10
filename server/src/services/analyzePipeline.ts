@@ -1,7 +1,8 @@
 import { createHash } from "crypto";
 import type { Client } from "@libsql/client";
 import OpenAI, { APIConnectionTimeoutError } from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
+import { zodTextFormat } from "openai/helpers/zod";
+import type { Reasoning } from "openai/resources/shared";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { SYSTEM_PROMPT } from "../prompts/system";
@@ -63,15 +64,18 @@ export type AnalyzeApiResponse = {
   cached: boolean;
 };
 
-/** Default frontier model; override with OPENAI_ANALYZE_MODEL. */
+/**
+ * Default frontier model (Responses API). Override with OPENAI_ANALYZE_MODEL.
+ * GPT-5.5 Pro is not on Chat Completions; analyze uses `v1/responses`.
+ */
 export function resolveAnalyzeModel(): string {
   const m = process.env.OPENAI_ANALYZE_MODEL?.trim();
   return m && m.length > 0 ? m : "gpt-5.5-pro";
 }
 
 /**
- * Default xhigh for GPT-5.x class models. Set OPENAI_REASONING_EFFORT=none|off
- * to omit `reasoning_effort` (needed for non-reasoning models like gpt-4o-mini).
+ * Default xhigh on Responses API. Set OPENAI_REASONING_EFFORT=none|off
+ * to omit the `reasoning` parameter for models that do not support it.
  */
 export function resolveReasoningEffort(): string | undefined {
   const r = process.env.OPENAI_REASONING_EFFORT?.trim();
@@ -98,7 +102,7 @@ function createOpenAIClient(apiKey: string): OpenAI {
 }
 
 // Headroom for structured output + reasoning; raise if responses truncate.
-const MAX_COMPLETION_TOKENS = 9000;
+const MAX_OUTPUT_TOKENS = 9000;
 
 export async function tryGetCachedAnalyzeResponse(
   db: Client,
@@ -249,32 +253,37 @@ export async function runOpenAIAnalyzeAndPersist(
 
   const client = createOpenAIClient(apiKey);
   console.log(
-    `[analyze] OpenAI model=${analyzeModel} reasoning_effort=${reasoningKey}`,
+    `[analyze] OpenAI Responses API model=${analyzeModel} reasoning_effort=${reasoningKey}`,
   );
 
-  const completionParams = {
-    model: analyzeModel as unknown as Parameters<
-      typeof client.chat.completions.create
-    >[0]["model"],
-    messages: [
-      { role: "system" as const, content: SYSTEM_PROMPT },
-      { role: "user" as const, content: userMessage },
-    ],
-    response_format: zodResponseFormat(
-      AIAnalysisResultSchema,
-      "ai_analysis_result",
-    ),
-    max_completion_tokens: MAX_COMPLETION_TOKENS,
-    ...(reasoningEffort
-      ? { reasoning_effort: reasoningEffort as unknown as never }
+  const parsed = await client.responses.parse({
+    model: analyzeModel,
+    instructions: SYSTEM_PROMPT,
+    input: userMessage,
+    text: {
+      format: zodTextFormat(AIAnalysisResultSchema, "ai_analysis_result"),
+    },
+    max_output_tokens: MAX_OUTPUT_TOKENS,
+    stream: false,
+    ...(reasoningEffort !== undefined
+      ? {
+          reasoning: { effort: reasoningEffort } as Reasoning,
+        }
       : {}),
-  };
+  });
 
-  const completion = await client.chat.completions.create(completionParams);
+  if (parsed.error) {
+    throw new Error(parsed.error.message ?? "OpenAI response error");
+  }
 
-  const raw = completion.choices[0]?.message?.content;
-  if (!raw) throw new Error("Empty response from OpenAI");
-  let analysis = AIAnalysisResultSchema.parse(JSON.parse(raw));
+  let analysisRaw: unknown = parsed.output_parsed;
+  if (analysisRaw == null && parsed.output_text?.trim()) {
+    analysisRaw = JSON.parse(parsed.output_text) as unknown;
+  }
+  if (analysisRaw == null) {
+    throw new Error("Empty or unparseable structured output from OpenAI");
+  }
+  let analysis = AIAnalysisResultSchema.parse(analysisRaw);
 
   const ballFlightContradictions = analyzeBallFlightConsistency(
     aggregate,
@@ -321,13 +330,11 @@ export async function runOpenAIAnalyzeAndPersist(
     deterministic,
   });
 
-  const usage = completion.usage;
+  const usage = parsed.usage;
   if (usage) {
-    const cachedInput =
-      (usage as { prompt_tokens_details?: { cached_tokens?: number } })
-        .prompt_tokens_details?.cached_tokens ?? 0;
+    const cachedInput = usage.input_tokens_details?.cached_tokens ?? 0;
     console.log(
-      `[analyze] usage prompt=${usage.prompt_tokens} cached=${cachedInput} completion=${usage.completion_tokens} total=${usage.total_tokens}`,
+      `[analyze] usage input=${usage.input_tokens} cached=${cachedInput} output=${usage.output_tokens} total=${usage.total_tokens}`,
     );
   }
 
