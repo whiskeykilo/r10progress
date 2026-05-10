@@ -164,6 +164,31 @@ const DrillCard = ({
   </div>
 );
 
+const formatPracticePlanForCopy = (
+  practiceRecommendations: AIAnalysisResult["practiceRecommendations"],
+) => {
+  const sections: string[] = [
+    "Practice Plan",
+    "",
+    "High Priority Focus",
+    practiceRecommendations.highPriorityFocus,
+  ];
+
+  practiceRecommendations.drills.forEach((drill, index) => {
+    sections.push("", `Drill ${index + 1}: ${drill.name}`);
+    sections.push(`Difficulty: ${drill.difficulty}`);
+    sections.push(`Purpose: ${drill.purpose}`);
+    sections.push("Steps:");
+    sections.push(
+      ...drill.steps.map((step, stepIndex) => `${stepIndex + 1}. ${step}`),
+    );
+    sections.push("Success Metrics:");
+    sections.push(...drill.successMetrics.map((metric) => `- ${metric}`));
+  });
+
+  return sections.join("\n");
+};
+
 export const AIReport = () => {
   const { reportId } = useParams();
   const navigate = useNavigate();
@@ -175,6 +200,9 @@ export const AIReport = () => {
   const [regenerating, setRegenerating] = useState(false);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [goalSuggestion, setGoalSuggestion] = useState("");
+  const [practicePlanCopyState, setPracticePlanCopyState] = useState<
+    "idle" | "copied" | "error"
+  >("idle");
 
   const canRegenerate = !!navState.shots && navState.shots.length > 0;
   const handleCreateGoal = (suggestion: string) => {
@@ -235,6 +263,15 @@ export const AIReport = () => {
       .finally(() => setLoading(false));
   }, [reportId, navigate]);
 
+  useEffect(() => {
+    if (practicePlanCopyState === "idle") return;
+    const timer = window.setTimeout(
+      () => setPracticePlanCopyState("idle"),
+      2500,
+    );
+    return () => window.clearTimeout(timer);
+  }, [practicePlanCopyState]);
+
   if (loading) {
     return (
       <BasePageLayout>
@@ -265,6 +302,18 @@ export const AIReport = () => {
   }
 
   const { analysis } = report;
+  const handleCopyPracticePlan = async () => {
+    const plainText = formatPracticePlanForCopy(
+      analysis.practiceRecommendations,
+    );
+    try {
+      await navigator.clipboard.writeText(plainText);
+      setPracticePlanCopyState("copied");
+    } catch (err) {
+      console.error("Failed to copy practice plan:", err);
+      setPracticePlanCopyState("error");
+    }
+  };
 
   if (
     !analysis?.performanceMetrics ||
@@ -309,7 +358,7 @@ export const AIReport = () => {
               {navState.cached && (
                 <span
                   title="Reused a previously generated report for this exact shot selection. Click Regenerate for a fresh take."
-                  className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-200"
+                  className="dark:bg-brand-900/40 dark:text-brand-200 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700"
                 >
                   Cached
                 </span>
@@ -328,7 +377,7 @@ export const AIReport = () => {
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="app-focus-ring rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-300"
+                className="app-focus-ring disabled:bg-brand-300 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed"
               >
                 {regenerating ? "Regenerating…" : "Regenerate"}
               </button>
@@ -674,9 +723,23 @@ export const AIReport = () => {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-            Practice Plan
-          </h2>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Practice Plan
+            </h2>
+            <button
+              type="button"
+              onClick={handleCopyPracticePlan}
+              className="app-focus-ring rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              aria-label="Copy practice plan"
+            >
+              {practicePlanCopyState === "copied"
+                ? "Copied"
+                : practicePlanCopyState === "error"
+                  ? "Copy failed"
+                  : "Copy plan"}
+            </button>
+          </div>
           <div className="app-card">
             <div className="mb-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
