@@ -28,4 +28,8 @@ describe("SYSTEM_PROMPT", () => {
     expect(SYSTEM_PROMPT).toMatch(/Confidence-aware analysis/i);
     expect(SYSTEM_PROMPT).toMatch(/radar-primary/i);
   });
+
+  it("requires tagged common issues for strategy vs mechanics", () => {
+    expect(SYSTEM_PROMPT).toMatch(/tag.*strategy.*mechanics/i);
+  });
 });

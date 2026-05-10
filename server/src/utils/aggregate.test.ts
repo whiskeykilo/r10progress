@@ -166,6 +166,8 @@ describe("aggregateShots", () => {
     expect(seven.flags.faceOpenBias).toBe(true);
     expect(seven.carry?.mean).toBeCloseTo(132.5, 1);
     expect(seven.totalDeviation?.mean).toBeGreaterThan(0); // right-of-target push
+    expect(seven.lateralRobust.medianSigned).toBeDefined();
+    expect(seven.shotShape.pattern).toBeDefined();
 
     const drv = agg.clubs.find((c) => c.clubName === "Driver")!;
     expect(drv).toBeDefined();

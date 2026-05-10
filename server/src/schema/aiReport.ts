@@ -17,7 +17,7 @@ import { z } from "zod";
 // Bump this string whenever the prompt or schema changes meaningfully.
 // It's prefixed into the input hash so cache entries are invalidated by edits
 // to the system prompt or this schema.
-export const PROMPT_VERSION = "2026-05-09.v4-sg";
+export const PROMPT_VERSION = "2026-05-09.v5-trust";
 
 const ScoreBlockSchema = z.object({
   score: z.number(),
@@ -35,6 +35,11 @@ const DrillSchema = z.object({
 });
 
 const TrendSchema = z.enum(["improving", "declining", "stable"]);
+
+const CommonIssueSchema = z.object({
+  issue: z.string(),
+  tag: z.enum(["strategy", "mechanics"]),
+});
 
 export const AIAnalysisResultSchema = z.object({
   technicalAnalysis: z.object({
@@ -72,7 +77,7 @@ export const AIAnalysisResultSchema = z.object({
         }),
       }),
     }),
-    commonIssues: z.array(z.string()),
+    commonIssues: z.array(CommonIssueSchema),
     trends: z.object({
       distanceTrend: TrendSchema,
       accuracyTrend: TrendSchema,
@@ -101,6 +106,7 @@ export const SgRecommendationSchema = z.object({
     z.object({ label: z.string(), value: z.string() }),
   ),
   drill: SgDrillPlanSchema,
+  tag: z.enum(["strategy", "mechanics"]),
 });
 
 export const SgFirstPlanSchema = z.object({
@@ -110,9 +116,55 @@ export const SgFirstPlanSchema = z.object({
   recommendations: z.array(SgRecommendationSchema),
 });
 
-/** Stored report shape = LLM narrative + deterministic SG plan. */
+const PenaltyScenarioSchema = z.object({
+  ellipseWidthYds: z.number(),
+  fairwayWidthYds: z.number(),
+  hazardAdjacentDriverHoles: z.number(),
+  sigmaYds: z.number(),
+  probabilityOutsideFairwayPerTeeShot: z.number(),
+  expectedPenaltyStrokesPerRound: z.number(),
+});
+
+export const DeterministicReportBundleSchema = z.object({
+  ballFlightContradictions: z.array(z.string()),
+  dPlaneCitation: z.string(),
+  sampleTier: z.enum(["prescriptive", "directional", "report_only"]),
+  guardrailNotes: z.array(z.string()),
+  scoreRubricDisclosure: z.string(),
+  penaltyEstimate: z
+    .object({
+      baseline: PenaltyScenarioSchema,
+      targetWidthYds: z.number().nullable(),
+      atTarget: PenaltyScenarioSchema.nullable(),
+    })
+    .nullable(),
+  /** Per-club robust lateral dispersion + shot-shape summary (from aggregates). */
+  clubDispersionRobust: z.array(
+    z.object({
+      clubName: z.string(),
+      shotCount: z.number(),
+      medianSignedDeviationYds: z.number(),
+      iqrSignedDeviationYds: z.number(),
+      tukeyLowOutliers: z.number(),
+      tukeyHighOutliers: z.number(),
+      shotShapePattern: z.enum([
+        "two_way",
+        "fade_bias",
+        "draw_bias",
+        "neutral",
+      ]),
+    }),
+  ),
+});
+
+export type DeterministicReportBundle = z.infer<
+  typeof DeterministicReportBundleSchema
+>;
+
+/** Stored report shape = LLM narrative + deterministic SG plan + server bundle. */
 export const PersistedAnalysisSchema = AIAnalysisResultSchema.extend({
   sgFirstPlan: SgFirstPlanSchema,
+  deterministic: DeterministicReportBundleSchema,
 });
 
 export type PersistedAnalysis = z.infer<typeof PersistedAnalysisSchema>;

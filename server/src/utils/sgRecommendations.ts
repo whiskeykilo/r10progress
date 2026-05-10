@@ -7,6 +7,7 @@ import {
 } from "../benchmarks";
 import type { ClubAggregate, ConfidenceTier, ShotAggregate } from "./aggregate";
 import { LATERAL_DIAGNOSTIC_MIN_SHOTS } from "./aggregate";
+import { sampleTierForCount } from "./recommendationGuardrails";
 
 export type SgCategory = "approach" | "offTheTee" | "aroundGreen" | "putting";
 
@@ -18,6 +19,8 @@ export type SgDrill = {
   steps: string[];
 };
 
+export type SgFindingTag = "strategy" | "mechanics";
+
 export type SgRecommendation = {
   rank: number;
   category: SgCategory;
@@ -28,6 +31,7 @@ export type SgRecommendation = {
   evidenceLines: string[];
   supportingMetrics: Array<{ label: string; value: string }>;
   drill: SgDrill;
+  tag: SgFindingTag;
 };
 
 export type SgFirstPlan = {
@@ -168,6 +172,7 @@ export function buildSgFirstPlan(params: {
           { label: "Driver shots", value: `${driver.shotCount}` },
         ],
         drill: ottDrill(),
+        tag: "mechanics",
       });
     }
 
@@ -213,6 +218,7 @@ export function buildSgFirstPlan(params: {
               "Pick the tee height that minimizes spin variance across the block.",
             ],
           },
+          tag: "mechanics",
         });
       }
     }
@@ -245,6 +251,7 @@ export function buildSgFirstPlan(params: {
           { label: "7i shots", value: `${iron7.shotCount}` },
         ],
         drill: approachDrill("7 iron"),
+        tag: "mechanics",
       });
     }
 
@@ -281,6 +288,7 @@ export function buildSgFirstPlan(params: {
             "Only after centered cluster progress, revisit dynamic loft tweaks.",
           ],
         },
+        tag: "mechanics",
       });
     }
   }
@@ -317,6 +325,7 @@ export function buildSgFirstPlan(params: {
             "Score how many clears the gate vs prior session.",
           ],
         },
+        tag: "strategy",
       });
     }
   }
@@ -350,6 +359,7 @@ export function buildSgFirstPlan(params: {
       ],
       supportingMetrics: [],
       drill: approachDrill("Practice plan"),
+      tag: "mechanics",
     });
   }
 
@@ -360,5 +370,67 @@ export function buildSgFirstPlan(params: {
     environmentNote,
     handicapNote,
     recommendations: ranked,
+  };
+}
+
+const categoryPriRank: Record<SgCategory, number> = {
+  approach: 1.35,
+  offTheTee: 1.1,
+  aroundGreen: 0.95,
+  putting: 0.65,
+};
+
+/**
+ * Sample-size gates on driver-linked drills, promote strategy tags, stable sort.
+ */
+export function finalizeSgFirstPlan(
+  plan: SgFirstPlan,
+  aggregate: ShotAggregate,
+): SgFirstPlan {
+  const driver = getClub(aggregate, (n) => n.toLowerCase().includes("driver"));
+
+  const gated = plan.recommendations.map((rec) => {
+    const driverScoped =
+      rec.category === "offTheTee" &&
+      (rec.title.toLowerCase().includes("driver") ||
+        rec.evidenceLines.some((l) => l.toLowerCase().includes("driver")));
+    if (!driverScoped || !driver) return rec;
+    const n = driver.shotCount;
+    const tier = sampleTierForCount(n);
+    if (tier === "report_only") {
+      return {
+        ...rec,
+        drill: {
+          name: rec.drill.name,
+          focus: `Report-only tier (n=${n}): ${rec.drill.focus}`,
+          steps: [],
+        },
+      };
+    }
+    if (tier === "directional") {
+      return {
+        ...rec,
+        drill: {
+          ...rec.drill,
+          focus: `Hypothesis to test (n=${n}): ${rec.drill.focus}`,
+        },
+      };
+    }
+    return rec;
+  });
+
+  const sorted = [...gated].sort((a, b) => {
+    const pri = (x: SgRecommendation) => (x.tag === "strategy" ? 0 : 1);
+    const d = pri(a) - pri(b);
+    if (d !== 0) return d;
+    return (
+      b.estimatedSgPerRound * categoryPriRank[b.category] -
+      a.estimatedSgPerRound * categoryPriRank[a.category]
+    );
+  });
+
+  return {
+    ...plan,
+    recommendations: sorted.map((r, i) => ({ ...r, rank: i + 1 })),
   };
 }

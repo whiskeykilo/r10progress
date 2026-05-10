@@ -27,6 +27,7 @@ export interface SgRecommendation {
   evidenceLines: string[];
   supportingMetrics: Array<{ label: string; value: string }>;
   drill: SgDrillPlan;
+  tag?: "strategy" | "mechanics";
 }
 
 export interface SgFirstPlan {
@@ -34,6 +35,42 @@ export interface SgFirstPlan {
   environmentNote: string;
   handicapNote: string;
   recommendations: SgRecommendation[];
+}
+
+export interface DeterministicReportBundle {
+  ballFlightContradictions: string[];
+  dPlaneCitation: string;
+  sampleTier: "prescriptive" | "directional" | "report_only";
+  guardrailNotes: string[];
+  scoreRubricDisclosure: string;
+  penaltyEstimate: {
+    baseline: {
+      ellipseWidthYds: number;
+      fairwayWidthYds: number;
+      hazardAdjacentDriverHoles: number;
+      sigmaYds: number;
+      probabilityOutsideFairwayPerTeeShot: number;
+      expectedPenaltyStrokesPerRound: number;
+    };
+    targetWidthYds: number | null;
+    atTarget: {
+      ellipseWidthYds: number;
+      fairwayWidthYds: number;
+      hazardAdjacentDriverHoles: number;
+      sigmaYds: number;
+      probabilityOutsideFairwayPerTeeShot: number;
+      expectedPenaltyStrokesPerRound: number;
+    } | null;
+  } | null;
+  clubDispersionRobust: Array<{
+    clubName: string;
+    shotCount: number;
+    medianSignedDeviationYds: number;
+    iqrSignedDeviationYds: number;
+    tukeyLowOutliers: number;
+    tukeyHighOutliers: number;
+    shotShapePattern: "two_way" | "fade_bias" | "draw_bias" | "neutral";
+  }>;
 }
 
 export interface AIAnalysisResult {
@@ -108,7 +145,7 @@ export interface AIAnalysisResult {
         };
       };
     };
-    commonIssues: string[];
+    commonIssues: Array<{ issue: string; tag: "strategy" | "mechanics" }>;
     trends: {
       distanceTrend: "improving" | "declining" | "stable";
       accuracyTrend: "improving" | "declining" | "stable";
@@ -117,6 +154,8 @@ export interface AIAnalysisResult {
   };
   /** Deterministic SG-first plan (server-computed). */
   sgFirstPlan?: SgFirstPlan;
+  /** Server-computed validation, penalties, robust dispersion (optional on legacy reports). */
+  deterministic?: DeterministicReportBundle;
 }
 
 export const aiReportExample: AnalysisReport = {
@@ -203,7 +242,18 @@ export const aiReportExample: AnalysisReport = {
           },
         },
       },
-      commonIssues: ["Slight path inconsistency", "Variable spin rates"],
+      commonIssues: [
+        {
+          issue:
+            "Strategy: favor wider aim corridors until lateral ellipse tightens.",
+          tag: "strategy",
+        },
+        {
+          issue:
+            "Mechanics: variable spin rates — verify strike before path tweaks.",
+          tag: "mechanics",
+        },
+      ],
       trends: {
         distanceTrend: "improving",
         accuracyTrend: "stable",
@@ -237,6 +287,46 @@ export const aiReportExample: AnalysisReport = {
               "Log offline.",
             ],
           },
+          tag: "mechanics",
+        },
+      ],
+    },
+    deterministic: {
+      ballFlightContradictions: [],
+      dPlaneCitation:
+        "D-Plane / new ball-flight laws: face angle largely sets start direction; face-to-path sets curvature.",
+      sampleTier: "prescriptive",
+      guardrailNotes: [],
+      scoreRubricDisclosure:
+        "0–100 scores follow the model rubric (absolute skill vs consistency bands).",
+      penaltyEstimate: {
+        baseline: {
+          ellipseWidthYds: 48,
+          fairwayWidthYds: 32,
+          hazardAdjacentDriverHoles: 6,
+          sigmaYds: 12.24,
+          probabilityOutsideFairwayPerTeeShot: 0.08,
+          expectedPenaltyStrokesPerRound: 0.48,
+        },
+        targetWidthYds: 60,
+        atTarget: {
+          ellipseWidthYds: 60,
+          fairwayWidthYds: 32,
+          hazardAdjacentDriverHoles: 6,
+          sigmaYds: 15.31,
+          probabilityOutsideFairwayPerTeeShot: 0.04,
+          expectedPenaltyStrokesPerRound: 0.24,
+        },
+      },
+      clubDispersionRobust: [
+        {
+          clubName: "Example Club",
+          shotCount: 25,
+          medianSignedDeviationYds: 2,
+          iqrSignedDeviationYds: 8,
+          tukeyLowOutliers: 0,
+          tukeyHighOutliers: 1,
+          shotShapePattern: "neutral",
         },
       ],
     },

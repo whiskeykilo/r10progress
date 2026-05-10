@@ -49,7 +49,7 @@ export const BaseListbox = ({
                 className={({ active }) =>
                   `relative cursor-default select-none py-2 pl-10 pr-4 ${
                     active
-                      ? "text-brand-900 dark:bg-brand-900/30 dark:text-brand-200 bg-brand-100"
+                      ? "bg-brand-100 text-brand-900 dark:bg-brand-900/30 dark:text-brand-200"
                       : "text-gray-900 dark:text-gray-100"
                   }`
                 }
@@ -65,7 +65,7 @@ export const BaseListbox = ({
                       {value}
                     </span>
                     {selected ? (
-                      <span className="dark:text-brand-400 absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-brand-600 dark:text-brand-400">
                         <CheckIcon className="h-5 w-5" aria-hidden="true" />
                       </span>
                     ) : null}

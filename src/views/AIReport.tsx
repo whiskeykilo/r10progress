@@ -306,7 +306,7 @@ export const AIReport = () => {
               {navState.cached && (
                 <span
                   title="Reused a previously generated report for this exact shot selection. Click Regenerate for a fresh take."
-                  className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-200"
+                  className="dark:bg-brand-900/40 dark:text-brand-200 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700"
                 >
                   Cached
                 </span>
@@ -325,7 +325,7 @@ export const AIReport = () => {
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="app-focus-ring rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-300"
+                className="app-focus-ring disabled:bg-brand-300 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed"
               >
                 {regenerating ? "Regenerating…" : "Regenerate"}
               </button>
@@ -343,6 +343,15 @@ export const AIReport = () => {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Performance Overview
           </h2>
+          {analysis.deterministic?.scoreRubricDisclosure && (
+            <p
+              className="mt-2 text-xs text-gray-500 dark:text-gray-400"
+              title={analysis.deterministic.scoreRubricDisclosure}
+            >
+              Score rubric (hover / long-press for formula): headline scores are
+              0–100 coach rubric + consistency weighting — see tooltip.
+            </p>
+          )}
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -379,6 +388,123 @@ export const AIReport = () => {
           </div>
         </div>
 
+        {analysis.deterministic &&
+          (analysis.deterministic.ballFlightContradictions.length > 0 ||
+            analysis.deterministic.guardrailNotes.length > 0 ||
+            analysis.deterministic.penaltyEstimate) && (
+            <div className="app-card border-l-4 border-amber-500">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Data integrity &amp; scorecard bridge
+              </h2>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {analysis.deterministic.dPlaneCitation}
+              </p>
+              <p className="mt-2 text-xs uppercase tracking-wide text-gray-500">
+                Sample tier:{" "}
+                {analysis.deterministic.sampleTier.replace("_", " ")}
+              </p>
+              {analysis.deterministic.ballFlightContradictions.length > 0 && (
+                <ul className="mt-3 list-inside list-disc text-sm text-amber-900 dark:text-amber-100">
+                  {analysis.deterministic.ballFlightContradictions.map(
+                    (c, i) => (
+                      <li key={i}>{c}</li>
+                    ),
+                  )}
+                </ul>
+              )}
+              {analysis.deterministic.guardrailNotes.length > 0 && (
+                <ul className="mt-3 list-inside list-disc text-sm text-gray-700 dark:text-gray-300">
+                  {analysis.deterministic.guardrailNotes.map((n, i) => (
+                    <li key={i}>{n}</li>
+                  ))}
+                </ul>
+              )}
+              {analysis.deterministic.penaltyEstimate && (
+                <div className="mt-4 rounded-md bg-gray-50 p-3 text-sm dark:bg-gray-800/80">
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    Penalty stroke model (driver dispersion vs fairway)
+                  </p>
+                  <p className="mt-1 text-gray-700 dark:text-gray-300">
+                    Baseline ellipse ~{" "}
+                    {analysis.deterministic.penaltyEstimate.baseline.ellipseWidthYds.toFixed(
+                      1,
+                    )}{" "}
+                    yd wide, fairway ~{" "}
+                    {
+                      analysis.deterministic.penaltyEstimate.baseline
+                        .fairwayWidthYds
+                    }{" "}
+                    yd, hazard-adjacent tee shots ~{" "}
+                    {
+                      analysis.deterministic.penaltyEstimate.baseline
+                        .hazardAdjacentDriverHoles
+                    }
+                    /round → ~{" "}
+                    {analysis.deterministic.penaltyEstimate.baseline.expectedPenaltyStrokesPerRound.toFixed(
+                      2,
+                    )}{" "}
+                    penalty strokes/round (illustrative).
+                  </p>
+                  {analysis.deterministic.penaltyEstimate.atTarget &&
+                    analysis.deterministic.penaltyEstimate.targetWidthYds !=
+                      null && (
+                      <p className="mt-2 text-gray-700 dark:text-gray-300">
+                        At target ellipse ~{" "}
+                        {analysis.deterministic.penaltyEstimate.targetWidthYds}{" "}
+                        yd wide → ~{" "}
+                        {analysis.deterministic.penaltyEstimate.atTarget.expectedPenaltyStrokesPerRound.toFixed(
+                          2,
+                        )}{" "}
+                        penalties/round.
+                      </p>
+                    )}
+                </div>
+              )}
+              {analysis.deterministic.clubDispersionRobust.length > 0 && (
+                <div className="mt-4 overflow-x-auto">
+                  <p className="mb-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    Robust lateral dispersion (median / IQR / Tukey outliers)
+                  </p>
+                  <table className="min-w-full text-left text-xs text-gray-700 dark:text-gray-300">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-600">
+                        <th className="py-1 pr-2">Club</th>
+                        <th className="py-1 pr-2">n</th>
+                        <th className="py-1 pr-2">Median dev</th>
+                        <th className="py-1 pr-2">IQR</th>
+                        <th className="py-1 pr-2">Outliers −/+</th>
+                        <th className="py-1">Shape</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysis.deterministic.clubDispersionRobust
+                        .slice(0, 8)
+                        .map((row) => (
+                          <tr
+                            key={row.clubName}
+                            className="border-b border-gray-100 dark:border-gray-700/80"
+                          >
+                            <td className="py-1 pr-2">{row.clubName}</td>
+                            <td className="py-1 pr-2">{row.shotCount}</td>
+                            <td className="py-1 pr-2">
+                              {row.medianSignedDeviationYds}
+                            </td>
+                            <td className="py-1 pr-2">
+                              {row.iqrSignedDeviationYds}
+                            </td>
+                            <td className="py-1 pr-2">
+                              {row.tukeyLowOutliers}/{row.tukeyHighOutliers}
+                            </td>
+                            <td className="py-1">{row.shotShapePattern}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
         {analysis.sgFirstPlan ? (
           <div className="app-card border-l-4 border-brand-600">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -411,6 +537,15 @@ export const AIReport = () => {
                     </span>
                     <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-gray-600 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:ring-gray-600">
                       {rec.category}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        (rec.tag ?? "mechanics") === "strategy"
+                          ? "bg-blue-100 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100"
+                          : "bg-purple-100 text-purple-900 dark:bg-purple-900/35 dark:text-purple-100"
+                      }`}
+                    >
+                      {rec.tag ?? "mechanics"}
                     </span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -560,6 +695,35 @@ export const AIReport = () => {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Statistical Trends
           </h2>
+          {analysis.statistics.commonIssues.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Common issues (strategy vs mechanics)
+              </h3>
+              <ul className="mt-2 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                {[...analysis.statistics.commonIssues]
+                  .sort((a, b) => {
+                    const pa = a.tag === "strategy" ? 0 : 1;
+                    const pb = b.tag === "strategy" ? 0 : 1;
+                    return pa - pb;
+                  })
+                  .map((item, idx) => (
+                    <li key={idx} className="flex flex-wrap gap-2">
+                      <span
+                        className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${
+                          item.tag === "strategy"
+                            ? "bg-blue-100 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100"
+                            : "bg-purple-100 text-purple-900 dark:bg-purple-900/35 dark:text-purple-100"
+                        }`}
+                      >
+                        {item.tag}
+                      </span>
+                      <span>{item.issue}</span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">

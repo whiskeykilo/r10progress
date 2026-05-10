@@ -13,7 +13,20 @@ import {
 } from "../schema/aiReport";
 import { aggregateShots } from "../utils/aggregate";
 import type { AggregateShotsOptions } from "../utils/aggregate";
-import { buildSgFirstPlan } from "../utils/sgRecommendations";
+import {
+  analyzeBallFlightConsistency,
+  D_PLANE_CITATION,
+} from "../utils/ballFlightConsistency";
+import {
+  applyRecommendationGuardrails,
+  PRESCRIPTIVE_MIN_SHOTS,
+  sampleTierForCount,
+} from "../utils/recommendationGuardrails";
+import { buildDeterministicReportBundle } from "../utils/reportDeterministic";
+import {
+  buildSgFirstPlan,
+  finalizeSgFirstPlan,
+} from "../utils/sgRecommendations";
 
 const router = Router();
 
@@ -41,11 +54,9 @@ const BodySchema = z.object({
     .optional(),
 });
 
-// Reasoning-capable analytical task with strict structured output. gpt-5-mini
-// gives us real reasoning at mid-tier cost; reasoning_effort "low" caps
-// reasoning-token spend while preserving the quality lift over gpt-4o-mini.
-const MODEL = "gpt-5-mini";
-const REASONING_EFFORT = "low" as const;
+// Frontier analytical model — hard-coded (no env override).
+const MODEL = "gpt-5.2";
+const REASONING_EFFORT = "xhigh" as const;
 
 // Headroom for reasoning tokens + structured output. Reasoning tokens count
 // against this limit; if responses come back truncated, raise this first.
@@ -97,11 +108,14 @@ router.post("/", async (req, res) => {
   const indoorHeavy =
     aggregate.meta.environmentMix.indoor >
     aggregate.meta.environmentMix.outdoor;
-  const sgFirstPlan = buildSgFirstPlan({
+  const sgFirstPlan = finalizeSgFirstPlan(
+    buildSgFirstPlan({
+      aggregate,
+      handicapIndex: playerProfile?.handicapIndex ?? null,
+      indoorHeavy,
+    }),
     aggregate,
-    handicapIndex: playerProfile?.handicapIndex ?? null,
-    indoorHeavy,
-  });
+  );
   const inputHash = createHash("sha256")
     .update(
       `${PROMPT_VERSION}\n${MODEL}\n${aggregateJson}\n${sessionNotesCanonical}\n${profileCanonical}\n${environmentsCanonical}`,
@@ -165,16 +179,58 @@ ${aggregateJson}`;
         AIAnalysisResultSchema,
         "ai_analysis_result",
       ),
-      reasoning_effort: REASONING_EFFORT,
+      // SDK ReasoningEffort union may lag newer API values; runtime sends xhigh.
+      reasoning_effort: REASONING_EFFORT as unknown as never,
       max_completion_tokens: MAX_COMPLETION_TOKENS,
     });
 
     const raw = completion.choices[0]?.message?.content;
     if (!raw) throw new Error("Empty response from OpenAI");
-    const analysis = AIAnalysisResultSchema.parse(JSON.parse(raw));
+    let analysis = AIAnalysisResultSchema.parse(JSON.parse(raw));
+
+    const ballFlightContradictions = analyzeBallFlightConsistency(
+      aggregate,
+      analysis,
+    );
+
+    const guarded = applyRecommendationGuardrails({ aggregate, analysis });
+    analysis = guarded.analysis;
+    const tier = sampleTierForCount(aggregate.global.shotsAnalyzed);
+    const guardrailNotes = [...guarded.guardrailNotes];
+
+    if (tier !== "prescriptive") {
+      const tc = aggregate.global.topConcerns.slice(0, 2).join(" · ");
+      analysis = {
+        ...analysis,
+        practiceRecommendations: {
+          ...analysis.practiceRecommendations,
+          highPriorityFocus: `[Aggregate-led priority — sample below ${PRESCRIPTIVE_MIN_SHOTS} for prescriptive drills] ${tc || "Collect more swings."}`,
+        },
+      };
+    }
+
+    if (ballFlightContradictions.length > 0) {
+      analysis = {
+        ...analysis,
+        practiceRecommendations: {
+          ...analysis.practiceRecommendations,
+          highPriorityFocus: `[Consistency flags] ${ballFlightContradictions[0]} (${D_PLANE_CITATION})\n${analysis.practiceRecommendations.highPriorityFocus}`,
+        },
+      };
+    }
+
+    const deterministic = buildDeterministicReportBundle({
+      aggregate,
+      ballFlightContradictions,
+      dPlaneCitation: D_PLANE_CITATION,
+      sampleTier: tier,
+      guardrailNotes,
+    });
+
     const persisted = PersistedAnalysisSchema.parse({
       ...analysis,
       sgFirstPlan,
+      deterministic,
     });
 
     // Surface usage so we can confirm prompt-cache hits and tune token caps.

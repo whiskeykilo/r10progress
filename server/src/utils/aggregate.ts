@@ -4,6 +4,9 @@
 // Keep this module dependency-free (besides Node built-ins) so it can be
 // unit-tested with a small Vitest fixture in aggregate.test.ts.
 
+import type { ShotShapeClusterSummary } from "./shotShapeClusters";
+import { summarizeShotShapeClusters } from "./shotShapeClusters";
+
 export type RawShot = Record<string, unknown>;
 
 export type Stat = {
@@ -70,6 +73,14 @@ export type ClubAggregate = {
     cp: number | null;
     f2p: number | null;
   }>;
+  /** Signed total deviation: median, IQR, Tukey fence outlier counts. */
+  lateralRobust: {
+    medianSigned: number;
+    iqr: number;
+    tukeyLowOutliers: number;
+    tukeyHighOutliers: number;
+  };
+  shotShape: ShotShapeClusterSummary;
 };
 
 export type GlobalAggregate = {
@@ -480,6 +491,29 @@ const aggregateClub = (
   const centered = totalDevs.filter((v) => Math.abs(v) <= 5).length;
   const denom = Math.max(totalDevs.length, 1);
 
+  const sortedDevs = [...totalDevs].sort((a, b) => a - b);
+  let tukeyLow = 0;
+  let tukeyHigh = 0;
+  let iqrSigned = 0;
+  let medianSigned = 0;
+  if (sortedDevs.length >= 4) {
+    const q1 = quantile(sortedDevs, 0.25);
+    const q3 = quantile(sortedDevs, 0.75);
+    const iqr = q3 - q1;
+    iqrSigned = round(iqr, 2);
+    medianSigned = round(quantile(sortedDevs, 0.5), 2);
+    const lo = q1 - 1.5 * iqr;
+    const hi = q3 + 1.5 * iqr;
+    for (const v of sortedDevs) {
+      if (v < lo) tukeyLow++;
+      if (v > hi) tukeyHigh++;
+    }
+  } else if (sortedDevs.length > 0) {
+    medianSigned = round(quantile(sortedDevs, 0.5), 2);
+  }
+
+  const shotShape = summarizeShotShapeClusters(shots);
+
   const clubFaceStat = stat(shots.map((s) => num(s, FACE_KEYS)));
   const clubPathStat = stat(shots.map((s) => num(s, PATH_KEYS)));
   const attackStat = stat(shots.map((s) => num(s, ATTACK_KEYS)));
@@ -529,6 +563,13 @@ const aggregateClub = (
       inconsistentStrike: (smashStat?.std ?? 0) > 0.05,
     },
     representativeShots: pickRepresentative(shots),
+    lateralRobust: {
+      medianSigned,
+      iqr: iqrSigned,
+      tukeyLowOutliers: tukeyLow,
+      tukeyHighOutliers: tukeyHigh,
+    },
+    shotShape: shotShape,
   };
 };
 
@@ -594,6 +635,12 @@ const computeTopConcerns = (clubs: ClubAggregate[]): string[] => {
       concerns.push({
         score: 50,
         msg: `${c.clubName}: face-closed bias (${c.clubFace?.mean})`,
+      });
+    }
+    if (c.shotShape.pattern === "two_way" && c.shotCount >= 10) {
+      concerns.push({
+        score: 58,
+        msg: `${c.clubName}: two-way face-to-path pattern (mixed draw/fade delivery)`,
       });
     }
   }
