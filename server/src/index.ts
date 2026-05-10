@@ -5,7 +5,6 @@ import reportsRouter from "./routes/reports";
 import sessionsRouter from "./routes/sessions";
 import settingsRouter from "./routes/settings";
 import goalsRouter from "./routes/goals";
-import ghinRouter from "./routes/ghin";
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? "8080", 10);
@@ -19,7 +18,6 @@ app.use(express.json({ limit: "50mb" }));
 app.use("/api/sessions", sessionsRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/goals", goalsRouter);
-app.use("/api/ghin", ghinRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/analyze", analyzeRouter);
 

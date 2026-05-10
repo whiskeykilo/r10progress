@@ -120,7 +120,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                     </div>
                   </Transition.Child>
                   {/* Sidebar component, swap this element with another sidebar if you like */}
-                  <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sky-600 px-6 pb-4">
+                  <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sky-600 px-6 pb-4 dark:bg-gray-900">
                     <div className="flex h-16 shrink-0 items-center">
                       <NavLink
                         to="/dashboard"
@@ -149,8 +149,8 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                                   className={({ isActive }) =>
                                     clsx(
                                       isActive
-                                        ? "bg-sky-700 text-white"
-                                        : "text-sky-200 hover:bg-sky-700 hover:text-white",
+                                        ? "bg-sky-700 text-white dark:bg-gray-800 dark:text-white"
+                                        : "text-sky-200 hover:bg-sky-700 hover:text-white dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
                                       "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
                                     )
                                   }
@@ -161,7 +161,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                                         className={clsx(
                                           isActive
                                             ? "text-white"
-                                            : "text-sky-200 group-hover:text-white",
+                                            : "text-sky-200 group-hover:text-white dark:text-gray-400 dark:group-hover:text-white",
                                           "h-6 w-6 shrink-0",
                                         )}
                                         aria-hidden="true"
@@ -181,8 +181,8 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                             className={({ isActive }) =>
                               clsx(
                                 isActive
-                                  ? "bg-sky-700 text-white"
-                                  : "text-sky-200 hover:bg-sky-700 hover:text-white",
+                                  ? "bg-sky-700 text-white dark:bg-gray-800 dark:text-white"
+                                  : "text-sky-200 hover:bg-sky-700 hover:text-white dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
                                 "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
                               )
                             }
@@ -193,7 +193,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                                   className={clsx(
                                     isActive
                                       ? "text-white"
-                                      : "text-sky-200 group-hover:text-white",
+                                      : "text-sky-200 group-hover:text-white dark:text-gray-400 dark:group-hover:text-white",
                                     "h-6 w-6 shrink-0",
                                   )}
                                   aria-hidden="true"
@@ -215,7 +215,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sky-600 px-6 pb-4">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sky-600 px-6 pb-4 dark:bg-gray-900">
             <div className="flex h-16 shrink-0 items-center">
               <NavLink to="/dashboard">
                 <img
@@ -236,8 +236,8 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                           className={({ isActive }) =>
                             clsx(
                               isActive
-                                ? "bg-sky-700 text-white"
-                                : "text-sky-200 hover:bg-sky-700 hover:text-white",
+                                ? "bg-sky-700 text-white dark:bg-gray-800 dark:text-white"
+                                : "text-sky-200 hover:bg-sky-700 hover:text-white dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
                               "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
                             )
                           }
@@ -248,7 +248,7 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                                 className={clsx(
                                   isActive
                                     ? "text-white"
-                                    : "text-sky-200 group-hover:text-white",
+                                    : "text-sky-200 group-hover:text-white dark:text-gray-400 dark:group-hover:text-white",
                                   "h-6 w-6 shrink-0",
                                 )}
                                 aria-hidden="true"
@@ -267,14 +267,14 @@ export const NewLayout = ({ children }: PropsWithChildren) => {
                     className={({ isActive }) =>
                       clsx(
                         isActive
-                          ? "bg-sky-700 text-white"
-                          : "text-sky-200 hover:bg-sky-700 hover:text-white",
+                          ? "bg-sky-700 text-white dark:bg-gray-800 dark:text-white"
+                          : "text-sky-200 hover:bg-sky-700 hover:text-white dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
                         "group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
                       )
                     }
                   >
                     <Cog6ToothIcon
-                      className="h-6 w-6 shrink-0 text-sky-200 group-hover:text-white"
+                      className="h-6 w-6 shrink-0 text-sky-200 group-hover:text-white dark:text-gray-400 dark:group-hover:text-white"
                       aria-hidden="true"
                     />
                     Settings

@@ -1,5 +1,7 @@
 import * as echarts from "echarts";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { applyReadableChartTheme } from "./chartOptions";
 
 /**
  * Custom echarts mount to make the graph rerender on nested data change,
@@ -9,6 +11,24 @@ import { useEffect, useRef } from "react";
 export const BaseGraph = ({ options }: { options: echarts.EChartsOption }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts>();
+
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark"),
+  );
+
+  useEffect(() => {
+    const el = document.documentElement;
+    const sync = () => setIsDark(el.classList.contains("dark"));
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(el, { attributes: true, attributeFilter: ["class"] });
+    return () => mo.disconnect();
+  }, []);
+
+  const themedOptions = useMemo(
+    () => applyReadableChartTheme(options, isDark),
+    [options, isDark],
+  );
 
   useEffect(() => {
     // Initialize chart
@@ -48,8 +68,8 @@ export const BaseGraph = ({ options }: { options: echarts.EChartsOption }) => {
   useEffect(() => {
     if (!chartInstance.current) return;
     chartInstance.current.resize();
-    chartInstance.current.setOption(options, true);
-  }, [options]);
+    chartInstance.current.setOption(themedOptions, true);
+  }, [themedOptions]);
 
   return <div ref={chartRef} className="h-full w-full" />;
 };

@@ -3,14 +3,17 @@ import { useUnit } from "../../../hooks/useUnit";
 import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid } from "../../base/chartOptions";
 import { abbreviateClubName } from "../../../utils/clubAbbreviations";
+import { chartColorForClubIndex } from "../../../utils/clubChartOrder";
 import { useCarryAndDeviation } from "./ShotDispersionGraph.utils";
 
 export const AllShotsGraph = () => {
-  const shots = useCarryAndDeviation();
+  const { shots, shotsByClub } = useCarryAndDeviation();
   const unit = useUnit();
 
+  const clubsInBagOrder = Object.keys(shotsByClub);
+
   let maximumDeviation = Math.max(
-    ...shots.shots.map((shot) => Math.abs(Number(shot.x))),
+    ...shots.map((shot) => Math.abs(Number(shot.x))),
     0,
   );
   // Round up to the nearest 10
@@ -31,6 +34,8 @@ export const AllShotsGraph = () => {
     xAxis: {
       type: "value",
       name: `Deviation (${unit})`,
+      nameLocation: "middle",
+      nameGap: 28,
       min: -maximumDeviation,
       max: maximumDeviation,
       axisLabel: {
@@ -40,6 +45,8 @@ export const AllShotsGraph = () => {
     yAxis: {
       type: "value",
       name: `Carry (${unit})`,
+      nameLocation: "middle",
+      nameGap: 52,
       axisLabel: {
         formatter: (value: number) => `${value} ${unit}`,
       },
@@ -47,12 +54,14 @@ export const AllShotsGraph = () => {
     legend: {
       orient: "horizontal",
       top: "bottom",
+      data: clubsInBagOrder,
       formatter: abbreviateClubName,
     },
-    series: Object.entries(shots.shotsByClub).map(([club, shots]) => ({
-      type: "scatter",
+    series: clubsInBagOrder.map((club, index) => ({
+      type: "scatter" as const,
       name: club,
-      data: shots.map((shot) => ({
+      color: chartColorForClubIndex(index),
+      data: shotsByClub[club].map((shot) => ({
         value: [shot.x, shot.y],
         club,
       })),

@@ -3,40 +3,12 @@ import { useUnit } from "../../../hooks/useUnit";
 import { BaseGraph } from "../../base/BaseGraph";
 import { chartOptionsGrid, PointWithClub } from "../../base/chartOptions";
 import { abbreviateClubName } from "../../../utils/clubAbbreviations";
+import { chartColorForClubIndex } from "../../../utils/clubChartOrder";
 import { useCarryAndDeviation } from "./ShotDispersionGraph.utils";
 
-// different colors for each club
-const colors = {
-  1: "#FF0000",
-  2: "#FFA500",
-  3: "#FFFF00",
-  4: "#008000",
-  5: "#0000FF",
-  6: "#4B0082",
-  7: "#EE82EE",
-  8: "#A9A9A9",
-  9: "#000000",
-  10: "#FF4500",
-  11: "#FFD700",
-  12: "#ADFF2F",
-  13: "#00FFFF",
-  14: "#000080",
-};
-
 export const DispersionCirclesGraph = () => {
-  const { shots } = useCarryAndDeviation();
+  const { shots, shotsByClub } = useCarryAndDeviation();
   const unit = useUnit();
-  const shotsByClub: Record<string, PointWithClub[]> = shots.reduce(
-    (acc, shot) => {
-      const { club } = shot;
-      if (!acc[club]) {
-        acc[club] = [];
-      }
-      acc[club].push(shot);
-      return acc;
-    },
-    {} as Record<string, typeof shots>,
-  );
 
   let maximumDeviation = Math.max(
     ...shots.map((shot) => Math.abs(Number(shot.x))),
@@ -45,19 +17,17 @@ export const DispersionCirclesGraph = () => {
   // Round up to the nearest 10
   maximumDeviation = Math.ceil(maximumDeviation / 10) * 10;
 
-  const series = Object.entries(shotsByClub)
-    .map(([club, clubShots]) => {
+  const clubsInSeriesOrder = Object.keys(shotsByClub);
+
+  const series = clubsInSeriesOrder
+    .map((club, clubIndex) => {
+      const clubShots = shotsByClub[club];
       const centerX =
         clubShots.reduce((sum, shot) => sum + shot.x, 0) / clubShots.length;
       const centerY =
         clubShots.reduce((sum, shot) => sum + shot.y, 0) / clubShots.length;
 
-      const color =
-        colors[
-          (Object.values(shotsByClub).findIndex(
-            (shots) => shots === clubShots,
-          ) + 1) as keyof typeof colors
-        ];
+      const color = chartColorForClubIndex(clubIndex);
 
       const calculateEllipseAxes = (shots: PointWithClub[]) => {
         const xValues = shots.map((shot) => shot.x);
@@ -135,6 +105,8 @@ export const DispersionCirclesGraph = () => {
     xAxis: {
       type: "value",
       name: `Deviation (${unit})`,
+      nameLocation: "middle",
+      nameGap: 28,
       min: -maximumDeviation,
       max: maximumDeviation,
       axisLabel: {
@@ -144,6 +116,8 @@ export const DispersionCirclesGraph = () => {
     yAxis: {
       type: "value",
       name: `Carry (${unit})`,
+      nameLocation: "middle",
+      nameGap: 52,
       axisLabel: {
         formatter: (value: number) => `${value} ${unit}`,
       },
@@ -151,13 +125,8 @@ export const DispersionCirclesGraph = () => {
     legend: {
       orient: "horizontal",
       top: "bottom",
-      formatter: (name: string) => {
-        const suffix = " Dispersion";
-        if (name.endsWith(suffix)) {
-          return `${abbreviateClubName(name.slice(0, -suffix.length))} · ellipse`;
-        }
-        return abbreviateClubName(name);
-      },
+      data: clubsInSeriesOrder,
+      formatter: (name: string) => abbreviateClubName(name),
     },
     series,
   };

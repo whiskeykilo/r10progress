@@ -69,7 +69,7 @@ export const Settings = () => {
           </SettingCard>
         </div>
 
-        <SettingCard title="Player profile & GHIN">
+        <SettingCard title="Player profile">
           <PlayerProfileSettings />
         </SettingCard>
 

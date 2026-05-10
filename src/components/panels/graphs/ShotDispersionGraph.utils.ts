@@ -7,6 +7,7 @@ import {
   getTotalDeviationDistance,
 } from "../../../utils/golfSwingData.helpers";
 import { PointWithClub } from "../../base/chartOptions";
+import { sortClubNames } from "../../../utils/clubChartOrder";
 
 export const useCarryAndDeviation = () => {
   const sessions = useSelectedSessionsWithSettings();
@@ -23,20 +24,27 @@ export const useCarryAndDeviation = () => {
         (pair) => !!pair,
       );
 
+      const shotsByClubUnsorted = shots.reduce(
+        (acc, shot) => {
+          if (!shot) return acc;
+          const { club } = shot;
+          if (!acc[club]) {
+            acc[club] = [];
+          }
+          acc[club].push(shot);
+          return acc;
+        },
+        {} as Record<string, typeof shots>,
+      );
+
+      const shotsByClub: Record<string, PointWithClub[]> = {};
+      for (const club of sortClubNames(Object.keys(shotsByClubUnsorted))) {
+        shotsByClub[club] = shotsByClubUnsorted[club]!;
+      }
+
       return {
         shots,
-        shotsByClub: shots.reduce(
-          (acc, shot) => {
-            if (!shot) return acc;
-            const { club } = shot;
-            if (!acc[club]) {
-              acc[club] = [];
-            }
-            acc[club].push(shot);
-            return acc;
-          },
-          {} as Record<string, typeof shots>,
-        ),
+        shotsByClub,
       };
     }
     return { shots: [], shotsByClub: {} };

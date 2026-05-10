@@ -211,8 +211,8 @@ export const ClubTrendChart = () => {
               Club Trend
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Carry average and carry offline dispersion per session (only
-              sessions selected in the header), in chronological order.
+              Carry average and carry offline dispersion per session, in
+              chronological order.
             </p>
           </div>
           <RangeBallBadge className="ml-0 shrink-0" />

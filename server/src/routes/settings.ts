@@ -4,11 +4,8 @@ import { getDb } from "../db";
 const router = Router();
 
 const DEFAULT_PLAYER_PROFILE = {
-  ghinNumber: "",
-  golferDisplayName: "",
-  ghinLinkConfirmed: false,
   handicapIndex: null as number | null,
-  handicapSource: null as "manual" | "ghin" | null,
+  handicapSource: null as "manual" | null,
   handicapLastSyncedAt: null as string | null,
   clubLoftsByName: {} as Record<string, number>,
 };
