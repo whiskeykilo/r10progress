@@ -65,22 +65,22 @@ export type AnalyzeApiResponse = {
 };
 
 /**
- * Default frontier model (Responses API). Override with OPENAI_ANALYZE_MODEL.
- * GPT-5.5 Pro is not on Chat Completions; analyze uses `v1/responses`.
+ * Default analyze model (Responses API). Override with OPENAI_ANALYZE_MODEL.
+ * Frontier GPT-5.x class models use `v1/responses`, not Chat Completions.
  */
 export function resolveAnalyzeModel(): string {
   const m = process.env.OPENAI_ANALYZE_MODEL?.trim();
-  return m && m.length > 0 ? m : "gpt-5.5-pro";
+  return m && m.length > 0 ? m : "gpt-5.5";
 }
 
 /**
- * Default xhigh on Responses API. Set OPENAI_REASONING_EFFORT=none|off
- * to omit the `reasoning` parameter for models that do not support it.
+ * Default `medium` reasoning effort on Responses API. Override with OPENAI_REASONING_EFFORT.
+ * Set to `none` or `off` to omit the `reasoning` parameter for models that do not support it.
  */
 export function resolveReasoningEffort(): string | undefined {
   const r = process.env.OPENAI_REASONING_EFFORT?.trim();
   if (r && (/^none$/i.test(r) || /^off$/i.test(r))) return undefined;
-  if (!r || r.length === 0) return "xhigh";
+  if (!r || r.length === 0) return "medium";
   return r;
 }
 
@@ -172,7 +172,7 @@ export function buildAnalyzePipelineContext(
   const sessionNotesCanonical = JSON.stringify(sessionNotes);
   const aggOptions: AggregateShotsOptions | undefined =
     body.environmentBySessionFile &&
-    Object.keys(body.environmentBySessionFile).length
+      Object.keys(body.environmentBySessionFile).length
       ? { environmentBySessionFile: body.environmentBySessionFile }
       : undefined;
   const profileCanonical = JSON.stringify(body.playerProfile ?? {});
@@ -277,8 +277,8 @@ export async function runOpenAIAnalyzeAndPersist(
     stream: false,
     ...(reasoningEffort !== undefined
       ? {
-          reasoning: { effort: reasoningEffort } as Reasoning,
-        }
+        reasoning: { effort: reasoningEffort } as Reasoning,
+      }
       : {}),
   });
 

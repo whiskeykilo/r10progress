@@ -75,8 +75,8 @@ The AI Analysis page warns users not to navigate away during a run; analyze requ
 ## Server Environment Variables
 
 - `OPENAI_API_KEY` — Required for `/api/analyze` (AI shot analysis).
-- `OPENAI_ANALYZE_MODEL` — Model id for `/api/analyze` (default: `gpt-5.5-pro`). Analyze calls OpenAI **Responses API** (`POST /v1/responses`) with structured JSON via **`zodTextFormat`**, not Chat Completions. Models that only support Chat Completions need a different env value **and** would require a separate code path or switching back to `chat.completions` — the default path assumes Responses-capable ids.
-- `OPENAI_REASONING_EFFORT` — e.g. `xhigh`, or `none` / `off` to omit the Responses **`reasoning`** block for models that do not support it (or use `gpt-4o-mini`).
+- `OPENAI_ANALYZE_MODEL` — Model id for `/api/analyze` (default: `gpt-5.5`). Analyze calls OpenAI **Responses API** (`POST /v1/responses`) with structured JSON via **`zodTextFormat`**, not Chat Completions. Models that only support Chat Completions need a different env value **and** would require a separate code path or switching back to `chat.completions` — the default path assumes Responses-capable ids.
+- `OPENAI_REASONING_EFFORT` — Default `medium` on the Responses **`reasoning`** block; override with e.g. `xhigh`, or `none` / `off` to omit **`reasoning`** for models that do not support it (or use `gpt-4o-mini`).
 - `OPENAI_TIMEOUT_MS` — OpenAI SDK client timeout in ms (default `1800000`, max `3600000`). Raise if frontier runs hit timeouts.
 - `PORT` — Server port (default: `8080`).
 - `STATIC_DIR` — Path to built SPA (default: `{cwd}/dist`).
