@@ -1,8 +1,8 @@
-# R10Progress (self-hosted)
-
 <p align="center">
-  <img src="public/logo.png" alt="R10Progress logo" width="160" />
+  <img src="public/logo.png" alt="R10Progress logo" width="168" />
 </p>
+
+# R10Progress
 
 Track and visualize golf shot data from the **Garmin Approach R10** launch monitor. Import CSV exports from the Garmin Golf app, explore dispersion and trends, optionally run **AI session analysis**, and keep everything **on your machine**—no Firebase and no vendor cloud for your swing data.
 
@@ -33,7 +33,7 @@ docker build -t r10progress .
 docker run -p 8080:8080 -v r10progress-data:/data r10progress
 ```
 
-Open **<http://localhost:8080>**. The UI and `/api` are served together. SQLite lives on the **`/data`** volume (`sqlite.db`).
+Open **[http://localhost:8080](http://localhost:8080)**. The UI and `/api` are served together. SQLite lives on the `**/data`** volume (`sqlite.db`).
 
 To enable AI analysis, pass an API key:
 
@@ -56,12 +56,12 @@ Repeated runs with the same inputs can be **served from cache** so you are not c
 
 ### Environment variables
 
-| Variable           | Default        | Purpose                                      |
-| ------------------ | -------------- | -------------------------------------------- |
-| `OPENAI_API_KEY`   | —              | Enables AI reports, practice drills, SG plan, and smart session titles |
-| `PORT`             | `8080`         | HTTP port inside the container               |
-| `DATA_DIR`         | `{cwd}/data`   | Directory for `sqlite.db`                    |
-| `STATIC_DIR`       | `{cwd}/dist`   | Built SPA (set automatically in the image) |
+| Variable         | Default      | Purpose                                                                |
+| ---------------- | ------------ | ---------------------------------------------------------------------- |
+| `OPENAI_API_KEY` | —            | Enables AI reports, practice drills, SG plan, and smart session titles |
+| `PORT`           | `8080`       | HTTP port inside the container                                         |
+| `DATA_DIR`       | `{cwd}/data` | Directory for `sqlite.db`                                              |
+| `STATIC_DIR`     | `{cwd}/dist` | Built SPA (set automatically in the image)                             |
 
 ---
 
@@ -72,12 +72,13 @@ Repeated runs with the same inputs can be **served from cache** so you are not c
 3. **Open R10Progress** in the browser (Docker: port **8080**; local dev: **5173** below).
 4. **Upload** the CSV from the Upload flow. The app parses units and column names for supported locales.
 5. **Explore**:
-   - **Dashboard** — Overview of your data.
-   - **Sessions** — List and manage imported sessions.
-   - **Visualization** — Charts for dispersion and trends.
-   - **Reports** / **AI analysis** — Stored reports and new analysis (needs `OPENAI_API_KEY`).
-   - **Settings** — Units, filtering behavior, and related options.
-   - **Goals** — Experimental goal tracking.
+
+- **Dashboard** — Overview of your data.
+- **Sessions** — List and manage imported sessions.
+- **Visualization** — Charts for dispersion and trends.
+- **Reports** / **AI analysis** — Stored reports and new analysis (needs `OPENAI_API_KEY`).
+- **Settings** — Units, filtering behavior, and related options.
+- **Goals** — Experimental goal tracking.
 
 There is **no login** in self-hosted mode; anyone who can reach the URL can use the instance—run it on a trusted network or behind your own auth reverse proxy if needed.
 
@@ -109,7 +110,7 @@ pnpm dev
 - **Frontend (Vite):** [http://localhost:5173](http://localhost:5173)
 - **API:** [http://localhost:8080](http://localhost:8080) — Vite proxies `/api` to the server, so use the **5173** URL in the browser.
 
-SQLite is created automatically under **`./data`** on first API use.
+SQLite is created automatically under `**./data`** on first API use.
 
 For AI features during development, export a key in the shell that runs the server (there is no bundled `.env` loader):
 
