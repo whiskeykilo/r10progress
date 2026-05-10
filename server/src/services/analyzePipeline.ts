@@ -172,7 +172,7 @@ export function buildAnalyzePipelineContext(
   const sessionNotesCanonical = JSON.stringify(sessionNotes);
   const aggOptions: AggregateShotsOptions | undefined =
     body.environmentBySessionFile &&
-      Object.keys(body.environmentBySessionFile).length
+    Object.keys(body.environmentBySessionFile).length
       ? { environmentBySessionFile: body.environmentBySessionFile }
       : undefined;
   const profileCanonical = JSON.stringify(body.playerProfile ?? {});
@@ -277,8 +277,8 @@ export async function runOpenAIAnalyzeAndPersist(
     stream: false,
     ...(reasoningEffort !== undefined
       ? {
-        reasoning: { effort: reasoningEffort } as Reasoning,
-      }
+          reasoning: { effort: reasoningEffort } as Reasoning,
+        }
       : {}),
   });
 
